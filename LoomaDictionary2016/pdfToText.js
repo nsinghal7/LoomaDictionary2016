@@ -1,3 +1,8 @@
+/**
+ * from http://stackoverflow.com/questions/1554280/extract-text-from-pdf-in-javascript,
+ * but replaced bidiTexts with items and added the return statement at the end.
+ */
+
 function Pdf2TextClass(){
      var self = this;
      this.complete = 0;

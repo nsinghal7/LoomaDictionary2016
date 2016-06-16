@@ -10,6 +10,8 @@
 <script src="pdfToText.js"></script>
 
 <input type="file" id="input" onchange="getPDFData()">
+<p id="output">
+</p>
 <script>
 	function getPDFData() {
 		console.log("changed");
@@ -28,7 +30,7 @@
 		var converter = Pdf2TextClass();
 		converter.pdfToText(data,
 			function(done, total) { console.log(done + " out of " + total);},
-			function(text) { console.log(text); console.log(typeof text);});
+			function(text) { document.getElementById("output").textContent = text;});
 	}
 </script>
 </body>
