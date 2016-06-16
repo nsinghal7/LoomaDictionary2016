@@ -35,8 +35,22 @@
 		xmlhttp.onreadystatechange = function() {
 		    if (xmlhttp.readyState == 4 && xmlhttp.status == 200) {
 		        var resp = JSON.parse(xmlhttp.responseText);
-		        var ans = resp["responseData"]["translatedText"];
-		        document.getElementById("output").textContent = ans;
+		        var match = [resp["responseData"]["translatedText"]];
+		        for(var i = 0; i < resp["matches"].length; i++) {
+		        	match.push(resp["matches"][i]["translation"]);
+		        }
+		        var ans = {};
+		        for(var i = 0; i < match.length; i++) {
+		        	if(match[i].length > 0 && !match[i].match(/[a-z]/i)) {
+		        		ans[match[i]] = true;
+		        	}
+		        }
+		        var list = [];
+		        for(var i in ans) {
+		        	list.push(i);
+		        }
+		        
+		        document.getElementById("output").textContent = list.toString();
 		    }
 		};
 		xmlhttp.open("GET", "http://api.mymemory.translated.net/get?q="+ word +"&langpair=en|ne", true);
