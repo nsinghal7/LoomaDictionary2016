@@ -6,5 +6,30 @@
 </head>
 <body>
 
+<script src="pdfjs/pdf.js"></script>
+<script src="pdfToText.js"></script>
+
+<input type="file" id="input" onchange="getPDFData()">
+<script>
+	function getPDFData() {
+		console.log("changed");
+		var file = document.getElementById("input").files[0];
+		console.log(file);
+		var reader = new FileReader();
+		reader.onloadend = function() {
+			console.log("loaded");
+			convert(new Uint8Array(reader.result));
+		};
+		reader.onProgress = function() { console.log("progress");};
+		reader.readAsArrayBuffer(file);
+	}
+	function convert(data) {
+		console.log("converting");
+		var converter = Pdf2TextClass();
+		converter.pdfToText(data,
+			function(done, total) { console.log(done + " out of " + total);},
+			function(text) { console.log(text); console.log(typeof text);});
+	}
+</script>
 </body>
 </html>
