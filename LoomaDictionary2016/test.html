@@ -8,10 +8,6 @@
 
 <script src="pdfjs/pdf.js"></script>
 <script src="pdfToText.js"></script>
-
-<input type="file" id="input" onchange="getPDFData()">
-<p id="output">
-</p>
 <script>
 	function getPDFData() {
 		console.log("changed");
@@ -32,6 +28,25 @@
 			function(done, total) { console.log(done + " out of " + total);},
 			function(text) { document.getElementById("output").textContent = text;});
 	}
+	
+	function translateWord() {
+		var word = document.getElementById("word").value;
+		var xmlhttp = new XMLHttpRequest();
+		xmlhttp.onreadystatechange = function() {
+		    if (xmlhttp.readyState == 4 && xmlhttp.status == 200) {
+		        var resp = JSON.parse(xmlhttp.responseText);
+		        var ans = resp["responseData"]["translatedText"];
+		        document.getElementById("output").textContent = ans;
+		    }
+		};
+		xmlhttp.open("GET", "http://api.mymemory.translated.net/get?q="+ word +"&langpair=en|ne", true);
+		xmlhttp.send();
+	}
 </script>
+<input type="file" id="input" onchange="getPDFData()">
+<input id="word" onchange="translateWord()">
+<p id="output">
+</p>
+
 </body>
 </html>
