@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Looma Dictionary Editor</title>
+<link rel="stylesheet" href="editor.css">
+</head>
+<body>
+
+<div id="menuArea">
+	<button id="uploadPDFButton" onclick="showUploadDiv()">Upload PDF</button>
+	
+	<div id="uploadPDFDiv" class="popupDiv">
+		<button class="closePopupButton" onclick="hideUploadDiv()"> X </button> <br>
+		<input type="file" id="pdfInput"> <br>
+		<button id="processPDFButton" onclick="processPDFButton()">Process PDF</button>
+	</div>
+	
+	<button id="publishButton">Publish Accepted Changes</button>
+	
+	<form id="searchForm">
+		<input type="text" name="wordPart" placeholder="Enter Search Term Here"> <br>
+		Added: <input type="checkbox" name="added" checked>
+		Modified: <input type="checkbox" name="modified" checked>
+		Accepted: <input type="checkbox" name="accepted" checked> <br>
+		<input type="submit" value="Search"> 
+	</form>
+</div>
+
+
+
+</body>
+</html>
