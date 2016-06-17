@@ -1,4 +1,32 @@
 @CHARSET "UTF-8";
 .popupDiv {
-	display: none;
+	border: solid 1px black;
+    position: fixed;
+    left: 50%;
+    top: 50%;
+    background-color: white;
+    z-index: 100;
+
+    height: 100px;
+    margin-top: -50px;
+
+    width: 200px;
+    margin-left: -100px;
+}
+
+.popupDiv .closePopupButton {
+	float: right;
+}
+
+
+
+.centeredSection {
+	width: 30%;
+	margin: auto;
+	border: 3px solid green;
+	padding: 18px;
+}
+
+#publishButton {
+	float: right;
 }
