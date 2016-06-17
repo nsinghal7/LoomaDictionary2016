@@ -8,5 +8,3 @@ function findUniqueWordsFromString(originalString){
 function extractWordsFromString(string) {
 	return string.match(/[qwertyuiopasdfghjklzxcvbnmQWERTYUIOPASDFGHJKLZXCVBNM]+/g);
 }
-
-debug(findUniqueWordsFromString("hello hello askdfjhaskdlf asdfkjasdf asf3435 (*S&D(*7ads(D*&f9s8"))
