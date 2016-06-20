@@ -21,7 +21,7 @@ if (isset($errors) && !empty($errors))
 ?><h1>Login</h1>
 <form action="login.php" method="post">
 	<p>User ID: <input type="text"
-	name="ID" soze="20" maxlength="60" />
+	name="ID" size="20" maxlength="60" />
 	</p>
 	<p>Password: <input type="password"
 	name="pass" size="20" maxlength="20" />
@@ -30,5 +30,5 @@ if (isset($errors) && !empty($errors))
 	value="Login" /></p>
 </form>
 
-<?php include ('includes/footer.html'); ?>
+<?php //include ('includes/footer.html');
 	
