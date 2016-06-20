@@ -1,0 +1,14 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Insert title here</title>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.2/jquery.min.js"></script>
+</head>
+<body>
+<p id="par"> </p>
+<script type="text/javascript">
+	jQuery.get("test.php", {"json": JSON.stringify({"a": 5})}, function(data, status, jqXHR) {$("#par").text(data)}, "text");
+</script>
+</body>
+</html>

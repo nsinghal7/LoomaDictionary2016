@@ -65,5 +65,14 @@ function Pdf2TextClass(){
     } // of for
   });
  }; // end of pdfToText()
+ 
+ this.convertPDF = function(file, partDone, fullDone) {
+	 var reader = new FileReader();
+		reader.onloadend = function() {
+			self.pdfToText(new Uint8Array(reader.result), partDone, fullDone);
+		};
+		reader.onProgress = function() { console.log("progress");};
+		reader.readAsArrayBuffer(file);
+ }
  return this;
 }; // end of class
