@@ -12,16 +12,19 @@
 </head>
 <body>
 
+<div id="uploadPDFDiv" class="popupDiv">
+	<button class="closePopupButton" onclick="hideUploadDiv()"> X </button> <br>
+	<input type="file" id="pdfInput"> <br>
+	<button id="processPDFButton" onclick="processPDF()">Process PDF</button>
+	<br>
+	<p id="progressDisplay" class="centeredText"> </p>
+</div>
+
+
 <div id="menuArea">
+
+
 	<button id="uploadPDFButton" onclick="showUploadDiv()">Upload PDF</button>
-	
-	<div id="uploadPDFDiv" class="popupDiv">
-		<button class="closePopupButton" onclick="hideUploadDiv()"> X </button> <br>
-		<input type="file" id="pdfInput"> <br>
-		<button id="processPDFButton" onclick="processPDF()">Process PDF</button>
-		<br>
-		<p id="progressDisplay" class="centeredText"> </p>
-	</div>
 	
 	<button id="publishButton" onclick="publish()">Publish Accepted Changes</button>
 	
