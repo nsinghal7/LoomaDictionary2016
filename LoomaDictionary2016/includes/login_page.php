@@ -26,7 +26,7 @@ if (isset($errors) && !empty($errors))
 	<p>Password: <input type="password"
 	name="pass" size="20" maxlength="20" />
 	</p>
-	<p><input type+"subit" name="submit"
+	<p><input type = "submit" name="submit"
 	value="Login" /></p>
 </form>
 	
