@@ -6,22 +6,23 @@
 		return true;
 	}
 	function readSimplified($args) {
-		
+		return array('values' => 'simple');
 	}
 	function readAdvanced($args) {
-		
+		return array('values' => 'advance');
 	}
 	function publish($user) {
-		
+		return true;
 	}
 	function updateStaging($new, $user) {
-		
+		return true;
 	}
-	if(!isset($_REQUEST['login_info']) or !isset($_REQUEST['user']) or
-			!login($_REQUEST['login_info'], $_REQUEST['user'])) {
+	if(!isset($_REQUEST['loginInfo']) or !isset($_REQUEST['user']) or
+			!login($_REQUEST['loginInfo'], $_REQUEST['user'])) {
 		$response['status'] = array( 'type' => 'error', 'value' => 'Not logged in');
-	} elseif ($_SERVER['REQUEST_METHOD'] == 'PUT' and isset($_REQUEST['word_list'])) {
-		$list = $_REQUEST['word_list'];
+	} elseif ($_SERVER['REQUEST_METHOD'] == 'POST' and isset($_REQUEST['wordList'])) {
+		$list = json_decode($_REQUEST['wordList']);
+		$skipped = 0;
 		foreach ($list as $word) {
 			$success = createEntry($word, $_REQUEST['user']);
 			if (!$success) {
@@ -29,10 +30,12 @@
 					$response['skipped'] = array();
 				}
 				$response['skipped'][] = $word;
+				$skipped++;
 			}
 		}
+		$response['status'] = array('type' => 'success', 'value' => "added words, skipped $skipped words");
 	} elseif ($_SERVER['REQUEST_METHOD'] == 'GET' and isset($_REQUEST['searchArgs'])) {
-		if (isset($_REQUEST['simplified'])) {
+		if ($_REQUEST['simplified'] == "true") {
 			$response['data'] = readSimplified($_REQUEST['searchArgs']);
 		} else {
 			$response['data'] = readAdvanced($_REQUEST['searchArgs']);
@@ -56,7 +59,9 @@
 		$response['status'] = array('type' => 'error', 'value' => 'invalid request',
 				'request' => json_encode($_REQUEST));
 	}
+	$encoded = json_encode($response);
+	error_log($encoded);
 	header('Content-type: application/json');
-	exit(json_encode($response));
+	exit($encoded);
 	
 ?>

@@ -2,23 +2,11 @@ var processing = false;
 
 function startup() {
 	hideUploadDiv();
-	var search = window.location.search;
-	if(search.length > 0) {
-		var pairs = search.substring(1).split("&");
-		for(var i = 0; i < pairs.length; i++) {
-			var pair = pairs[i];
-			var kv = pair.split("=");
-			if(kv[0] == "wordPart") {
-				$("#wordPart").val(kv[1]);
-			} else {
-				$("#" + kv[0]).prop("checked", true);
-			}
-		}
-	}
 }
 
 function showUploadDiv() {
 	$("#uploadPDFDiv").show();
+	$("#progressDisplay").text("");
 }
 
 function hideUploadDiv() {
@@ -39,19 +27,33 @@ function processPDF() {
 	Pdf2TextClass().convertPDF(file, function(page, total) {}, function(text) {
 		progress.text("Processing text");
 		var words = findUniqueWordsFromString(text);
-		for(var i = 0; i < words.length; i++) {
-			findAndAddDefinitions(words[i]);
-		}
-		progress.text("Success!");
-		setTimeout(function() {
-			$("#uploadPDFDiv").find(".closePopupButton").prop("disabled", false);
-			processing = false;
-			hideUploadDiv();
-			progress.text("");
-		}, 1000)
+		jQuery.post("backend.php",
+				{'loginInfo': {"allowed": true}, 'user': 'me',
+				'wordList': JSON.stringify(words)},
+				function(data, status, jqXHR) {
+					if('status' in data && data['status']['type'] == 'error') {
+						progress.text("Failed with error: " + data['status']['value']);
+					} else {
+						progress.text("Success!");
+					}
+					$("#uploadPDFDiv").find(".closePopupButton").prop("disabled", false);
+					processing = false;
+				}, "json");
 	});
 }
 
-function findAndAddDefinitions(word) {
-	
+function submitSearch() {
+	$("#searchButton").prop("disabled", true);
+	jQuery.get("backend.php",
+			{'loginInfo': {"allowed": true}, 'user': 'me',
+			'searchArgs': {'text': $("#wordPart").val(),
+						'added': $("#added").prop("checked"),
+						'modified': $("#modified").prop("checked"),
+						'accepted': $("#accepted").prop("checked")},
+			'simplified': $("#simplified").prop("checked")},
+			function(data, status, jqXHR) {
+				// show data;
+				console.log(data);
+				$("#searchButton").prop("disabled", false);
+			}, 'json');
 }
