@@ -60,7 +60,6 @@
 				'request' => json_encode($_REQUEST));
 	}
 	$encoded = json_encode($response);
-	error_log($encoded);
 	header('Content-type: application/json');
 	exit($encoded);
 	
