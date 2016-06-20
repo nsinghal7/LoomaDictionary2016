@@ -2,6 +2,19 @@ var processing = false;
 
 function startup() {
 	hideUploadDiv();
+	var search = window.location.search;
+	if(search.length > 0) {
+		var pairs = search.substring(1).split("&");
+		for(var i = 0; i < pairs.length; i++) {
+			var pair = pairs[i];
+			var kv = pair.split("=");
+			if(kv[0] == "wordPart") {
+				$("#wordPart").val(kv[1]);
+			} else {
+				$("#" + kv[0]).prop("checked", true);
+			}
+		}
+	}
 }
 
 function showUploadDiv() {
@@ -22,18 +35,11 @@ function processPDF() {
 	if(file == null || !("name" in file) || !file.name.endsWith(".pdf")) {
 		progress.text("No file selected or invalid format");
 	}
-	Pdf2TextClass().convertPDF(file, function(page, total) {
-		if(page % 5 == 0 || page == total) {
-			progress.text("Converting page " + page + " / " + total);
-		}
-	}, function(text) {
+	progress.text("Converting file to text");
+	Pdf2TextClass().convertPDF(file, function(page, total) {}, function(text) {
 		progress.text("Processing text");
 		var words = findUniqueWordsFromString(text);
 		for(var i = 0; i < words.length; i++) {
-			console.log(i)
-			if(i % 100 == 0 || i == words.length - 1) {
-				progress.text("Creating definitions for word " + i + " / " + words.length);
-			}
 			findAndAddDefinitions(words[i]);
 		}
 		progress.text("Success!");
