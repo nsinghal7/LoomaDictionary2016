@@ -80,3 +80,25 @@ body {
 	pointer-events: none;
 	opacity: 0.4;
 }
+
+
+table, th, td {
+    border: 1px solid black;
+    border-collapse: collapse;
+}
+
+#resultsTable {
+	width: 100%;
+}
+
+.wordCol, .rootCol, .posCol, .nepCol, .modCol, .dateCol {
+	width: 9%;
+}
+
+.defCol {
+	width: 30%;
+}
+
+.otherCol {
+	width: 16%;
+}

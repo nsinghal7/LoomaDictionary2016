@@ -42,12 +42,12 @@ function processPDF() {
 					}
 					$("#uploadPDFDiv").find(".closePopupButton").prop("disabled", false);
 					processing = false;
+					submitSearch();
 				}, "json");
 	});
 }
 
 function submitSearch() {
-	$("#searchButton").prop("disabled", true);
 	jQuery.get("backend.php",
 			{'loginInfo': {"allowed": true, 'user': 'me'},
 			'searchArgs': {'text': $("#wordPart").val(),
@@ -59,7 +59,6 @@ function submitSearch() {
 				// show data;
 				// change maxPage
 				console.log(data);
-				$("#searchButton").prop("disabled", false);
 			}, 'json');
 }
 
@@ -67,7 +66,7 @@ function publish() {
 	jQuery.get("backend.php", {'loginInfo': {'allowed': true, 'user': 'me'}, 'publish': true},
 		function(data, status, jqXHR) {
 			if(data['status']['type'] == 'success') {
-				console.log('success, published');
+				console.log('successfully published');
 			} else {
 				console.log('fail to publish');
 			}
