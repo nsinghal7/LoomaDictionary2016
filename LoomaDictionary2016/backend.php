@@ -1,30 +1,26 @@
 <?php
-	function login($info, $user) {
+	function createEntry($word, $login) {
 		return true;
 	}
-	function createEntry($word, $user) {
-		return true;
-	}
-	function readSimplified($args) {
+	function readSimplified($args, $login) {
 		return array('values' => 'simple');
 	}
-	function readAdvanced($args) {
+	function readAdvanced($args, $login) {
 		return array('values' => 'advance');
 	}
-	function publish($user) {
+	function publish($login) {
 		return true;
 	}
-	function updateStaging($new, $user) {
+	function updateStaging($new, $login) {
 		return true;
 	}
-	if(!isset($_REQUEST['loginInfo']) or !isset($_REQUEST['user']) or
-			!login($_REQUEST['loginInfo'], $_REQUEST['user'])) {
+	if(!isset($_REQUEST['loginInfo'])) {
 		$response['status'] = array( 'type' => 'error', 'value' => 'Not logged in');
 	} elseif ($_SERVER['REQUEST_METHOD'] == 'POST' and isset($_REQUEST['wordList'])) {
 		$list = json_decode($_REQUEST['wordList']);
 		$skipped = 0;
 		foreach ($list as $word) {
-			$success = createEntry($word, $_REQUEST['user']);
+			$success = createEntry($word, $_REQUEST['loginInfo']);
 			if (!$success) {
 				if(!isset($response['skipped'])) {
 					$response['skipped'] = array();
@@ -36,12 +32,12 @@
 		$response['status'] = array('type' => 'success', 'value' => "added words, skipped $skipped words");
 	} elseif ($_SERVER['REQUEST_METHOD'] == 'GET' and isset($_REQUEST['searchArgs'])) {
 		if ($_REQUEST['simplified'] == "true") {
-			$response['data'] = readSimplified($_REQUEST['searchArgs']);
+			$response['data'] = readSimplified($_REQUEST['searchArgs'], $_REQUEST['loginInfo']);
 		} else {
-			$response['data'] = readAdvanced($_REQUEST['searchArgs']);
+			$response['data'] = readAdvanced($_REQUEST['searchArgs'], $_REQUEST['loginInfo']);
 		}
 	} elseif ($_SERVER['REQUEST_METHOD'] == 'GET' and isset($_REQUEST['publish'])) {
-		$success = publish($_REQUEST['user']);
+		$success = publish($_REQUEST['loginInfo']);
 		if($success) {
 			$response['status'] = array('type' => 'success');
 		} else {
@@ -49,7 +45,7 @@
 		}
 	} elseif($_SERVER['REQUEST_METHOD'] == 'POST' and isset($_REQUEST['mod'])) {
 		$new = json_decode(stripslashes($_REQUEST['mod']), true);
-		$success = updateStaging($new, $_REQUEST['user']);
+		$success = updateStaging($new, $_REQUEST['loginInfo']);
 		if($success) {
 			$response['status'] = array('type' => 'success');
 		} else {
