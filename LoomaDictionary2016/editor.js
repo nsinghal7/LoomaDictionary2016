@@ -1,10 +1,11 @@
 var processing = false;
 var maxPage = 1;
+var words = [];
 
 function startup() {
 	hideUploadDiv();
+	submitSearch();
 }
-startup();
 
 function showUploadDiv() {
 	$("#uploadPDFDiv").show();
@@ -31,7 +32,7 @@ function processPDF() {
 	Pdf2TextClass().convertPDF(file, function(page, total) {}, function(text) {
 		progress.text("Processing text");
 		var words = findUniqueWordsFromString(text);
-		jQuery.post("backend.php",
+		$.post("backend.php",
 				{'loginInfo': {"allowed": true, 'user': 'me'},
 				'wordList': JSON.stringify(words)},
 				function(data, status, jqXHR) {
@@ -48,7 +49,7 @@ function processPDF() {
 }
 
 function submitSearch() {
-	jQuery.get("backend.php",
+	$.get("backend.php",
 			{'loginInfo': {"allowed": true, 'user': 'me'},
 			'searchArgs': {'text': $("#wordPart").val(),
 						'added': $("#added").prop("checked"),
@@ -56,21 +57,63 @@ function submitSearch() {
 						'accepted': $("#accepted").prop("checked")},
 			'simplified': $("#simplified").prop("checked")},
 			function(data, status, jqXHR) {
-				// show data;
-				// change maxPage
-				console.log(data);
+				data = data['data'];
+				$("#pageInput").val(data['page']);
+				maxPage = data['maxPage'];
+				
+				var table = $("#resultsTable");
+				table.find("tr:gt(0)").remove();
+				
+				words = data['words'];
+				for(var i = 0; i < words.length; i++) {
+					var word = words[i];
+					var row = $('<tr>');
+					
+					function createEditableTd(type, index, value) {
+						return $('<td class="' + type + 'Col"></td>')
+								.append($('<input type="text" id="'
+										+ type + "," + index + '" onchange="edit(\'' + type
+										+ '\', ' + index + ')" value="' + value
+										+ '" class="resultsTableInput">'));
+					}
+					
+					row.append(createEditableTd("word", i, word["wordData"]["word"]));
+					var stat;
+					if(word['metaData']['deleted']) {
+						stat = "deleted";
+					} else if(word['metaData']['accepted']) {
+						stat = "accepted";
+					} else if(word['metaData']['modified']) {
+						stat = "modified";
+					} else if(word['metaData']['added']) {
+						stat = "added";
+					} else {
+						stat = "published";
+					}
+					row.append($('<td class="statCol">' + stat + '</td>'));
+					row.append(createEditableTd("root", i, word["wordData"]["root"]));
+					row.append(createEditableTd("pos", i, word["wordData"]["pos"]));
+					row.append(createEditableTd("nep", i, word["wordData"]["nep"]));
+					row.append(createEditableTd("def", i, word["wordData"]["def"]));
+					row.append(createEditableTd("mod", i, word["wordData"]["mod"]));
+					row.append(createEditableTd("date", i, word["wordData"]["date"]));
+					row.append(createEditableTd("other", i, word["wordData"]["other"]));
+					table.append(row);
+				}
 			}, 'json');
 }
 
 function publish() {
-	jQuery.get("backend.php", {'loginInfo': {'allowed': true, 'user': 'me'}, 'publish': true},
-		function(data, status, jqXHR) {
-			if(data['status']['type'] == 'success') {
-				console.log('successfully published');
-			} else {
-				console.log('fail to publish');
-			}
-		}, 'json');
+	if(confirm("Are you sure you want to publish these changes?")) {
+		$.get("backend.php", {'loginInfo': {'allowed': true, 'user': 'me'}, 'publish': true},
+				function(data, status, jqXHR) {
+					if(data['status']['type'] == 'success') {
+						alert("published successfully");
+					} else {
+						alert("publishing failed");
+					}
+				}, 'json');
+	}
 }
 
 
@@ -84,5 +127,12 @@ function switchPage(change) {
 }
 
 function pageChange() {
+	// load new data
 	console.log("page changed to " + $("#pageInput").val());
+}
+
+function edit(type, index) {
+	console.log("change");
+	// send changes. if doesn't work, replace modified text with original, and warn the user
+	// if works, change the words list officially
 }

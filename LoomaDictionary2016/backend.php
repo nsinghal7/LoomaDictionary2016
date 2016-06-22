@@ -3,10 +3,28 @@
 		return true;
 	}
 	function readSimplified($args, $login) {
-		return array('values' => 'simple');
+		return array('format' => 'simple', 'page' => 1, 'maxPage' => 1, 'words' =>
+				array(array('wordData' =>
+						array('word' => 'test', 'root' => '', 'pos' => 'noun', 'nep' => 'sklfj',
+						'def' => 'a large quiz', 'mod' => 'me', 'date' => '123089',
+						'other' => 'nothing'),
+					'metaData' =>
+						array('added' => true, 'modified' => true, 'accepted' => true,
+						'deleted' => false)
+				))
+		);
 	}
 	function readAdvanced($args, $login) {
-		return array('values' => 'advance');
+		return array('format' => 'advanced', 'page' => 1, 'maxPage' => 1, 'words' =>
+				array(array('wordData' =>
+						array('word' => 'test', 'root' => '', 'pos' => 'noun', 'nep' => 'sklfj',
+						'def' => 'a large quiz', 'mod' => 'me', 'date' => '123089',
+						'other' => 'nothing'),
+					'metaData' =>
+						array('added' => true, 'modified' => true, 'accepted' => true,
+						'deleted' => false)
+				))
+		);
 	}
 	function publish($login) {
 		return true;
