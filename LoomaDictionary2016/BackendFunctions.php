@@ -21,7 +21,7 @@
 	function createEntry($word, $connection) {
 		
 		//get definition(find api)
-		$def
+		$def = 
 
 		//get translation(HARD)
 		$np = 
@@ -44,13 +44,14 @@
 		//put everything into a doc
 		$doc = array(
 		//do we need to specify object id??
-		"ch_id" : "3EN06", //figure out what this is
-		"en" : $word,
-		"rw" : $rw,
-		"np" : $np,
-		"part" : $POS,
-		"def" : $def,
-		"rand" : $random
+		"ch_id" => "3EN06", //figure out what this is
+		"en" => $word,
+		"rw" => $rw,
+		"np" => $np,
+		"part" => $POS,
+		"def" => $def,
+		"rand" => $random
+		"date_entered" => $dateCreated
 			);
 
 		// insert the doc into the database
