@@ -91,14 +91,19 @@ table, th, td {
 	width: 100%;
 }
 
-.wordCol, .rootCol, .posCol, .nepCol, .modCol, .dateCol {
-	width: 9%;
+.resultsTableInput {
+	background-color: green;
+	border-color: green;
+}
+
+.wordCol, .statCol, .rootCol, .posCol, .nepCol, .modCol, .dateCol {
+	width: 8%;
 }
 
 .defCol {
-	width: 30%;
+	width: 29%;
 }
 
 .otherCol {
-	width: 16%;
+	width: 15%;
 }
