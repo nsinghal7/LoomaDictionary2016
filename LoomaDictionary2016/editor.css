@@ -1,4 +1,14 @@
 @CHARSET "UTF-8";
+
+html {
+	height: 100%;
+}
+
+body {
+	min-height: 100%;
+}
+
+
 .popupDiv {
 	border: solid 1px black;
     position: fixed;
@@ -35,4 +45,60 @@
 
 #publishButton {
 	float: right;
+}
+
+
+
+
+#viewArea {
+	margin-top: 10px;
+	width: 100%;
+	background-color: green;
+}
+
+#pageSwitcherSuper {
+	left: 0%;
+	width: 100%;
+	background-color: blue;
+}
+
+#pageSwitcherSub {
+	display: inline-block;
+	position: relative;
+	left: 50%;
+	margin-left: -125px;
+	background-color: red;
+}
+
+
+#pageInput {
+	width: 40px;
+}
+
+
+.disableButtons {
+	pointer-events: none;
+	opacity: 0.4;
+}
+
+
+table, th, td {
+    border: 1px solid black;
+    border-collapse: collapse;
+}
+
+#resultsTable {
+	width: 100%;
+}
+
+.wordCol, .rootCol, .posCol, .nepCol, .modCol, .dateCol {
+	width: 9%;
+}
+
+.defCol {
+	width: 30%;
+}
+
+.otherCol {
+	width: 16%;
 }
