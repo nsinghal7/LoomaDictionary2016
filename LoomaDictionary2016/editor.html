@@ -41,9 +41,23 @@
 
 
 <div id="viewArea">
-
 	
-
+	<div id="resultsArea">
+	</div>
+	
+	<div id="pageSwitcherSuper">
+		<div id="pageSwitcherSub">
+			<input type="button" id="firstPageButton" value="<<<" onclick="switchPage(-2)">
+			<input type="button" id="previousPageButton" value="<" onclick="switchPage(-1)">
+			<b>Page</b>
+			<input type="number" id="pageInput" value="1" min="1" onchange="pageChange()">
+			<b>of</b>
+			<b id="maxPage"></b>
+			<input type="button" id="nextPageButton" value=">" onclick="switchPage(1)">
+			<input type="button" id="lastPageButton" value=">>>" onclick="switchPage(2)">
+		</div>
+	</div>
+	
 </div>
 
 
