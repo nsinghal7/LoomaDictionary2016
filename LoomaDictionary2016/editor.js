@@ -181,7 +181,7 @@ function submitSearch(oldSearch) {
 					row.append(createEditableTd("mod", i, word["wordData"]["mod"]));
 					row.append(createEditableTd("date", i, word["wordData"]["date"]));
 					row.append($('<td class="otherCol">'
-							+ (word['wordData']["other"] || "") + '</td>');
+							+ (word['wordData']["other"] || "") + '</td>'));
 					
 					// adds the new row to the table
 					table.append(row);
