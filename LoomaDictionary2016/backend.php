@@ -54,8 +54,20 @@
 	function publish($officialConnection, $stagingConnection, $user) {
 		return true;
 	}
-	function updateStaging($new, $officialConnection, $stagingConnection, $user) {
-		return true;
+	function updateStaging($change, $officialConnection, $stagingConnection, $user) {
+		// change: {wordId: id of word to change, field: field to change, new: new value,
+		//			deleteToggled: if should switch from deleted to not deleted or vice versa}
+		// should also automatically turn on modified and off accepted for field modifications
+		// but not for status modifications. Should also update other non-editable wordData
+		// such as 'mod' and 'date'
+		//Also only allow modifications of permitted fields
+		return array('wordData' =>
+					array('word' => 'test', 'pos' => 'noun', 'nep' => 'sklfj',
+							'def' => 'a large quiz', 'mod' => 'me', 'date' => 'Jan 24, 2012',
+							'other' => 'changed'),
+					'metaData' =>
+					array('added' => true, 'modified' => true, 'accepted' => false,
+							'deleted' => true));
 	}
 	
 	$officialConnection;
@@ -99,11 +111,11 @@
 				$response['status'] = array('type' => 'error', 'value' => 'publishing failed');
 			}
 		} elseif($_SERVER['REQUEST_METHOD'] == 'POST' and isset($_REQUEST['mod'])) {
-			$new = json_decode(stripslashes($_REQUEST['mod']), true);
-			$success = updateStaging($new, $officialConnection, $stagingConnection,
+			$success = updateStaging($_REQUEST['mod'], $officialConnection, $stagingConnection,
 										$_REQUEST['loginInfo']['user']);
 			if($success) {
 				$response['status'] = array('type' => 'success');
+				$response['new'] = $success;
 			} else {
 				$response['status'] = array('type' => 'error',
 												'value' => 'modification failed');

@@ -143,56 +143,62 @@ function submitSearch(oldSearch) {
 					var word = words[i];
 					
 					//creates a new row for the table and fills it with the data from the word
-					var row = $('<tr>');
-					
-					/**
-					 * Creates editable fields in the table
-					 * @returns A jQuery object representing a td tag
-					 */
-					function createEditableTd(type, index, value) {
-						return $('<td class="' + type + 'Col"></td>')
-								.append($('<input type="text" id="'
-										+ type + "," + index + '" onchange="edit(\'' + type
-										+ '\', ' + index + ')" value="' + value
-										+ '" class="resultsTableInput">'));
-					}
-					
-					// add each field
-					row.append(createEditableTd("word", i, word["wordData"]["word"]));
-					var stat;
-					if(word['metaData']['deleted']) {
-						stat = "deleted";
-					} else if(word['metaData']['accepted']) {
-						stat = "accepted";
-					} else if(word['metaData']['modified']) {
-						stat = "modified";
-					} else if(word['metaData']['added']) {
-						stat = "added";
-					} else {
-						stat = "published";
-					}
-					
-					//adds data to the row from the word object
-					row.append($('<td class="statCol"><button onclick="edit(\'stat\', '
-								+ i + ', true)">' + stat
-								+ '</button><button onclick="edit(\'stat\', '
-								+ i + ', false)" class="entryDeleteButton">'
-								+ (word['metaData']['deleted']?'+':'X')+'</button></td>'));
-					row.append(createEditableTd("root", i, word["wordData"]["root"] || ""));
-					row.append(createEditableTd("pos", i, word["wordData"]["pos"]));
-					row.append(createEditableTd("nep", i, word["wordData"]["nep"]));
-					row.append(createEditableTd("def", i, word["wordData"]["def"]));
-					row.append($('<td class="modCol"><p>'
-							+ (word['wordData']["mod"]) + '</p></td>'));
-					row.append($('<td class="dateCol"><p>'
-							+ (word['wordData']["date"]) + '</p></td>'));
-					row.append($('<td class="otherCol"><p>'
-							+ (word['wordData']["other"] || "") + '</p></td>'));
+					var row = createTableEntry(word, i);
 					
 					// adds the new row to the table
 					table.append(row);
 				}
 			}, 'json');
+}
+
+
+function createTableEntry(word, i) {
+	var row = $('<tr>');
+	
+	/**
+	 * Creates editable fields in the table
+	 * @returns A jQuery object representing a td tag
+	 */
+	function createEditableTd(type, index, value) {
+		return $('<td class="' + type + 'Col"></td>')
+				.append($('<input type="text" id="'
+						+ type + "_" + index + '" onchange="edit(\'' + type
+						+ '\', ' + index + ')" value="' + value
+						+ '" class="resultsTableInput">'));
+	}
+	
+	// add each field
+	row.append(createEditableTd("word", i, word["wordData"]["word"]));
+	var stat;
+	if(word['metaData']['deleted']) {
+		stat = "deleted";
+	} else if(word['metaData']['accepted']) {
+		stat = "accepted";
+	} else if(word['metaData']['modified']) {
+		stat = "modified";
+	} else if(word['metaData']['added']) {
+		stat = "added";
+	} else {
+		stat = "published";
+	}
+	
+	//adds data to the row from the word object
+	row.append($('<td class="statCol"><button onclick="edit(\'stat\', '
+				+ i + ', true)" id="stat_' + i + '">' + stat
+				+ '</button><button onclick="edit(\'stat\', '
+				+ i + ', false)" class="entryDeleteButton">'
+				+ (word['metaData']['deleted']?'+':'X')+'</button></td>'));
+	row.append(createEditableTd("root", i, word["wordData"]["root"] || ""));
+	row.append(createEditableTd("pos", i, word["wordData"]["pos"]));
+	row.append(createEditableTd("nep", i, word["wordData"]["nep"]));
+	row.append(createEditableTd("def", i, word["wordData"]["def"]));
+	row.append($('<td class="modCol"><p>'
+			+ (word['wordData']["mod"]) + '</p></td>'));
+	row.append($('<td class="dateCol"><p>'
+			+ (word['wordData']["date"]) + '</p></td>'));
+	row.append($('<td class="otherCol"><p>'
+			+ (word['wordData']["other"] || "") + '</p></td>'));
+	return row;
 }
 
 
@@ -252,7 +258,6 @@ function switchPage(change) {
  */
 function pageChange() {
 	submitSearch(true);
-	console.log("page changed to " + $("#pageInput").val());
 }
 
 /**
@@ -264,8 +269,25 @@ function pageChange() {
  * delete button was toggled. Defaults to undefined.
  */
 function edit(type, index, spec) {
-	console.log("change");
-	//TODO
-	// send changes. if doesn't work, replace modified text with original, and warn the user
-	// if works, change the words list officially
+	var elem = $("#" + type + "_" + index);
+	$.post('backend.php', {'loginInfo': {'allowed': true, 'user': 'me'},
+							'mod': {'wordId': words[index]['wordData']['id'],
+								'field': type, 'new': elem.val(),
+								'deleteToggle': (words[index]['metaData']['deleted']
+											&& type == "stat") || !spec}},
+			function(data, status, jqXHR) {
+				// called on server response
+				if(data['status']['type'] == 'success') {
+					// don't alert user, since success is assumed, and keep server's change
+					words[index] = data['new'];
+					elem.parent().parent().replaceWith(createTableEntry(words[index], index));
+				} else {
+					// alert user of failure and revert change
+					elem.parent().parent().replaceWith(createTableEntry(words[index], index));
+					alert("The change you made to the word "
+							+ words[index]['wordData']['word'] + " ("
+							+ words[index]['wordData']['pos'] + ", "
+							+ words[index]['wordData']['id'] + ") failed and were reverted");
+				}
+			}, 'json');
 }
