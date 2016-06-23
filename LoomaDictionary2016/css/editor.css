@@ -120,4 +120,9 @@ td {
 .entryDeleteButton {
 	background-color: red;
 	float: right;
+	height: 100%;
+}
+
+.statButton {
+	height: 100%;
 }

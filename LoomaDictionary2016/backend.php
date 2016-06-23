@@ -1,4 +1,14 @@
 <?php
+	date_default_timezone_set("America/Los_Angeles");
+
+	$testword = array('wordData' =>
+						array('word' => 'test', 'pos' => 'noun', 'nep' => 'sklfj',
+						'def' => 'a large quiz', 'mod' => 'me',
+						'date' => '1/24/2012 01:23:45am', 'other' => 'nothing'),
+					'metaData' =>
+						array('added' => true, 'modified' => true, 'accepted' => true,
+						'deleted' => false));
+
 	/**
 	 * Opens a connection to the official database and returns it
 	 * @param unknown $login The login information of the user which must be verified before
@@ -6,7 +16,7 @@
 	 * @return a new connection object if successful, otherwise return null
 	 */
 	function openOfficialConnection($login) {
-		return array();
+		return 2;
 	}
 	
 	/**
@@ -16,7 +26,7 @@
 	 * @return a new connection object if successful, otherwise return null
 	 */
 	function openStagingConnection($login) {
-		return array();
+		return 2;
 	}
 	
 	/**
@@ -50,16 +60,10 @@
 	 * }
 	 */
 	function readSimplified($args, $officialConnection, $stagingConnection) {
-		return array('format' => 'simple', 'page' => 1, 'maxPage' => 1, 'words' =>
-				array(array('wordData' =>
-						array('word' => 'test', 'pos' => 'noun', 'nep' => 'sklfj',
-						'def' => 'a large quiz', 'mod' => 'me', 'date' => 'Jan 24, 2012',
-						'other' => 'nothing'),
-					'metaData' =>
-						array('added' => true, 'modified' => true, 'accepted' => true,
-						'deleted' => false)
-				))
-		);
+		global $testword;
+		$ans = array('format' => 'simple', 'page' => 1, 'maxPage' => 1, 'words' =>
+				array($testword));
+		return $ans;
 	}
 	
 	/**
@@ -75,16 +79,11 @@
 	 * }
 	 */
 	function readAdvanced($args, $officialConnection, $stagingConnection) {
-		return array('format' => 'advanced', 'page' => 1, 'maxPage' => 1, 'words' =>
-				array(array('wordData' =>
-						array('word' => 'test', 'pos' => 'noun', 'nep' => 'sklfj',
-						'def' => 'a large quiz', 'mod' => 'me', 'date' => 'Jan 24, 2012',
-						'other' => 'nothing'),
-					'metaData' =>
-						array('added' => true, 'modified' => true, 'accepted' => true,
-						'deleted' => true)
-				))
-		);
+		global $testword;
+		
+		$ans = array('format' => 'advanced', 'page' => 1, 'maxPage' => 1, 'words' =>
+				array($testword));
+		return $ans;
 	}
 	
 	/**
@@ -112,17 +111,27 @@
 	 * word in staging-style.
 	 */
 	function updateStaging($change, $officialConnection, $stagingConnection, $user) {
+		global $testword;
 		// should also automatically turn on modified and off accepted for field modifications
 		// but not for status modifications. Should also update other non-editable wordData
 		// such as 'mod' and 'date'
 		//Also only allow modifications of permitted fields
-		return array('wordData' =>
-					array('word' => 'test', 'pos' => 'noun', 'nep' => 'sklfj',
-							'def' => 'a large quiz', 'mod' => 'me', 'date' => 'Jan 24, 2012',
-							'other' => 'changed'),
-					'metaData' =>
-					array('added' => true, 'modified' => true, 'accepted' => false,
-							'deleted' => true));
+		$field = $change["field"];
+		if($change["deleteToggled"] == "true") {
+			$testword["metaData"]["deleted"] = !$testword["metaData"]["deleted"];
+		} elseif($field == "word" or $field == "root" or $field == "pos" or $field == "nep"
+				or $field == "def") {
+			$testword["wordData"][$field] = $change["new"];
+			$testword["metaData"]["modified"] = true;
+			$testword["metaData"]["accepted"] = false;
+		} elseif($field == "stat") {
+			$testword["metaData"]["accepted"] = !$testword["metaData"]["accepted"];
+		} else {
+			return false;
+		}
+		$testword["wordData"]["mod"] = $user;
+		$testword["wordData"]["date"] = date("m/d/Y h:i:sa");
+		return $testword;
 	}
 	
 	$officialConnection;

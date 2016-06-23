@@ -203,7 +203,7 @@ function createTableEntry(word, i) {
 	
 	//adds data to the row from the word object
 	row.append($('<td class="statCol"><button onclick="edit(\'stat\', '
-				+ i + ', true)" id="stat_' + i + '">' + stat
+				+ i + ', true)" id="stat_' + i + '" class="statButton">' + stat
 				+ '</button><button onclick="edit(\'stat\', '
 				+ i + ', false)" class="entryDeleteButton">'
 				+ (word['metaData']['deleted']?'+':'X')+'</button></td>'));
@@ -290,17 +290,19 @@ function pageChange() {
  * delete button was toggled. Defaults to undefined.
  */
 function edit(type, index, spec) {
+	console.log("change " + words[index]['metaData']['deleted']);
 	var elem = $("#" + type + "_" + index);
 	$.post('backend.php', {'loginInfo': {'allowed': true, 'user': 'me'},
 							'mod': {'wordId': words[index]['wordData']['id'],
 								'field': type, 'new': elem.val(),
-								'deleteToggle': (words[index]['metaData']['deleted']
-											&& type == "stat") || !spec}},
+								'deleteToggled': (words[index]['metaData']['deleted']
+											&& type == "stat") || spec == false}},
 			function(data, status, jqXHR) {
 				// called on server response
 				if(data['status']['type'] == 'success') {
 					// don't alert user, since success is assumed, and keep server's change
 					words[index] = data['new'];
+					console.log(words[index]);
 					elem.parent().parent().replaceWith(createTableEntry(words[index], index));
 				} else {
 					// alert user of failure and revert change
