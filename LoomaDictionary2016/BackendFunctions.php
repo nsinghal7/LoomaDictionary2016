@@ -71,15 +71,30 @@
 		//returns all the definitions for the words
 		return array('values' => 'advance');
 	}
+
+	//transfer the data from the staging databse to the Looma database
 	function publish($stagingConnection, $loomaConnection) {
-		//transfer the data from the staging databse to the Looma database
-		$modifiedDocs = array();
+
+		//get the date entered
+		date_default_timezone_set("America/Los_Angeles");
+		$dateEntered = date('m-d-Y') . " at " . date('h:i:sa');
 
 		$stagingCursor = $stagingConnection->database_name->collection_name->find();
 		foreach($stagingCursor as $doc){
-			
-		}
+			$newDoc = array (
+				"ch_id" => "3EN06", //figure out what this is
+				"en" => $doc["en"],
+				"rw" => $doc["rw"],
+				"np" => $doc["np"],
+				"part" => $doc["part"],
+				"def" => $doc["def"],
+				"rand" => $doc["rand"],
+				"date_entered" => $dateEntered
+				);
 
+			//adjust database and collection name!!!
+			$loomaConnection->database_name->collection_name->save($newDoc);
+		}
 
 		return true;
 	}
