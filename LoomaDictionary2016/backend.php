@@ -31,7 +31,7 @@
 		return array('format' => 'simple', 'page' => 1, 'maxPage' => 1, 'words' =>
 				array(array('wordData' =>
 						array('word' => 'test', 'pos' => 'noun', 'nep' => 'sklfj',
-						'def' => 'a large quiz', 'mod' => 'me', 'date' => '123089',
+						'def' => 'a large quiz', 'mod' => 'me', 'date' => 'Jan 24, 2012',
 						'other' => 'nothing'),
 					'metaData' =>
 						array('added' => true, 'modified' => true, 'accepted' => true,
@@ -43,11 +43,11 @@
 		return array('format' => 'advanced', 'page' => 1, 'maxPage' => 1, 'words' =>
 				array(array('wordData' =>
 						array('word' => 'test', 'pos' => 'noun', 'nep' => 'sklfj',
-						'def' => 'a large quiz', 'mod' => 'me', 'date' => '123089',
+						'def' => 'a large quiz', 'mod' => 'me', 'date' => 'Jan 24, 2012',
 						'other' => 'nothing'),
 					'metaData' =>
 						array('added' => true, 'modified' => true, 'accepted' => true,
-						'deleted' => false)
+						'deleted' => true)
 				))
 		);
 	}

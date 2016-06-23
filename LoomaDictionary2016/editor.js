@@ -173,15 +173,21 @@ function submitSearch(oldSearch) {
 					}
 					
 					//adds data to the row from the word object
-					row.append($('<td class="statCol">' + stat + '</td>'));
+					row.append($('<td class="statCol"><button onclick="edit(\'stat\', '
+								+ i + ', true)">' + stat
+								+ '</button><button onclick="edit(\'stat\', '
+								+ i + ', false)" class="entryDeleteButton">'
+								+ (word['metaData']['deleted']?'+':'X')+'</button></td>'));
 					row.append(createEditableTd("root", i, word["wordData"]["root"] || ""));
 					row.append(createEditableTd("pos", i, word["wordData"]["pos"]));
 					row.append(createEditableTd("nep", i, word["wordData"]["nep"]));
 					row.append(createEditableTd("def", i, word["wordData"]["def"]));
-					row.append(createEditableTd("mod", i, word["wordData"]["mod"]));
-					row.append(createEditableTd("date", i, word["wordData"]["date"]));
-					row.append($('<td class="otherCol">'
-							+ (word['wordData']["other"] || "") + '</td>'));
+					row.append($('<td class="modCol"><p>'
+							+ (word['wordData']["mod"]) + '</p></td>'));
+					row.append($('<td class="dateCol"><p>'
+							+ (word['wordData']["date"]) + '</p></td>'));
+					row.append($('<td class="otherCol"><p>'
+							+ (word['wordData']["other"] || "") + '</p></td>'));
 					
 					// adds the new row to the table
 					table.append(row);
@@ -253,8 +259,11 @@ function pageChange() {
  * Called when an editable cell in the table is changed and should be transmitted to the server
  * @param type The column of the cell changed
  * @param index The row of the cell changed (corresponds to the index in the word list
+ * @param spec Indicates more specifications. So far should only be used for the statCol
+ * buttons, where true means the accepted/normal button was toggled, and false means the
+ * delete button was toggled. Defaults to undefined.
  */
-function edit(type, index) {
+function edit(type, index, spec) {
 	console.log("change");
 	//TODO
 	// send changes. if doesn't work, replace modified text with original, and warn the user

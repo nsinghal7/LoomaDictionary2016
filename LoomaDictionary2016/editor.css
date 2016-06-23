@@ -79,16 +79,29 @@ table, th, td {
     border-collapse: collapse;
 }
 
-#resultsTable {
-	width: 100%;
+td {
+	padding-right: 5px;
 }
 
+#resultsTable {
+	width: 100%;
+	table-layout: fixed;
+}
+
+#resultsTable  tr  td  p {
+	word-wrap: break-word;
+	margin-top: 0px;
+	margin-bottom: 0px;
+}
 .resultsTableInput {
 	background-color: green;
 	border-color: green;
+	height: 100%;
+	max-width: 100%;
+	min-width: 90%;
 }
 
-.wordCol, .statCol, .rootCol, .posCol, .nepCol, .modCol, .dateCol {
+.wordCol, .rootCol, .posCol, .nepCol, .modCol, .otherCol {
 	width: 8%;
 }
 
@@ -96,6 +109,15 @@ table, th, td {
 	width: 29%;
 }
 
-.otherCol {
-	width: 15%;
+.statCol {
+	width: 11%;
+}
+
+.dateCol {
+	width: 12%;
+}
+
+.entryDeleteButton {
+	background-color: red;
+	float: right;
 }
