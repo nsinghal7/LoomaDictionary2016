@@ -54,7 +54,10 @@
 		"def" => $def,
 		"rand" => $random
 		"date_entered" => $dateCreated
-		"stagingData" => //put metadata object here
+		"stagingData" => array(
+				'added' => true, 'modified' => false, 'accepted' => false,
+				'deleted' => false
+				)
 			);
 
 		// insert the doc into the database
@@ -66,9 +69,16 @@
 		//returns the things that are modified
 		return array('values' => 'simple');
 	}
+
+	//
 	function readAdvanced($args, $connection) {
 		//returns all the definitions for the words
-		return array('values' => 'advance');
+
+		$finalArray = array('format' => 'advanced', 'page' => 1, 'maxPage' => 1,);
+
+
+
+		return $finalArray;
 	}
 
 	//transfer the data from the staging databse to the Looma database
@@ -77,11 +87,25 @@
 		$stagingCursor = $stagingConnection->database_name->collection_name->find();
 
 		foreach($stagingCursor as $doc){
-			//convert to correct format
-			$newDoc = convert($doc);
+			//check to make sure the object has not been deleted and has been accepted
+			if(!$doc['stagingData']['deleted'] and $doc['stagingData']['accepted'])
+			{
+				//convert to correct format
+				$newDoc = convert($doc);
 
-			//adjust database and collection name!!!
-			$loomaConnection->database_name->collection_name->save($newDoc);
+				//remove from staging
+				$stagingConnection->database_name->collection_name->remove($doc);
+
+				//adjust database and collection name!!!
+				$loomaConnection->database_name->collection_name->save($newDoc);
+
+			}
+			//if it has been deleted, remove it
+			else if ($doc['stagingData']['deleted'])
+			{
+				//remove from database
+				$stagingConnection->database_name->collection_name->remove($doc);
+			}
 		}
 
 		return true;
