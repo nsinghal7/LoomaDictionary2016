@@ -1,9 +1,7 @@
 <?php
-
 //Header
 $page_title = 'Login';
 //include ('include/header.html');
-
 //Error message for potential errors
 if (isset($errors) && !empty($errors))
 {
@@ -16,12 +14,11 @@ if (isset($errors) && !empty($errors))
 	}
 	echo '</p><p>Please try again.</p>';
 }
-
 //Display the form:
 ?><h1>Login</h1>
 <form action="login.php" method="post">
 	<p>User ID: <input type="text"
-	name="ID" soze="20" maxlength="60" />
+	name="ID" size="20" maxlength="60" />
 	</p>
 	<p>Password: <input type="password"
 	name="pass" size="20" maxlength="20" />
@@ -29,5 +26,3 @@ if (isset($errors) && !empty($errors))
 	<p><input type = "submit" name="submit"
 	value="Login" /></p>
 </form>
-	
-	
