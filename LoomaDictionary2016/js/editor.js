@@ -16,10 +16,29 @@ var maxPage = 1;
  */
 var words = [];
 
+/**
+ * Notes the text specified by the last search so the search can be repeated if necessary
+ */
 var prevText = "";
+
+/**
+ * Notes whether the last search specified 'added' so the search can be repeated
+ */
 var prevAdded = false;
+
+/**
+ * Notes whether the last search specified 'modified' so the search can be repeated
+ */
 var prevModified = false;
+
+/**
+ * Notes whether the last search specified 'accepted' so the search can be repeated
+ */
 var prevAccepted = false;
+
+/**
+ * Notes whether the last search specified 'simplified' so the search can be repeated
+ */
 var prevSimplified = false;
 
 
@@ -215,6 +234,8 @@ function publish() {
 					// TODO replace alert with a less intrusive notification
 					if(data['status']['type'] == 'success') {
 						alert("published successfully");
+						//since this causes lots of changes, just reload the table
+						submitSearch(true);
 					} else {
 						alert("publishing failed");
 					}
