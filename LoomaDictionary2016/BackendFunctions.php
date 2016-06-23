@@ -18,7 +18,7 @@
 		return null;
 	}
 
-	function createEntry($word, $connection) {
+	function createEntry($word, $stagingConnection) {
 		
 		//get definition(find api)
 		$def = 
@@ -41,6 +41,9 @@
 		$multiplier = 10 ** $numDigits;
 		$random = rand(0, $multiplier) / $multiplier;
 
+		//generate al the necessary metadata
+
+
 		//put everything into a doc
 		$doc = array(
 		//do we need to specify object id??
@@ -52,10 +55,11 @@
 		"def" => $def,
 		"rand" => $random
 		"date_entered" => $dateCreated
+		"stagingData" => //put metadata object here
 			);
 
 		// insert the doc into the database
-		$connection->database_name->collection_name->save($doc);
+		$stagingConnection->database_name->collection_name->save($doc);
 
 		return true;
 	}
@@ -67,14 +71,23 @@
 		//returns all the definitions for the words
 		return array('values' => 'advance');
 	}
-	function publish($login, $connection) {
+	function publish($stagingConnection, $loomaConnection) {
 		//transfer the data from the staging databse to the Looma database
+		$modifiedDocs = array();
+
+		$stagingCursor = $stagingConnection->database_name->collection_name->find();
+		foreach($stagingCursor as $doc){
+			
+		}
+
+
 		return true;
 	}
 
-	//for backend purposes, this method is equivalent to the createEntry method
+	//passes the doc to be entered into the staging database and a connection to that database
 	function updateStaging($new, $connection) {
-		return createEntry($new, $connection);
+		$connection->database_name->collection_name->save($new);
+		return true;
 	}
-
+ 
 ?>
