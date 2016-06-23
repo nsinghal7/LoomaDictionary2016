@@ -108,7 +108,9 @@
 	 * @param connection $stagingConnection The connection to the staging database
 	 * @param string $user the user
 	 * @return false if the update failed; if successful, should return the new value of the
-	 * word in staging-style.
+	 * word in staging-style. If the type of update was 'cancel' will return true to
+	 * differentiate it from a failure and a modification (since now the page should reload
+	 * to get the official entry or nothing)
 	 */
 	function updateStaging($change, $officialConnection, $stagingConnection, $user) {
 		global $testword;
@@ -117,7 +119,10 @@
 		// such as 'mod' and 'date'
 		//Also only allow modifications of permitted fields
 		$field = $change["field"];
-		if($change["deleteToggled"] == "true") {
+		if($field == 'cancel') {
+			// cancel change;
+			return true;
+		} else if($change["deleteToggled"] == "true") {
 			$testword["stagingData"]["deleted"] = !$testword["stagingData"]["deleted"];
 		} elseif($field == "word" or $field == "root" or $field == "pos" or $field == "nep"
 				or $field == "def") {

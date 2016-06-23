@@ -101,20 +101,16 @@ td {
 	min-width: 90%;
 }
 
-.wordCol, .rootCol, .posCol, .nepCol, .modCol, .otherCol {
+.wordCol, .rootCol, .posCol, .nepCol, .modCol, .dateCol, .otherCol {
 	width: 8%;
 }
 
 .defCol {
-	width: 29%;
+	width: 28%;
 }
 
 .statCol {
-	width: 11%;
-}
-
-.dateCol {
-	width: 12%;
+	width: 16%;
 }
 
 .entryDeleteButton {
@@ -125,4 +121,10 @@ td {
 
 .statButton {
 	height: 100%;
+}
+
+.cancelButton {
+	height: 100%;
+	float: right;
+	background-color: orange;
 }

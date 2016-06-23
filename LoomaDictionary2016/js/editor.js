@@ -189,7 +189,9 @@ function createTableEntry(word, i) {
 	// add each field
 	row.append(createEditableTd("word", i, word["wordData"]["word"]));
 	var stat;
+	console.log(word['stagingData']);
 	if(word['stagingData']['deleted']) {
+		console.log("here");
 		stat = "deleted";
 	} else if(word['stagingData']['accepted']) {
 		stat = "accepted";
@@ -203,10 +205,11 @@ function createTableEntry(word, i) {
 	
 	//adds data to the row from the word object
 	row.append($('<td class="statCol"><button onclick="edit(\'stat\', '
-				+ i + ', true)" id="stat_' + i + '" class="statButton">' + stat
-				+ '</button><button onclick="edit(\'stat\', '
-				+ i + ', false)" class="entryDeleteButton">'
-				+ (word['stagingData']['deleted']?'+':'X')+'</button></td>'));
+				+ i + ')" id="stat_' + i + '" class="statButton">' + stat
+				+ '</button><button class="cancelButton" onclick="edit(\'cancel\', ' + i
+				+ ')">cancel</button><button onclick="edit(\'delete\', '
+				+ i + ')" class="entryDeleteButton">'
+				+ (word['stagingData']['deleted']?'re add':'delete')+'</button></td>'));
 	row.append(createEditableTd("root", i, word["wordData"]["root"] || ""));
 	row.append(createEditableTd("pos", i, word["wordData"]["pos"]));
 	row.append(createEditableTd("nep", i, word["wordData"]["nep"]));
@@ -283,27 +286,32 @@ function pageChange() {
 
 /**
  * Called when an editable cell in the table is changed and should be transmitted to the server
- * @param type The column of the cell changed
+ * @param type The column of the cell changed. For statCol, also allows 'delete' and 'cancel'
  * @param index The row of the cell changed (corresponds to the index in the word list
- * @param spec Indicates more specifications. So far should only be used for the statCol
- * buttons, where true means the accepted/normal button was toggled, and false means the
- * delete button was toggled. Defaults to undefined.
  */
-function edit(type, index, spec) {
-	console.log("change " + words[index]['stagingData']['deleted']);
-	var elem = $("#" + type + "_" + index);
+function edit(type, index) {
+	var id_type = (type == 'cancel' || type == 'delete') ? 'stat' : type;
+	var elem = $("#" + id_type + "_" + index);
+	if(type == 'cancel' && !confirm(
+			"Are you sure you want to revert all unpublished changes to this entry?")) {
+		return;
+	}
 	$.post('backend.php', {'loginInfo': {'allowed': true, 'user': 'me'},
 							'mod': {'wordId': words[index]['wordData']['id'],
 								'field': type, 'new': elem.val(),
 								'deleteToggled': (words[index]['stagingData']['deleted']
-											&& type == "stat") || spec == false}},
+											&& type == "stat") || type == 'delete'}},
 			function(data, status, jqXHR) {
 				// called on server response
 				if(data['status']['type'] == 'success') {
 					// don't alert user, since success is assumed, and keep server's change
 					words[index] = data['new'];
-					console.log(words[index]);
-					elem.parent().parent().replaceWith(createTableEntry(words[index], index));
+					if(words[index] == true) {
+						submitSearch(true);
+					} else {
+						elem.parent().parent().replaceWith(createTableEntry(words[index],
+								index));
+					}
 				} else {
 					// alert user of failure and revert change
 					elem.parent().parent().replaceWith(createTableEntry(words[index], index));
