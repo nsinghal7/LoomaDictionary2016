@@ -65,14 +65,55 @@
 
 		return true;
 	}
+
+	//********for this method, use the $where and a javascript function to specify criteria*****
 	function readSimplified($args, $connection) {
-		//returns the things that are modified
+		//to do:
+		//if there are no criteria, return everything
+			//if there is just a word, return that word from all databases
+			//else (only drawing from stagind database now)
+				//return everything that satisfies the conditions
+
+
+
+
+
+		//boolean to see if all of the fields are false in array $args
+		$bool = $args['added'] or $args['modified'] or $args['accepted'];
+
+		if($bool == 'false'){
+			//we are drawing from both databases.  do we return everything or specify a search query
+			if($args['text'] == ''){
+				//get a cursor to all elements
+				//figure out how many total pages
+				//skip to the correct page (if above the max, just return last page)
+				//put them into the correct format
+				//return an array of everything
+
+			}
+			else{
+				//return everything with the appropriate word (or portion of a word)
+			}
+		}
+		//if this is executed, we will only be drawing fron the staging and must filter our results accordingly
+		else{
+			//get all elements that match the criteria
+			//figure out how many total pages
+			//skip to the correct page (if above the max, just return last page)
+			//put them into the correct format
+			//return an array of everything
+		}
+			
+
 		return array('values' => 'simple');
 	}
 
 	//
 	function readAdvanced($args, $connection) {
 		//returns all the definitions for the words
+
+		//cases for args that are sent over
+			//
 
 		$finalArray = array('format' => 'advanced', 'page' => 1, 'maxPage' => 1,);
 
@@ -88,7 +129,7 @@
 
 		foreach($stagingCursor as $doc){
 			//check to make sure the object has not been deleted and has been accepted
-			if(!$doc['stagingData']['deleted'] and $doc['stagingData']['accepted'])
+			if($doc['stagingData']['deleted'] == 'false' and $doc['stagingData']['accepted'] == 'true')
 			{
 				//convert to correct format
 				$newDoc = convert($doc);
@@ -101,7 +142,7 @@
 
 			}
 			//if it has been deleted, remove it
-			else if ($doc['stagingData']['deleted'])
+			else if ($doc['stagingData']['deleted'] == 'true')
 			{
 				//remove from database
 				$stagingConnection->database_name->collection_name->remove($doc);
