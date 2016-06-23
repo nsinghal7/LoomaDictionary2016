@@ -81,7 +81,22 @@
 
 		$stagingCursor = $stagingConnection->database_name->collection_name->find();
 		foreach($stagingCursor as $doc){
-			$newDoc = array (
+			//convert to correct format
+			$newDoc = convert($doc);
+
+			//adjust database and collection name!!!
+			$loomaConnection->database_name->collection_name->save($newDoc);
+		}
+
+		return true;
+	}
+
+	//converts a doc from the staging version to the version entered into the looma database
+	//edit this fuction if you would like to adapt this function for somethign other than dictionary words
+	function convert($doc)
+	{
+		return $newDoc = array (
+				//object id
 				"ch_id" => "3EN06", //figure out what this is
 				"en" => $doc["en"],
 				"rw" => $doc["rw"],
@@ -91,12 +106,6 @@
 				"rand" => $doc["rand"],
 				"date_entered" => $dateEntered
 				);
-
-			//adjust database and collection name!!!
-			$loomaConnection->database_name->collection_name->save($newDoc);
-		}
-
-		return true;
 	}
 
 	//passes the doc to be entered into the staging database and a connection to that database
