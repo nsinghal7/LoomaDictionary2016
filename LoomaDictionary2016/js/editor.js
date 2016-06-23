@@ -189,13 +189,13 @@ function createTableEntry(word, i) {
 	// add each field
 	row.append(createEditableTd("word", i, word["wordData"]["word"]));
 	var stat;
-	if(word['metaData']['deleted']) {
+	if(word['stagingData']['deleted']) {
 		stat = "deleted";
-	} else if(word['metaData']['accepted']) {
+	} else if(word['stagingData']['accepted']) {
 		stat = "accepted";
-	} else if(word['metaData']['modified']) {
+	} else if(word['stagingData']['modified']) {
 		stat = "modified";
-	} else if(word['metaData']['added']) {
+	} else if(word['stagingData']['added']) {
 		stat = "added";
 	} else {
 		stat = "published";
@@ -206,7 +206,7 @@ function createTableEntry(word, i) {
 				+ i + ', true)" id="stat_' + i + '" class="statButton">' + stat
 				+ '</button><button onclick="edit(\'stat\', '
 				+ i + ', false)" class="entryDeleteButton">'
-				+ (word['metaData']['deleted']?'+':'X')+'</button></td>'));
+				+ (word['stagingData']['deleted']?'+':'X')+'</button></td>'));
 	row.append(createEditableTd("root", i, word["wordData"]["root"] || ""));
 	row.append(createEditableTd("pos", i, word["wordData"]["pos"]));
 	row.append(createEditableTd("nep", i, word["wordData"]["nep"]));
@@ -290,12 +290,12 @@ function pageChange() {
  * delete button was toggled. Defaults to undefined.
  */
 function edit(type, index, spec) {
-	console.log("change " + words[index]['metaData']['deleted']);
+	console.log("change " + words[index]['stagingData']['deleted']);
 	var elem = $("#" + type + "_" + index);
 	$.post('backend.php', {'loginInfo': {'allowed': true, 'user': 'me'},
 							'mod': {'wordId': words[index]['wordData']['id'],
 								'field': type, 'new': elem.val(),
-								'deleteToggled': (words[index]['metaData']['deleted']
+								'deleteToggled': (words[index]['stagingData']['deleted']
 											&& type == "stat") || spec == false}},
 			function(data, status, jqXHR) {
 				// called on server response

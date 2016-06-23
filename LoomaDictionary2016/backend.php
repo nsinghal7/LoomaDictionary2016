@@ -5,7 +5,7 @@
 						array('word' => 'test', 'pos' => 'noun', 'nep' => 'sklfj',
 						'def' => 'a large quiz', 'mod' => 'me',
 						'date' => '1/24/2012 01:23:45am', 'other' => 'nothing'),
-					'metaData' =>
+					'stagingData' =>
 						array('added' => true, 'modified' => true, 'accepted' => true,
 						'deleted' => false));
 
@@ -118,14 +118,14 @@
 		//Also only allow modifications of permitted fields
 		$field = $change["field"];
 		if($change["deleteToggled"] == "true") {
-			$testword["metaData"]["deleted"] = !$testword["metaData"]["deleted"];
+			$testword["stagingData"]["deleted"] = !$testword["stagingData"]["deleted"];
 		} elseif($field == "word" or $field == "root" or $field == "pos" or $field == "nep"
 				or $field == "def") {
 			$testword["wordData"][$field] = $change["new"];
-			$testword["metaData"]["modified"] = true;
-			$testword["metaData"]["accepted"] = false;
+			$testword["stagingData"]["modified"] = true;
+			$testword["stagingData"]["accepted"] = false;
 		} elseif($field == "stat") {
-			$testword["metaData"]["accepted"] = !$testword["metaData"]["accepted"];
+			$testword["stagingData"]["accepted"] = !$testword["stagingData"]["accepted"];
 		} else {
 			return false;
 		}
