@@ -1,7 +1,7 @@
 <?php
 
 	function createConnectionToStaging($login){
-		if(verifyLogin($login))
+		if(checkLogin($login))
 		{
 			//default is localhost, insert parameters to specify address of database
 			return new MongoClient();
@@ -10,7 +10,7 @@
 	}
 
 	function createConnectionToLooma($login){
-		if(verifyLogin($login))
+		if(checkLogin($login))
 		{
 			//default is localhost, insert parameters to specify address of database
 			return new MongoClient();
@@ -33,8 +33,7 @@
 		$POS = 
 		
 		//get the date and time
-		date_default_timezone_set("America/Los_Angeles");
-		$dateCreated = date('m-d-Y') . " at " . date('h:i:sa');
+		$dateCreated = getDateAndTime("America/Los_Angeles");
 		
 		//generate random
 		$numDigits = 16;
@@ -75,11 +74,8 @@
 	//transfer the data from the staging databse to the Looma database
 	function publish($stagingConnection, $loomaConnection) {
 
-		//get the date entered
-		date_default_timezone_set("America/Los_Angeles");
-		$dateEntered = date('m-d-Y') . " at " . date('h:i:sa');
-
 		$stagingCursor = $stagingConnection->database_name->collection_name->find();
+
 		foreach($stagingCursor as $doc){
 			//convert to correct format
 			$newDoc = convert($doc);
@@ -95,6 +91,8 @@
 	//edit this fuction if you would like to adapt this function for somethign other than dictionary words
 	function convert($doc)
 	{
+		$dateEntered = getDateAndTime("America/Los_Angeles");
+
 		return $newDoc = array (
 				//object id
 				"ch_id" => "3EN06", //figure out what this is
@@ -112,6 +110,11 @@
 	function updateStaging($new, $connection) {
 		$connection->database_name->collection_name->save($new);
 		return true;
+	}
+
+	function getDateAndTime($timezone) {
+		date_default_timezone_set($timezone);
+		return $dateEntered = date('m-d-Y') . " at " . date('h:i:sa');
 	}
  
 ?>
