@@ -191,28 +191,25 @@ function createTableEntry(word, i) {
 	row.append(createEditableTd("word", i, word["wordData"]["word"]));
 	var stat;
 	if(word['stagingData']['deleted']) {
-		stat = "deleted";
-	} else if(word['stagingData']['accepted']) {
-		stat = "accepted";
-	} else if(word['stagingData']['modified']) {
-		stat = "modified";
-	} else if(word['stagingData']['added']) {
-		stat = "added";
-	} else {
-		stat = "published";
-	}
-	
-	if(stat == 'deleted') {
+		stat = "de<wbr>let<wbr>ed";
 		row.find("td input").addClass("strikethrough");
+	} else if(word['stagingData']['accepted']) {
+		stat = "acc<wbr>ept<wbr>ed";
+	} else if(word['stagingData']['modified']) {
+		stat = "mod<wbr>if<wbr>ied";
+	} else if(word['stagingData']['added']) {
+		stat = "add<wbr>ed";
+	} else {
+		stat = "pub<wbr>lish<wbr>ed";
 	}
 	
 	//adds data to the row from the word object
 	row.append($('<td class="statCol"><button onclick="edit(\'stat\', '
 				+ i + ')" id="stat_' + i + '" class="statButton">' + stat
 				+ '</button><button class="cancelButton" onclick="edit(\'cancel\', ' + i
-				+ ')">revert</button><button onclick="edit(\'delete\', '
+				+ ')">re<wbr>vert</button><button onclick="edit(\'delete\', '
 				+ i + ')" class="entryDeleteButton">'
-				+ (word['stagingData']['deleted']?'re add':'delete')+'</button></td>'));
+				+ (word['stagingData']['deleted']?'re add':'de<wbr>lete')+'</button></td>'));
 	row.append(createEditableTd("root", i, word["wordData"]["root"] || ""));
 	row.append(createEditableTd("pos", i, word["wordData"]["pos"]));
 	row.append(createEditableTd("nep", i, word["wordData"]["nep"]));

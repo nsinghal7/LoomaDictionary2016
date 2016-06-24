@@ -107,7 +107,7 @@ td {
 }
 .resultsTableInput {
 	background-color: #baf0ff;
-	border-color: #baf0ff;
+	border-color: #dbf3ff;
 	height: 100%;
 	width: calc(100% - 5px);
 }
@@ -133,15 +133,24 @@ td {
 	background-color: red;
 	float: right;
 	height: 100%;
+	font-size: calc(1.4vw - 30px / 6);
+	word-wrap: normal;
+	width: 30%;
 }
 
 .statButton {
 	height: 100%;
 	background-color: lime;
+	font-size: calc(1.4vw - 30px / 8);
+	word-wrap: normal;
+	width: 40%;
 }
 
 .cancelButton {
 	height: 100%;
 	float: right;
 	background-color: orange;
+	font-size: calc(1.4vw - 30px / 6);
+	word-wrap: normal;
+	width: 30%;
 }
