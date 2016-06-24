@@ -1,5 +1,8 @@
 @CHARSET "UTF-8";
 
+body {
+	background-color: #f6f6f6;
+}
 
 .popupDiv {
 	border: solid 1px black;
@@ -10,9 +13,18 @@
     z-index: 100;
 }
 
+#pdfInput, #processPDFButton {
+	position: relative;
+	left: 50%;
+	margin-left: -75px;
+	margin-top: 12%;
+}
+
+
+
 #uploadPDFDiv {
 	height: 200px;
-    margin-top: -100px;
+    margin-top: -125px;
 
     width: 300px;
     margin-left: -150px;
@@ -45,13 +57,13 @@
 #viewArea {
 	margin-top: 10px;
 	width: 100%;
-	background-color: green;
+	background-color: #baf0ff;
 }
 
 #pageSwitcherSuper {
 	left: 0%;
 	width: 100%;
-	background-color: blue;
+	background-color: gray;
 }
 
 #pageSwitcherSub {
@@ -59,7 +71,7 @@
 	position: relative;
 	left: 50%;
 	margin-left: -125px;
-	background-color: red;
+	background-color: gray;
 }
 
 
@@ -94,30 +106,51 @@ td {
 	margin-bottom: 0px;
 }
 .resultsTableInput {
-	background-color: green;
-	border-color: green;
+	background-color: #baf0ff;
+	border-color: #dbf3ff;
 	height: 100%;
-	max-width: 100%;
-	min-width: 90%;
+	width: calc(100% - 5px);
 }
 
-.wordCol, .rootCol, .posCol, .nepCol, .modCol, .otherCol {
+.strikethrough {
+	text-decoration: line-through;
+	color: red;
+}
+
+.wordCol, .rootCol, .posCol, .nepCol, .modCol, .dateCol, .otherCol {
 	width: 8%;
 }
 
 .defCol {
-	width: 29%;
+	width: 28%;
 }
 
 .statCol {
-	width: 11%;
-}
-
-.dateCol {
-	width: 12%;
+	width: 16%;
 }
 
 .entryDeleteButton {
 	background-color: red;
 	float: right;
+	height: 100%;
+	font-size: calc(1.4vw - 30px / 6);
+	word-wrap: normal;
+	width: 30%;
+}
+
+.statButton {
+	height: 100%;
+	background-color: lime;
+	font-size: calc(1.4vw - 30px / 8);
+	word-wrap: normal;
+	width: 40%;
+}
+
+.cancelButton {
+	height: 100%;
+	float: right;
+	background-color: orange;
+	font-size: calc(1.4vw - 30px / 6);
+	word-wrap: normal;
+	width: 30%;
 }

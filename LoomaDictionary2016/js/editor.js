@@ -16,10 +16,29 @@ var maxPage = 1;
  */
 var words = [];
 
+/**
+ * Notes the text specified by the last search so the search can be repeated if necessary
+ */
 var prevText = "";
+
+/**
+ * Notes whether the last search specified 'added' so the search can be repeated
+ */
 var prevAdded = false;
+
+/**
+ * Notes whether the last search specified 'modified' so the search can be repeated
+ */
 var prevModified = false;
+
+/**
+ * Notes whether the last search specified 'accepted' so the search can be repeated
+ */
 var prevAccepted = false;
+
+/**
+ * Notes whether the last search specified 'simplified' so the search can be repeated
+ */
 var prevSimplified = false;
 
 
@@ -87,6 +106,7 @@ function processPDF() {
 						progress.text("Failed with error: " + data['status']['value']);
 					} else {
 						progress.text("Success!");
+						submitSearch(true);
 					}
 					
 					// unlocks the process and reallows user submission
@@ -170,24 +190,26 @@ function createTableEntry(word, i) {
 	// add each field
 	row.append(createEditableTd("word", i, word["wordData"]["word"]));
 	var stat;
-	if(word['metaData']['deleted']) {
-		stat = "deleted";
-	} else if(word['metaData']['accepted']) {
-		stat = "accepted";
-	} else if(word['metaData']['modified']) {
-		stat = "modified";
-	} else if(word['metaData']['added']) {
-		stat = "added";
+	if(word['stagingData']['deleted']) {
+		stat = "de<wbr>let<wbr>ed";
+		row.find("td input").addClass("strikethrough");
+	} else if(word['stagingData']['accepted']) {
+		stat = "acc<wbr>ept<wbr>ed";
+	} else if(word['stagingData']['modified']) {
+		stat = "mod<wbr>if<wbr>ied";
+	} else if(word['stagingData']['added']) {
+		stat = "add<wbr>ed";
 	} else {
-		stat = "published";
+		stat = "pub<wbr>lish<wbr>ed";
 	}
 	
 	//adds data to the row from the word object
 	row.append($('<td class="statCol"><button onclick="edit(\'stat\', '
-				+ i + ', true)" id="stat_' + i + '">' + stat
-				+ '</button><button onclick="edit(\'stat\', '
-				+ i + ', false)" class="entryDeleteButton">'
-				+ (word['metaData']['deleted']?'+':'X')+'</button></td>'));
+				+ i + ')" id="stat_' + i + '" class="statButton">' + stat
+				+ '</button><button class="cancelButton" onclick="edit(\'cancel\', ' + i
+				+ ')">re<wbr>vert</button><button onclick="edit(\'delete\', '
+				+ i + ')" class="entryDeleteButton">'
+				+ (word['stagingData']['deleted']?'re add':'de<wbr>lete')+'</button></td>'));
 	row.append(createEditableTd("root", i, word["wordData"]["root"] || ""));
 	row.append(createEditableTd("pos", i, word["wordData"]["pos"]));
 	row.append(createEditableTd("nep", i, word["wordData"]["nep"]));
@@ -215,6 +237,8 @@ function publish() {
 					// TODO replace alert with a less intrusive notification
 					if(data['status']['type'] == 'success') {
 						alert("published successfully");
+						//since this causes lots of changes, just reload the table
+						submitSearch(true);
 					} else {
 						alert("publishing failed");
 					}
@@ -262,25 +286,40 @@ function pageChange() {
 
 /**
  * Called when an editable cell in the table is changed and should be transmitted to the server
- * @param type The column of the cell changed
+ * @param type The column of the cell changed. For statCol, also allows 'delete' and 'cancel'
  * @param index The row of the cell changed (corresponds to the index in the word list
- * @param spec Indicates more specifications. So far should only be used for the statCol
- * buttons, where true means the accepted/normal button was toggled, and false means the
- * delete button was toggled. Defaults to undefined.
  */
-function edit(type, index, spec) {
-	var elem = $("#" + type + "_" + index);
+function edit(type, index) {
+	// get correct element
+	var id_type = (type == 'cancel' || type == 'delete') ? 'stat' : type;
+	var elem = $("#" + id_type + "_" + index);
+	// confirm a cancel, which takes immediate effect in removing a definition from staging
+	if(type == 'cancel' && !confirm(
+			"Are you sure you want to revert all unpublished changes to this entry?")) {
+		return;
+	}
+	// disable all of screen until the response so that there won't be any collisions
+	$("#menuArea, #viewArea").addClass("disableButtons");
+	
+	// request change
 	$.post('backend.php', {'loginInfo': {'allowed': true, 'user': 'me'},
 							'mod': {'wordId': words[index]['wordData']['id'],
 								'field': type, 'new': elem.val(),
-								'deleteToggle': (words[index]['metaData']['deleted']
-											&& type == "stat") || !spec}},
+								'deleteToggled': (words[index]['stagingData']['deleted']
+											&& type == "stat") || type == 'delete'}},
 			function(data, status, jqXHR) {
 				// called on server response
 				if(data['status']['type'] == 'success') {
 					// don't alert user, since success is assumed, and keep server's change
 					words[index] = data['new'];
-					elem.parent().parent().replaceWith(createTableEntry(words[index], index));
+					if(words[index] == true) {
+						// the change was a removal (cancel), so reload the page
+						submitSearch(true);
+					} else {
+						// standard edit.
+						elem.parent().parent().replaceWith(createTableEntry(words[index],
+								index));
+					}
 				} else {
 					// alert user of failure and revert change
 					elem.parent().parent().replaceWith(createTableEntry(words[index], index));
@@ -289,5 +328,8 @@ function edit(type, index, spec) {
 							+ words[index]['wordData']['pos'] + ", "
 							+ words[index]['wordData']['id'] + ") failed and were reverted");
 				}
+				
+				// unlock screen so the user can continue
+				$("#menuArea, #viewArea").removeClass("disableButtons");
 			}, 'json');
 }
