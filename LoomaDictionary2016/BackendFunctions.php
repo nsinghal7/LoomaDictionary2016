@@ -1,9 +1,11 @@
 <?php
 
-
+	//edit this value to determine how many words will be assigned to each page
 	$wordsPerPage = 10;
 
-
+	/**
+	*Returns a connection to the staging database.  the address still needs to be specified
+	*/
 	function createConnectionToStaging($login){
 		if(checkLogin($login))
 		{
@@ -13,6 +15,9 @@
 		return null;
 	}
 
+	/**
+	*Returns a connection to the looma database.  the address still needs to be specified
+	*/
 	function createConnectionToLooma($login){
 		if(checkLogin($login))
 		{
@@ -22,6 +27,12 @@
 		return null;
 	}
 
+	/**
+	*creates an entry in the stagin database
+	*takes the word that the entry will be created around, 
+	*the connection to the staging database, and the user name
+	*returns true
+	*/
 	function createEntry($word, $stagingConnection, $user) {
 		
 		//get definition(find api)
@@ -30,16 +41,16 @@
 		//get translation(HARD, PROBLEMS USING URLs AND CONNECTING TO GOOGLE SERVER)
 		$np = 
 		
-		//get the rw
+		//get the rw (hopefully this will be included in the dictionary api)
 		$rw =
 
-		//get the POS
+		//get the POS (hopefully this is included in the dictionary api)
 		$POS = 
 		
 		//get the date and time
 		$dateCreated = getDateAndTime("America/Los_Angeles");
 		
-		//generate random
+		//generate random number
 		$numDigits = 16;
 		$multiplier = 10 ** $numDigits;
 		$random = rand(0, $multiplier) / $multiplier;
@@ -69,7 +80,14 @@
 		return true;
 	}
 
-
+	/**
+	*takes an array of parameters to be used in the search query ($args),
+	*a connection to the staging database, and a connection to the looma database
+	*
+	*returns an array with the kind of view (simplified), page number, max number of pages, 
+	*word data (definitions, id, date entered, etc.), and staging data
+	*(whether the word has been accepted, modified, deleted, etc.)
+	*/
 	function readSimplified($args, $stagingConnection, $loomaConnection) {
 		//to do:
 		//if there are no criteria, return everything
@@ -148,8 +166,12 @@
 		return array('values' => 'simple');
 	}
 
-	//fix this to reflect the search criteria in a javascript function
+
 	//return a string with the function
+	/**
+	*
+	*
+	*/
 	function criteriaToJavascript($args){
 		$finalFunction = "function() {return this.word.includes(" . $args['text'] . ") && (";
 		if($args['added'] == 'true'){
@@ -198,9 +220,10 @@
 		return $singleWord;
 	}
 
+	//make sure all the necessary fields are included
 	function compileSimpleWordData ($allWordData){
 		return array(
-				
+
 				'word' => $allWordData['word'], 
 				'pos' => $allWordData['pos'], 
 				'nep' => $allWordData['nep'],
