@@ -44,7 +44,7 @@
 		$multiplier = 10 ** $numDigits;
 		$random = rand(0, $multiplier) / $multiplier;
 
-		//generate al the necessary metadata
+		//generate al the necessary stagindData
 
 
 		//put everything into a doc
@@ -152,7 +152,20 @@
 	//fix this to reflect the search criteria in a javascript function
 	//return a string with the function
 	function criteriaToJavascript($args){
-		return "function() {return this.text == 'Joe' || this.age == 50;}";
+		$finalFunction = "function() {return this.word.includes(" . $args['text'] . ") && (";
+		if($args['added'] == 'true'){
+			$finalFunction = $finalFunction . "this.added == true ||";
+		}
+		if($args['modified'] == 'true'){
+						$finalFunction = $finalFunction . "this.modified == true ||";
+		}
+		if($args['accepted'] == 'true'){
+						$finalFunction = $finalFunction . "this.accepted == true ||";
+		}
+		//append the necessary ending to the javascript function
+		$finalFunction = substr($finalFunction, 0, -2) . ") ; } ";
+		
+		return $finalFunction;
 	}
 
 	function skipToAppropriateLocation ($stagingCursor, $args, $numPages, $numTotalWords){
