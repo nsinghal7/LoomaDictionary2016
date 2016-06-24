@@ -23,7 +23,7 @@
 		//get definition(find api)
 		$def = 
 
-		//get translation(HARD)
+		//get translation(HARD, PROBLEMS USING URLs AND CONNECTING TO GOOGLE SERVER)
 		$np = 
 		
 		//get the rw
@@ -67,7 +67,7 @@
 	}
 
 	//********for this method, use the $where and a javascript function to specify criteria*****
-	function readSimplified($args, $connection) {
+	function readSimplified($args, $stagingConnection, $loomaConnection) {
 		//to do:
 		//if there are no criteria, return everything
 			//if there is just a word, return that word from all databases
@@ -84,9 +84,25 @@
 		if($bool == 'false'){
 			//we are drawing from both databases.  do we return everything or specify a search query
 			if($args['text'] == ''){
-				//get a cursor to all elements
+
+				//get cursors to all elements
+				$stagingCursor = $stagingConnection->database_name->collection_name->find();
+					//adjust database and collection names here to match looma 
+				$loomaCursor = $loomaConnection->database_name->collection_name->find();
+
 				//figure out how many total pages
+				$numTotalWords = $stagingCursor->count(true) + $loomaCursor->count(true);
+				$numPages = $numTotalWords / 10;
+
 				//skip to the correct page (if above the max, just return last page)
+				if ($args['pages'] <= $numPages){
+					//here we need to figure out how much to skip in each cursor, or we just do things inefficiently
+				}
+				//this means it is above the max
+				else{
+					//here we need to figure out how much to skip
+				}
+
 				//put them into the correct format
 				//return an array of everything
 
@@ -97,10 +113,28 @@
 		}
 		//if this is executed, we will only be drawing fron the staging and must filter our results accordingly
 		else{
+			//encode criteria as js function
+			$js = "function() {return this.text == 'Joe' || this.age == 50;}";
+
 			//get all elements that match the criteria
+			$stagingCursor = $stagingConnection->database_name->collection_name->find();
+
 			//figure out how many total pages
+			$numTotalWords = $stagingCursor->count(true)
+			$numPages = $numTotalWords / 10;
+
 			//skip to the correct page (if above the max, just return last page)
+			if ($args['pages'] <= $numPages){
+				$stagingCursor->skip(($args['pages'] - 1 ) * 10);
+			}
+			//this means it is above the max
+			else{
+				$stagingCursor->skip($numTotalWords - 10);
+			}
+
 			//put them into the correct format
+			
+			
 			//return an array of everything
 		}
 			
@@ -109,7 +143,7 @@
 	}
 
 	//
-	function readAdvanced($args, $connection) {
+	function readAdvanced($args, $stagingConnection, $loomaConnection) {
 		//returns all the definitions for the words
 
 		//cases for args that are sent over
