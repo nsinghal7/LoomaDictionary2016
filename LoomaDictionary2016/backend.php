@@ -208,6 +208,11 @@
 		}
 	}
 	
+	closeConnection($officialConnection);
+	closeConnection($stagingConnection);
+	unset($officialConnection);
+	unset($stagingConnection);
+	
 	//return json encoded response
 	$encoded = json_encode($response);
 	header('Content-type: application/json');
