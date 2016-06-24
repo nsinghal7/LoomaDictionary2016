@@ -1,5 +1,8 @@
 @CHARSET "UTF-8";
 
+body {
+	background-color: #f6f6f6;
+}
 
 .popupDiv {
 	border: solid 1px black;
@@ -10,9 +13,18 @@
     z-index: 100;
 }
 
+#pdfInput, #processPDFButton {
+	position: relative;
+	left: 50%;
+	margin-left: -75px;
+	margin-top: 12%;
+}
+
+
+
 #uploadPDFDiv {
 	height: 200px;
-    margin-top: -100px;
+    margin-top: -125px;
 
     width: 300px;
     margin-left: -150px;
@@ -45,13 +57,13 @@
 #viewArea {
 	margin-top: 10px;
 	width: 100%;
-	background-color: green;
+	background-color: #baf0ff;
 }
 
 #pageSwitcherSuper {
 	left: 0%;
 	width: 100%;
-	background-color: blue;
+	background-color: gray;
 }
 
 #pageSwitcherSub {
@@ -59,7 +71,7 @@
 	position: relative;
 	left: 50%;
 	margin-left: -125px;
-	background-color: red;
+	background-color: gray;
 }
 
 
@@ -94,11 +106,15 @@ td {
 	margin-bottom: 0px;
 }
 .resultsTableInput {
-	background-color: green;
-	border-color: green;
+	background-color: #baf0ff;
+	border-color: #baf0ff;
 	height: 100%;
-	max-width: 100%;
-	min-width: 90%;
+	width: calc(100% - 5px);
+}
+
+.strikethrough {
+	text-decoration: line-through;
+	color: red;
 }
 
 .wordCol, .rootCol, .posCol, .nepCol, .modCol, .dateCol, .otherCol {
@@ -121,6 +137,7 @@ td {
 
 .statButton {
 	height: 100%;
+	background-color: lime;
 }
 
 .cancelButton {

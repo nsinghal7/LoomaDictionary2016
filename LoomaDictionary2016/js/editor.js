@@ -106,6 +106,7 @@ function processPDF() {
 						progress.text("Failed with error: " + data['status']['value']);
 					} else {
 						progress.text("Success!");
+						submitSearch(true);
 					}
 					
 					// unlocks the process and reallows user submission
@@ -189,9 +190,7 @@ function createTableEntry(word, i) {
 	// add each field
 	row.append(createEditableTd("word", i, word["wordData"]["word"]));
 	var stat;
-	console.log(word['stagingData']);
 	if(word['stagingData']['deleted']) {
-		console.log("here");
 		stat = "deleted";
 	} else if(word['stagingData']['accepted']) {
 		stat = "accepted";
@@ -203,11 +202,15 @@ function createTableEntry(word, i) {
 		stat = "published";
 	}
 	
+	if(stat == 'deleted') {
+		row.find("td input").addClass("strikethrough");
+	}
+	
 	//adds data to the row from the word object
 	row.append($('<td class="statCol"><button onclick="edit(\'stat\', '
 				+ i + ')" id="stat_' + i + '" class="statButton">' + stat
 				+ '</button><button class="cancelButton" onclick="edit(\'cancel\', ' + i
-				+ ')">cancel</button><button onclick="edit(\'delete\', '
+				+ ')">revert</button><button onclick="edit(\'delete\', '
 				+ i + ')" class="entryDeleteButton">'
 				+ (word['stagingData']['deleted']?'re add':'delete')+'</button></td>'));
 	row.append(createEditableTd("root", i, word["wordData"]["root"] || ""));

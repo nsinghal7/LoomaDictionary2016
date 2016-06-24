@@ -82,7 +82,8 @@
 		global $testword;
 		
 		$ans = array('format' => 'advanced', 'page' => 1, 'maxPage' => 1, 'words' =>
-				array($testword));
+				array($testword, $testword, $testword, $testword, $testword, $testword,
+						$testword, $testword, $testword, $testword, $testword));
 		return $ans;
 	}
 	
