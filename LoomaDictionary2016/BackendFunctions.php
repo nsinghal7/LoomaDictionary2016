@@ -1,5 +1,9 @@
 <?php
 
+
+	$wordsPerPage = 10;
+
+
 	function createConnectionToStaging($login){
 		if(checkLogin($login))
 		{
@@ -66,7 +70,7 @@
 		return true;
 	}
 
-	//********for this method, use the $where and a javascript function to specify criteria*****
+
 	function readSimplified($args, $stagingConnection, $loomaConnection) {
 		//to do:
 		//if there are no criteria, return everything
@@ -74,9 +78,10 @@
 			//else (only drawing from stagind database now)
 				//return everything that satisfies the conditions
 
+		global $wordsPerPage;
 
-
-
+		//create array to return at the end
+		$finalArray = array('format' => 'simple', 'page' => $args['page']);
 
 		//boolean to see if all of the fields are false in array $args
 		$bool = $args['added'] or $args['modified'] or $args['accepted'];
@@ -92,7 +97,7 @@
 
 				//figure out how many total pages
 				$numTotalWords = $stagingCursor->count(true) + $loomaCursor->count(true);
-				$numPages = $numTotalWords / 10;
+				$numPages = $numTotalWords / $wordsPerPage;
 
 				//skip to the correct page (if above the max, just return last page)
 				if ($args['pages'] <= $numPages){
@@ -114,36 +119,66 @@
 		//if this is executed, we will only be drawing fron the staging and must filter our results accordingly
 		else{
 			//encode criteria as js function
-			$js = "function() {return this.text == 'Joe' || this.age == 50;}";
+			$js = criteriaToJavascript($args);
 
 			//get all elements that match the criteria
-			$stagingCursor = $stagingConnection->database_name->collection_name->find();
+			$stagingCursor = $stagingConnection->database_name->collection_name->find(array('$where' => $js));
 
 			//figure out how many total pages
 			$numTotalWords = $stagingCursor->count(true)
-			$numPages = $numTotalWords / 10;
+			$numPages = $numTotalWords / $wordsPerPage;
 
-			//skip to the correct page (if above the max, just return last page)
-			if ($args['pages'] <= $numPages){
-				$stagingCursor->skip(($args['pages'] - 1 ) * 10);
-			}
-			//this means it is above the max
-			else{
-				$stagingCursor->skip($numTotalWords - 10);
-			}
+			//add the maxPage info to the final array
+			array_push($finalArray, 'maxPage' => $numPages);
 
-			//put them into the correct format
-			
-			
+			//skip to the correct page (if above the max, just skip to last last page)
+			skipToAppropriateLocation($stagingCursor, $args, $numPages, $numTotalWords);
+
+			//put the words in an array
+			$wordsArray = compileSimpleWordsArray($stagingCursor);
+
+			//add words array to final array
+			array_push ($finalArray, 'words' => $wordsArray);
+
 			//return an array of everything
+			return $finalArray;
+
 		}
 			
 
 		return array('values' => 'simple');
 	}
 
+	//fix this to reflect the search criteria in a javascript function
+	//return a string with the function
+	function criteriaToJavascript($args){
+		return "function() {return this.text == 'Joe' || this.age == 50;}";
+	}
+
+	function skipToAppropriateLocation ($stagingCursor, $args, $numPages, $numTotalWords){
+		global $wordsPerPage;
+
+		if($numPages == 1){
+			//do nothing
+		}
+		else if ($args['pages'] <= $numPages){
+			$stagingCursor->skip(($args['pages'] - 1 ) * $wordsPerPage);
+		}
+		//this means it is above the max
+		else{
+			$stagingCursor->skip(($numPages - 1) * $wordsPerPage);
+		}
+	}
+
+	function compileSimpleWordsArray ($stagingCursor){
+		$wordsArray = array();
+
+	}
+
 	//
 	function readAdvanced($args, $stagingConnection, $loomaConnection) {
+		global $wordsPerPage;
+
 		//returns all the definitions for the words
 
 		//cases for args that are sent over
