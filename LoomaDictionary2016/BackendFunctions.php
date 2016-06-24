@@ -22,7 +22,7 @@
 		return null;
 	}
 
-	function createEntry($word, $stagingConnection) {
+	function createEntry($word, $stagingConnection, $user) {
 		
 		//get definition(find api)
 		$def = 
@@ -44,8 +44,6 @@
 		$multiplier = 10 ** $numDigits;
 		$random = rand(0, $multiplier) / $multiplier;
 
-		//generate al the necessary stagindData
-
 
 		//put everything into a doc
 		$doc = array(
@@ -56,8 +54,9 @@
 		"np" => $np,
 		"part" => $POS,
 		"def" => $def,
-		"rand" => $random
-		"date_entered" => $dateCreated
+		"rand" => $random,
+		"date_entered" => $dateCreated,
+		"mod" => $user,
 		"stagingData" => array(
 				'added' => true, 'modified' => false, 'accepted' => false,
 				'deleted' => false
@@ -164,7 +163,7 @@
 		}
 		//append the necessary ending to the javascript function
 		$finalFunction = substr($finalFunction, 0, -2) . ") ; } ";
-		
+
 		return $finalFunction;
 	}
 
@@ -185,7 +184,30 @@
 
 	function compileSimpleWordsArray ($stagingCursor){
 		$wordsArray = array();
+		for ($i = 0; $i < 10; $i = $i + 1){
+			if($stagingCursor->hasNext() == 'true')
+			array_push ($wordsArray, compileSingleSimpleWord($stagingCursor->getNext()));
+		}
 
+		return $wordsArray;
+	}
+
+	function compileSingleSimpleWord($allWordData){
+		$singleWord = array('wordData' => array(), 'stagingData' => $allWordData['stagingData']);
+		array_push($singleWord['wordData'], compileSimpleWordData($allWordData));
+		return $singleWord;
+	}
+
+	function compileSimpleWordData ($allWordData){
+		return array(
+				
+				'word' => $allWordData['word'], 
+				'pos' => $allWordData['pos'], 
+				'nep' => $allWordData['nep'],
+				'def' => $allWordData['def'], 
+				'mod' => $allWordData['mod'], 
+				'date' => $allWordData['date_entered'],
+			);
 	}
 
 	//
@@ -249,6 +271,7 @@
 				"part" => $doc["part"],
 				"def" => $doc["def"],
 				"rand" => $doc["rand"],
+				"mod" => $doc["mod"],
 				"date_entered" => $dateEntered
 				);
 	}
