@@ -290,12 +290,18 @@ function pageChange() {
  * @param index The row of the cell changed (corresponds to the index in the word list
  */
 function edit(type, index) {
+	// get correct element
 	var id_type = (type == 'cancel' || type == 'delete') ? 'stat' : type;
 	var elem = $("#" + id_type + "_" + index);
+	// confirm a cancel, which takes immediate effect in removing a definition from staging
 	if(type == 'cancel' && !confirm(
 			"Are you sure you want to revert all unpublished changes to this entry?")) {
 		return;
 	}
+	// disable all of screen until the response so that there won't be any collisions
+	$("#menuArea, #viewArea").addClass("disableButtons");
+	
+	// request change
 	$.post('backend.php', {'loginInfo': {'allowed': true, 'user': 'me'},
 							'mod': {'wordId': words[index]['wordData']['id'],
 								'field': type, 'new': elem.val(),
@@ -307,8 +313,10 @@ function edit(type, index) {
 					// don't alert user, since success is assumed, and keep server's change
 					words[index] = data['new'];
 					if(words[index] == true) {
+						// the change was a removal (cancel), so reload the page
 						submitSearch(true);
 					} else {
+						// standard edit.
 						elem.parent().parent().replaceWith(createTableEntry(words[index],
 								index));
 					}
@@ -320,5 +328,8 @@ function edit(type, index) {
 							+ words[index]['wordData']['pos'] + ", "
 							+ words[index]['wordData']['id'] + ") failed and were reverted");
 				}
+				
+				// unlock screen so the user can continue
+				$("#menuArea, #viewArea").removeClass("disableButtons");
 			}, 'json');
 }
