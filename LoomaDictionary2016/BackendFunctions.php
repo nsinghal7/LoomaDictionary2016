@@ -133,6 +133,7 @@
 				//return everything with the appropriate word (or portion of a word)
 			}
 		}
+
 		//if this is executed, we will only be drawing fron the staging and must filter our results accordingly
 		else{
 			//encode criteria as js function
@@ -169,8 +170,9 @@
 
 	//return a string with the function
 	/**
-	*
-	*
+	*  Generates a javascript function in string form to perform the search query
+	*  takes all the necessary search arguments to be incorperated
+	*	returns a string with the javascript function
 	*/
 	function criteriaToJavascript($args){
 		$finalFunction = "function() {return this.word.includes(" . $args['text'] . ") && (";
@@ -189,6 +191,12 @@
 		return $finalFunction;
 	}
 
+	/**
+	*  takes a cursor for the staging database, the search arguments, the max
+	*  number of pages, and the total number of words the cursor can iterate through
+	*
+	*  skips the cursor over the appropriate number of entries.  
+	*/
 	function skipToAppropriateLocation ($stagingCursor, $args, $numPages, $numTotalWords){
 		global $wordsPerPage;
 
@@ -204,6 +212,12 @@
 		}
 	}
 
+	/**
+	*  creates an array with all the words and their data for 
+	*  entry in the final array of data for simplified view
+	*  takes a cursor to elements in the staging database
+	*	returns the array of all the words snd their data
+	*/
 	function compileSimpleWordsArray ($stagingCursor){
 		$wordsArray = array();
 		for ($i = 0; $i < 10; $i = $i + 1){
@@ -214,6 +228,11 @@
 		return $wordsArray;
 	}
 
+	/**
+	*  compiles all the data necessary for a single word in simplified view in preparation for entry in the word array
+	*  takes all the word's data (from the database)
+	*  returns the array for that word
+	*/
 	function compileSingleSimpleWord($allWordData){
 		$singleWord = array('wordData' => array(), 'stagingData' => $allWordData['stagingData']);
 		array_push($singleWord['wordData'], compileSimpleWordData($allWordData));
@@ -221,6 +240,11 @@
 	}
 
 	//make sure all the necessary fields are included
+	/**
+	*  creates an array with all the word data required for the simplified view
+	*  takes an array with all the data needed
+	*  returns the completed array
+	*/
 	function compileSimpleWordData ($allWordData){
 		return array(
 
@@ -233,7 +257,15 @@
 			);
 	}
 
-	//
+	//there's a lot of work left to do on this one
+	/**
+	*takes an array of parameters to be used in the search query ($args),
+	*a connection to the staging database, and a connection to the looma database
+	*
+	*returns an array with the kind of view (advanced), page number, max number of pages, 
+	*word data (definitions, id, date entered, etc.), and staging data
+	*(whether the word has been accepted, modified, deleted, etc.)
+	*/
 	function readAdvanced($args, $stagingConnection, $loomaConnection) {
 		global $wordsPerPage;
 
@@ -244,12 +276,17 @@
 
 		$finalArray = array('format' => 'advanced', 'page' => 1, 'maxPage' => 1,);
 
-
-
 		return $finalArray;
 	}
 
+
 	//transfer the data from the staging databse to the Looma database
+	/**
+	* transefers all the accepted changes from the staging database to the looma database
+	* also removes all deleted items from the staging database
+	* takes a connection to the staging database and a connection to the looma database
+	* returns true
+	*/
 	function publish($stagingConnection, $loomaConnection) {
 
 		$stagingCursor = $stagingConnection->database_name->collection_name->find();
@@ -279,8 +316,13 @@
 		return true;
 	}
 
-	//converts a doc from the staging version to the version entered into the looma database
+
 	//edit this fuction if you would like to adapt this function for somethign other than dictionary words
+	/**
+	*converts a doc from the staging version to the version entered into the looma database
+	*takes the doc in staging database form
+	*returns that doc with the information required for entry into the Looma database
+	*/
 	function convert($doc)
 	{
 		$dateEntered = getDateAndTime("America/Los_Angeles");
@@ -299,12 +341,20 @@
 				);
 	}
 
-	//passes the doc to be entered into the staging database and a connection to that database
+	/**
+	*Takes the new documet to be incorporated into the staging 
+	*database and a connection to that database
+	*Returns true
+	*/
 	function updateStaging($new, $connection) {
 		$connection->database_name->collection_name->save($new);
 		return true;
 	}
 
+	/**
+	* Takes the timezone to be used in the generation of the timestamp
+	* returns a string with the date and time in the specified format
+	*/
 	function getDateAndTime($timezone) {
 		date_default_timezone_set($timezone);
 		return $dateEntered = date('m-d-Y') . " at " . date('h:i:sa');
