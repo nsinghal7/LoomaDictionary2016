@@ -28,6 +28,15 @@
 	}
 
 	/**
+	 * Closes the given connection. After this is called, the variable should be unset
+	 * @param unknown $connection The connection to disconnect
+	 */
+	function closeConnection($connection) {
+		
+		//I don't think you actually want to do this..... discuss
+	}
+
+	/**
 	*creates an entry in the stagin database
 	*takes the word that the entry will be created around, 
 	*the connection to the staging database, and the user name
