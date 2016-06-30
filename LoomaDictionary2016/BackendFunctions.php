@@ -1,5 +1,7 @@
 <?php
 
+	require 'translator.php';
+
 	//edit this value to determine how many words will be assigned to each page
 	$wordsPerPage = 10;
 
@@ -48,7 +50,7 @@
 		$def = 
 
 		//get translation(HARD, PROBLEMS USING URLs AND CONNECTING TO GOOGLE SERVER)
-		$np = 
+		$np = translateToNepali($word);
 		
 		//get the rw (hopefully this will be included in the dictionary api)
 		$rw =
@@ -67,8 +69,7 @@
 
 		//put everything into a doc
 		$doc = array(
-		//do we need to specify object id??
-		"ch_id" => "3EN06", //figure out what this is
+		"_id" => ObjectId();
 		"en" => $word,
 		"rw" => $rw,
 		"np" => $np,
@@ -128,25 +129,40 @@
 
 
 
+	function readStagingDatabase ($args, $stagingConnection){
+			global $wordsPerPage;
 
 
+			//encode criteria as js function
+			$js = stagingCriteriaToJavascript($args);
 
-	function findAllDefinitionsSingleWord($args, $stagingConnection, $loomaConnection) {
+			//get all elements that match the criteria
+			$stagingCursor = $stagingConnection->database_name->collection_name->find(array('$where' => $js));
+
+			//figure out how many total pages
+			$numTotalWords = $stagingCursor->count(true)
+			$numPages = $numTotalWords / $wordsPerPage;
+
+			//skip to the correct page (if above the max, just skip to last page)
+			skipToAppropriateLocation($stagingCursor, $args, $numPages, $numTotalWords);
+
+			//put the words in an array
+			$wordsArray = compileStagingWordsArray($stagingCursor);
+
+			return $wordsArray;
+	}
+
+
+	/**
+		only use this to search for a single word and get back all definitions.  may be obsolete now
+	*/
+	function findAllDefinitionsSingleWordStaging($args, $stagingConnection, $loomaConnection) {
 
 		//find all entries in staging database
 
 		$stagingArray = getDefinitionsFromStaging($args, $stagingConnection);
 
-		//find all entries in looma database
-
-		$loomaArray = getDefinitionsFromLooma ($args, $loomaConnection);
-
-		//find all entries with the same object id and overwrite
-
-		$loomaArray = removeOverwrittenEntries($loomaArray, $stagingArray);
-
-		//combone both arrays
-		$finalArray = combineArrays($loomaArray, $stagingArray);
+		return $stagingArray;
 	}
 
 	function getDefintionsFromStaging ($args, $connection) {
@@ -165,7 +181,7 @@
 	}
 
 
-	function getDefinitionsFromLooma ($args, $connection) {
+	function findDefinitonsForSingleWordLooma ($word, $loomaConnection) {
 		
 		//get all elements that match the criteria
 		//FIX COLLECTION AND DATABASE NAMES
@@ -226,7 +242,7 @@
 	*/
 	function compileLoomaWordsArray ($loomaCursor){
 		$wordsArray = array();
-		for ($i = 0; $i < 10; $i = $i + 1){
+		for ($i = 0; $i < $loomaCursor->count(); $i = $i + 1){
 			if($loomaCursor->hasNext() == 'true')
 			array_push ($wordsArray, compileSingleLoomaWord($loomaCursor->getNext()));
 		}
@@ -265,7 +281,7 @@
 	*/
 	function compileSimpleWordData ($allWordData){
 		return array(
-				//object ids
+				'_id' : ObjectId(),
 				'word' => $allWordData['word'], 
 				'pos' => $allWordData['pos'], 
 				'nep' => $allWordData['nep'],
@@ -275,42 +291,26 @@
 			);
 	}
 
-	/**  creates an array of staging data with default entries
-	*    returns the completed array
+
+	/**
+	*  takes a cursor for the staging database, the search arguments, the max
+	*  number of pages, and the total number of words the cursor can iterate through
+	*
+	*  skips the cursor over the appropriate number of entries.  
 	*/
-	function compileDefaultStagingData (){
-		return array(
-			'accepted' => 'false',
-			'modified' => 'false',
-			'deleted' => 'false'
-			);
-	}
+	function skipToAppropriateLocation ($stagingCursor, $args, $numPages, $numTotalWords){
+		global $wordsPerPage;
 
-	function removeOverwrittenEntries ($betaArray, $dominantArray){
-		//nested for each loop, compare object ids and overwrite entires in the beta array
-
-		$betaCount = ount($betaArray);
-		$dominantCount = count($dominantArray);
-
-		for($indexDominant = 0; $indexDominant < $dominantCount; $indexDominant++) {
-	 		for ($indexBeta=0; $indexBeta < $betaCount; $indexBeta++) { 
-	 			
-	 			//make sure the key for object id is correct
-	 			if ($betaArray[$indexBeta]['ObjectID'] == $dominantArray[$indexDominant]['ObjectID']) {
-	 				unset($betaArray[$indexBeta]);
-	 			}
-	 		}
+		if($numPages == 1){
+			//do nothing
 		}
-
-		return $betaArray;
-	}
-
-	function combineArrays ($firstArray, $secondArray) {
-		
-		//return the combination of all the entries in both arrays
-		return array_merge_recursive($firstArray, $secondArray);
-
-		//if this is doing weird things, try the non-recursive version
+		else if ($args['pages'] <= $numPages){
+			$stagingCursor->skip(($args['pages'] - 1 ) * $wordsPerPage);
+		}
+		//this means it is above the max
+		else{
+			$stagingCursor->skip(($numPages - 1) * $wordsPerPage);
+		}
 	}
 
 
@@ -364,7 +364,15 @@
 
 
 
+	function moveEntryToStaging ($stagingConnection, $loomaConnection, $_id){
+		$doc = $loomaConnection->database_name->collection_name->findOne(array('_id' => $_id));
 
+		$stagingConnection->database_name->collection_name->save($doc);
+
+		$loomaConnection->database_name->collection_name->remove($doc);
+
+		return true;
+	}
 
 
 

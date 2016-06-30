@@ -110,25 +110,65 @@
 	}
 
 
-	/**
-	*  takes a cursor for the staging database, the search arguments, the max
-	*  number of pages, and the total number of words the cursor can iterate through
-	*
-	*  skips the cursor over the appropriate number of entries.  
+	/**  creates an array of staging data with default entries
+	*    returns the completed array
 	*/
-	function skipToAppropriateLocation ($stagingCursor, $args, $numPages, $numTotalWords){
-		global $wordsPerPage;
+	function compileDefaultStagingData (){
+		return array(
+			'accepted' => 'false',
+			'modified' => 'false',
+			'deleted' => 'false'
+			);
+	}
 
-		if($numPages == 1){
-			//do nothing
+	function removeOverwrittenEntries ($betaArray, $dominantArray){
+		//nested for each loop, compare object ids and overwrite entires in the beta array
+
+		$betaCount = ount($betaArray);
+		$dominantCount = count($dominantArray);
+
+		for($indexDominant = 0; $indexDominant < $dominantCount; $indexDominant++) {
+	 		for ($indexBeta=0; $indexBeta < $betaCount; $indexBeta++) { 
+	 			
+	 			//make sure the key for object id is correct
+	 			if ($betaArray[$indexBeta]['_id'] == $dominantArray[$indexDominant]['_id']) {
+	 				unset($betaArray[$indexBeta]);
+	 			}
+	 		}
 		}
-		else if ($args['pages'] <= $numPages){
-			$stagingCursor->skip(($args['pages'] - 1 ) * $wordsPerPage);
-		}
-		//this means it is above the max
-		else{
-			$stagingCursor->skip(($numPages - 1) * $wordsPerPage);
-		}
+
+		return $betaArray;
+	}
+
+	function combineArrays ($firstArray, $secondArray) {
+		
+		//return the combination of all the entries in both arrays
+		return array_merge_recursive($firstArray, $secondArray);
+
+		//if this is doing weird things, try the non-recursive version
+	}
+
+
+
+
+
+
+	function findAllDefinitionsSingleWord($args, $stagingConnection, $loomaConnection) {
+
+		//find all entries in staging database
+
+		$stagingArray = getDefinitionsFromStaging($args, $stagingConnection);
+
+		//find all entries in looma database
+
+		$loomaArray = getDefinitionsFromLooma ($args, $loomaConnection);
+
+		//find all entries with the same object id and overwrite
+
+		$loomaArray = removeOverwrittenEntries($loomaArray, $stagingArray);
+
+		//combone both arrays
+		$finalArray = combineArrays($loomaArray, $stagingArray);
 	}
 
 
