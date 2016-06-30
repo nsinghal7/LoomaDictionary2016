@@ -6,7 +6,7 @@
 						'def' => 'a large quiz', 'mod' => 'me',
 						'date' => '1/24/2012 01:23:45am', 'other' => 'nothing'),
 					'stagingData' =>
-						array('added' => false, 'modified' => false, 'accepted' => false,
+						array('added' => true, 'modified' => true, 'accepted' => true,
 						'deleted' => false));
 
 	/**
@@ -30,6 +30,13 @@
 	}
 	
 	/**
+	 * Closes the given connection. After this is called, the variable should be unset
+	 * @param unknown $connection The connection to disconnect
+	 */
+	function closeConnection($connection) {
+	}
+	
+	/**
 	 * Creates new dictionary entries with the given word
 	 * @param string $word The word to create entries fors
 	 * @param connection $officialConnection the connection to the official database
@@ -47,15 +54,36 @@
 	 * @param connection $officialConnection The connection to the official database
 	 * @param connection $stagingConnection The connection to the staging database
 	 * @return array An array in the following format:
-	 * {page: the page of the search (integer),
+	 * {format: 'simple', page: the page of the search (integer),
 	 * 		maxPage: the maximum page available with the same search (integer),
 	 * 		words: array of staging-style word objects
 	 * }
 	 */
-	function read($args, $officialConnection, $stagingConnection) {
+	function readSimplified($args, $officialConnection, $stagingConnection) {
 		global $testword;
-		$ans = array('page' => 1, 'maxPage' => 1, 'words' =>
+		$ans = array('format' => 'simple', 'page' => 1, 'maxPage' => 1, 'words' =>
 				array($testword));
+		return $ans;
+	}
+	
+	/**
+	 * Reads all definitions that match the inputted search arguments and returns them along
+	 * with all other definitions for those words
+	 * @param array $args The search arguments
+	 * @param connection $officialConnection The connection to the official database
+	 * @param connection $stagingConnection The connection to the staging database
+	 * @return array An array in the following format:
+	 * {format: 'simple', page: the page of the search (integer),
+	 * 		maxPage: the maximum page available with the same search (integer),
+	 * 		words: array of staging-style word objects
+	 * }
+	 */
+	function readAdvanced($args, $officialConnection, $stagingConnection) {
+		global $testword;
+		
+		$ans = array('format' => 'advanced', 'page' => 1, 'maxPage' => 1, 'words' =>
+				array($testword, $testword, $testword, $testword, $testword, $testword,
+						$testword, $testword, $testword, $testword, $testword));
 		return $ans;
 	}
 	
@@ -80,7 +108,10 @@
 	 * @param connection $officialConnection The connection to the official database
 	 * @param connection $stagingConnection The connection to the staging database
 	 * @param string $user the user
-	 * @return true if successful, false otherwise
+	 * @return false if the update failed; if successful, should return the new value of the
+	 * word in staging-style. If the type of update was 'cancel' will return true to
+	 * differentiate it from a failure and a modification (since now the page should reload
+	 * to get the official entry or nothing)
 	 */
 	function updateStaging($change, $officialConnection, $stagingConnection, $user) {
 		global $testword;
@@ -100,17 +131,13 @@
 			$testword["stagingData"]["modified"] = true;
 			$testword["stagingData"]["accepted"] = false;
 		} elseif($field == "stat") {
-			if($testword['stagingData']['modified'] || $testword['stagingData']['added']
-					|| $testword['stagingData']['accepted']
-					|| $testword['stagingData']['deleted']) {
-				$testword["stagingData"]["accepted"] = !$testword["stagingData"]["accepted"];
-			}
+			$testword["stagingData"]["accepted"] = !$testword["stagingData"]["accepted"];
 		} else {
 			return false;
 		}
 		$testword["wordData"]["mod"] = $user;
 		$testword["wordData"]["date"] = date("m/d/Y h:i:sa");
-		return true;
+		return $testword;
 	}
 	
 	$officialConnection;
@@ -145,8 +172,13 @@
 									'value' => "added words, skipped $skipped words");
 		} elseif ($_SERVER['REQUEST_METHOD'] == 'GET' and isset($_REQUEST['searchArgs'])) {
 			// searches for the definitions specified by the 'searchArgs' and returns results
-			$response['data'] = read($_REQUEST['searchArgs'], $officialConnection,
-										$stagingConnection);
+			if ($_REQUEST['simplified'] == "true") {
+				$response['data'] = readSimplified($_REQUEST['searchArgs'],
+												$officialConnection, $stagingConnection);
+			} else {
+				$response['data'] = readAdvanced($_REQUEST['searchArgs'],
+												$officialConnection, $stagingConnection);
+			}
 		} elseif ($_SERVER['REQUEST_METHOD'] == 'GET' and isset($_REQUEST['publish'])) {
 			// publishes accepted changes to the official database
 			$success = publish($officialConnection, $stagingConnection,
@@ -162,7 +194,10 @@
 										$_REQUEST['loginInfo']['user']);
 			if($success) {
 				$response['status'] = array('type' => 'success');
+				// if successful, also return the new value of the word
+				$response['new'] = $success;
 			} else {
+				// if failed, don't return a new value, since the old value is still valid
 				$response['status'] = array('type' => 'error',
 												'value' => 'modification failed');
 			}
@@ -173,7 +208,8 @@
 		}
 	}
 	
-	// prevent unauthorized usage of connection
+	closeConnection($officialConnection);
+	closeConnection($stagingConnection);
 	unset($officialConnection);
 	unset($stagingConnection);
 	

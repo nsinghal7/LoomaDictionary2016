@@ -60,6 +60,25 @@ body {
 	background-color: #baf0ff;
 }
 
+#pageSwitcherSuper {
+	left: 0%;
+	width: 100%;
+	background-color: gray;
+}
+
+#pageSwitcherSub {
+	display: inline-block;
+	position: relative;
+	left: 50%;
+	margin-left: -125px;
+	background-color: gray;
+}
+
+
+#pageInput {
+	width: 40px;
+}
+
 
 .disableButtons {
 	pointer-events: none;
@@ -76,12 +95,12 @@ td {
 	padding-right: 5px;
 }
 
-#resultsArea table {
+#resultsTable {
 	width: 100%;
 	table-layout: fixed;
 }
 
-#resultsArea table  tr  td  p {
+#resultsTable  tr  td  p {
 	word-wrap: break-word;
 	margin-top: 0px;
 	margin-bottom: 0px;
