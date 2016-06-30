@@ -4,7 +4,8 @@
 	$testword = array('wordData' =>
 						array('word' => 'test', 'pos' => 'noun', 'nep' => 'sklfj',
 						'def' => 'a large quiz', 'mod' => 'me',
-						'date' => '1/24/2012 01:23:45am', 'other' => 'nothing'),
+						'date' => '1/24/2012 01:23:45am', 'id' => 'asdklfjals',
+						'ch_id' => 'sdlkf'),
 					'stagingData' =>
 						array('added' => true, 'modified' => true, 'accepted' => true,
 						'deleted' => false));
