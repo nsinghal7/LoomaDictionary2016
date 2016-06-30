@@ -31,7 +31,6 @@
 	<form id="searchForm" class="centeredSection">
 		<input type="text" name="wordPart" id="wordPart" placeholder="Enter Search Term Here">
 		<input type="button" value="Search" id="searchButton" onclick="submitSearch()">
-		Simplified View: <input type="checkbox" id="simplified" name="simplified">
 		<br><br>
 		Added: <input type="checkbox" name="added" id="added">
 		Modified: <input type="checkbox" name="modified" id="modified">
@@ -43,7 +42,22 @@
 <div id="viewArea">
 	
 	<div id="resultsArea">
-		<table id="resultsTable">
+		<table id="newTable">
+			<tr>
+				<th class="wordCol">Word</th>
+				<th class="statCol">Status</th>
+				<th class="rootCol">Root Word</th>
+				<th class="posCol">POS</th>
+				<th class="nepCol">Nepali</th>
+				<th class="defCol">Definition</th>
+				<th class="modCol">Modified By</th>
+				<th class="dateCol">Date Modified</th>
+				<th class="otherCol">Other Info</th>
+			</tr>
+		</table>
+		<br>
+		<br>
+		<table id="oldTable">
 			<tr>
 				<th class="wordCol">Word</th>
 				<th class="statCol">Status</th>
@@ -58,18 +72,6 @@
 		</table>
 	</div>
 	
-	<div id="pageSwitcherSuper">
-		<div id="pageSwitcherSub">
-			<input type="button" id="firstPageButton" value="<<<" onclick="switchPage(-2)">
-			<input type="button" id="previousPageButton" value="<" onclick="switchPage(-1)">
-			<b>Page</b>
-			<input type="number" id="pageInput" value="1" min="1" onchange="pageChange()">
-			<b>of</b>
-			<b id="maxPage"></b>
-			<input type="button" id="nextPageButton" value=">" onclick="switchPage(1)">
-			<input type="button" id="lastPageButton" value=">>>" onclick="switchPage(2)">
-		</div>
-	</div>
 	
 </div>
 

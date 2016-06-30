@@ -4,15 +4,7 @@
 var processing = false;
 
 /**
- * The max page number for the current search results. Should be updated with each query.
- */
-var maxPage = 1;
-
-/**
- * The list of words from the current page of the current query. Should always be updated
- * after successful modifications to the database's representation of the data, but stay
- * the same until then so that, if the update fails, the user's view can be restored to the
- * version on the cloud without having to reload the page
+ * the list of words in BOTH tables
  */
 var words = [];
 
@@ -113,19 +105,23 @@ function processPDF() {
 					$("#uploadPDFDiv").find(".closePopupButton").prop("disabled", false);
 					$("#processPDFButton").prop("disabled", false);
 					processing = false;
+					
+					// reload with in case new data affected current search
 					submitSearch(true);
 				}, "json");
 	});
 }
 
+
+function parseBoolean(input) {
+	return input == true || input == 'true';
+}
+
 /**
  * Searches the database for all entries matching the parameters of text, added, modified, etc.
  * then formats these results and adds them into the results table.
- * @param oldSearch If true, searches for the results using the previously SUBMITTED
- * (by the user or another function where oldSearch is set to false) search
- * on the current page, rather than the new search on page 1. Defaults to false, and therefore
- * searches for the parameters currently on screen with page=1 and updates the previous
- * values
+ * @param oldSearch If true, searches using the previously SUBMITTED arguments, not those
+ * currently displayed. defaults to false;
  */
 function submitSearch(oldSearch) {
 	// send request to server
@@ -134,7 +130,6 @@ function submitSearch(oldSearch) {
 		prevAdded = $("#added").prop("checked")
 		prevModified = $("#modified").prop("checked");
 		prevAccepted = $("#accepted").prop("checked");
-		prevSimplified = $("#simplified").prop("checked");
 	}
 	$.get("backend.php",
 			{'loginInfo': {"allowed": true, 'user': 'me'},
@@ -142,36 +137,48 @@ function submitSearch(oldSearch) {
 						'added': prevAdded,
 						'modified': prevModified,
 						'accepted': prevAccepted,
-						'page': oldSearch?$("#pageInput").val():1},
-			'simplified': prevSimplified},
-			function(data, status, jqXHR) {
+						'page': oldSearch?$("#pageInput").val():1}},
+			function(input, status, jqXHR) {
 				// called when server responds
-				//TODO handle errors after the format for error responses is determined
+				// handle errors after the format for error responses is determined
+				if(input == null) {
+					alert("Search failed");
+					return;
+				}
 				
-				// sets current page and maxPage so the display is consistent with the state
-				data = data['data'];
-				$("#pageInput").val(data['page']);
-				maxPage = data['maxPage'];
+				var data = input['data'];
 				
-				// clears the table
-				var table = $("#resultsTable");
-				table.find("tr:gt(0)").remove();
+				// clears the tables
+				var newTable = $("#newTable");
+				var oldTable = $("#oldTable");
+				newTable.find("tr:gt(0)").remove();
+				oldTable.find("tr:gt(0)").remove();
 				
-				// processes each word's data
+				// processes each word's data, copies it into global variable
 				words = data['words'];
 				for(var i = 0; i < words.length; i++) {
-					var word = words[i];
+					// ensure that booleans were not converted to strings in json formatting
+					var staging = words[i]['stagingData'];
+					staging['modified'] = parseBoolean(staging['modified']);
+					staging['added'] = parseBoolean(staging['added']);
+					staging['accepted'] = parseBoolean(staging['accepted']);
+					staging['deleted'] = parseBoolean(staging['deleted']);
 					
-					//creates a new row for the table and fills it with the data from the word
-					var row = createTableEntry(word, i);
 					
-					// adds the new row to the table
-					table.append(row);
+					// creates a new entry and adds the new row to the appropriate table
+					(isNewWord(words[i]) ? newTable : oldTable)
+							.append(createTableEntry(words[i], i));
 				}
 			}, 'json');
 }
 
 
+/**
+ * Creates a <tr> in jquery that is in the correct format for the results tables (#new/oldTable)
+ * @param word The word to create it for
+ * @param i The index of the word in its array
+ * @returns The <tr>
+ */
 function createTableEntry(word, i) {
 	var row = $('<tr>');
 	
@@ -200,7 +207,7 @@ function createTableEntry(word, i) {
 	} else if(word['stagingData']['added']) {
 		stat = "add<wbr>ed";
 	} else {
-		stat = "pub<wbr>lish<wbr>ed";
+		stat = "un<wbr>ed<wbr>it<wbr>ed";
 	}
 	
 	//adds data to the row from the word object
@@ -248,54 +255,29 @@ function publish() {
 
 
 /**
- * Allows the buttons to the side of the page number to change the page number by signalling
- * this method. It then reloads the table on the new page if the page changed. 
- * @param change Specifies the change requested:
- * 	-2: go to page 1
- * 	-1: go back 1 page
- * 	1: go forward 1 page
- * 	2: go to last page
- * 	any other value: stay on same page
+ * Checks if a word belongs in newTable
+ * @param word The word to check
+ * @returns true if new, false otherwise
  */
-function switchPage(change) {
-	var elem = $("#pageInput");
-	var val = elem.val();
-	var prev = val;
-	if(change == -2) {
-		val = 1;
-	} else if(change == -1) {
-		val--;
-	} else if(change == 1) {
-		val++;
-	} else if(change == 2) {
-		val = maxPage;
-	}
-	val = Math.max(1, Math.min(maxPage, val));
-	elem.val(val);
-	if(val != prev) {
-		pageChange();
-	}
-}
-
-/**
- * Reloads the table on the new page
- */
-function pageChange() {
-	submitSearch(true);
+function isNewWord(word) {
+	return (word['stagingData']["added"] || word['stagingData']['modified']
+					|| word['stagingData']['accepted'] || word['stagingData']['deleted']);
 }
 
 /**
  * Called when an editable cell in the table is changed and should be transmitted to the server
  * @param type The column of the cell changed. For statCol, also allows 'delete' and 'cancel'
  * @param index The row of the cell changed (corresponds to the index in the word list
+ * @param newTable True if the word is in the newtable, false if in the old.
  */
-function edit(type, index) {
+function edit(type, index, newTable) {
 	// get correct element
 	var id_type = (type == 'cancel' || type == 'delete') ? 'stat' : type;
 	var elem = $("#" + id_type + "_" + index);
 	// confirm a cancel, which takes immediate effect in removing a definition from staging
 	if(type == 'cancel' && !confirm(
 			"Are you sure you want to revert all unpublished changes to this entry?")) {
+		// didn't mean to change
 		return;
 	}
 	// disable all of screen until the response so that there won't be any collisions
@@ -310,16 +292,8 @@ function edit(type, index) {
 			function(data, status, jqXHR) {
 				// called on server response
 				if(data['status']['type'] == 'success') {
-					// don't alert user, since success is assumed, and keep server's change
-					words[index] = data['new'];
-					if(words[index] == true) {
-						// the change was a removal (cancel), so reload the page
-						submitSearch(true);
-					} else {
-						// standard edit.
-						elem.parent().parent().replaceWith(createTableEntry(words[index],
-								index));
-					}
+					// don't alert user, since success is assumed, and reload data
+					submitSearch(true);
 				} else {
 					// alert user of failure and revert change
 					elem.parent().parent().replaceWith(createTableEntry(words[index], index));
