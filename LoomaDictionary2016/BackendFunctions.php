@@ -49,7 +49,7 @@
 		//get definition(find api)
 		$def = 
 
-		//get translation(HARD, PROBLEMS USING URLs AND CONNECTING TO GOOGLE SERVER)
+		//get translation
 		$np = translateToNepali($word);
 		
 		//get the rw (hopefully this will be included in the dictionary api)
