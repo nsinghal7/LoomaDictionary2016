@@ -16,6 +16,12 @@ var maxPage = 1;
  */
 var words = [];
 
+
+/**
+ * The list of official definitions for the currently selected word
+ */
+var officialDefs = [];
+
 /**
  * Notes the text specified by the last search so the search can be repeated if necessary
  */
@@ -36,11 +42,11 @@ var prevModified = false;
  */
 var prevAccepted = false;
 
-/**
- * Notes whether the last search specified 'simplified' so the search can be repeated
- */
-var prevSimplified = false;
 
+/**
+ * The word currently selected and displayed in the bottom bar
+ */
+var selectedWord = "";
 
 /**
  * To be called on startup. Sets up the screen and pulls data from the backend.
@@ -57,7 +63,7 @@ function startup() {
 function showUploadDiv() {
 	$("#uploadPDFDiv").show();
 	$("#progressDisplay").text("");
-	$("#menuArea, #viewArea").addClass("disableButtons");
+	$("#menuArea, #viewArea, #officialViewer").addClass("disableButtons");
 }
 
 
@@ -67,7 +73,7 @@ function showUploadDiv() {
 function hideUploadDiv() {
 	if(!processing) {
 		$("#uploadPDFDiv").hide();
-		$("#menuArea, #viewArea").removeClass("disableButtons");
+		$("#menuArea, #viewArea, #officialViewer").removeClass("disableButtons");
 	}
 }
 
@@ -134,7 +140,6 @@ function submitSearch(oldSearch) {
 		prevAdded = $("#added").prop("checked")
 		prevModified = $("#modified").prop("checked");
 		prevAccepted = $("#accepted").prop("checked");
-		prevSimplified = $("#simplified").prop("checked");
 	}
 	$.get("backend.php",
 			{'loginInfo': {"allowed": true, 'user': 'me'},
@@ -143,7 +148,7 @@ function submitSearch(oldSearch) {
 						'modified': prevModified,
 						'accepted': prevAccepted,
 						'page': oldSearch?$("#pageInput").val():1},
-			'simplified': prevSimplified},
+			'staging': true},
 			function(data, status, jqXHR) {
 				// called when server responds
 				//TODO handle errors after the format for error responses is determined
@@ -168,6 +173,8 @@ function submitSearch(oldSearch) {
 					// adds the new row to the table
 					table.append(row);
 				}
+				// reload officialTable
+				loadOfficialTable();
 			}, 'json');
 }
 
@@ -188,6 +195,11 @@ function createTableEntry(word, i) {
 	}
 	
 	// add each field
+	row.append($('<td class="selectedCol"> <button onclick="selectWord(\''
+				+ words[i]['wordData']['word'] + '\')" class="'
+				+ (words[i]['wordData']['word'] == selectedWord ? "" : "un")
+				+ 'selectedWord" word="' + words[i]['wordData']['word']
+				+ '">selected</button></td>'));
 	row.append(createEditableTd("word", i, word["wordData"]["word"]));
 	var stat;
 	if(word['stagingData']['deleted']) {
@@ -218,8 +230,7 @@ function createTableEntry(word, i) {
 			+ (word['wordData']["mod"]) + '</p></td>'));
 	row.append($('<td class="dateCol"><p>'
 			+ (word['wordData']["date"]) + '</p></td>'));
-	row.append($('<td class="otherCol"><p>'
-			+ (word['wordData']["other"] || "") + '</p></td>'));
+	row.append($('<td class="otherCol"><p></p></td>'));
 	return row;
 }
 
@@ -298,8 +309,14 @@ function edit(type, index) {
 			"Are you sure you want to revert all unpublished changes to this entry?")) {
 		return;
 	}
+	
+	// if published, stat button should have no effect
+	if(type == 'stat' && elem.text() == 'unedited') {
+		return;
+	}
+	
 	// disable all of screen until the response so that there won't be any collisions
-	$("#menuArea, #viewArea").addClass("disableButtons");
+	$("#menuArea, #viewArea, #officialViewer").addClass("disableButtons");
 	
 	// request change
 	$.post('backend.php', {'loginInfo': {'allowed': true, 'user': 'me'},
@@ -330,6 +347,69 @@ function edit(type, index) {
 				}
 				
 				// unlock screen so the user can continue
-				$("#menuArea, #viewArea").removeClass("disableButtons");
+				$("#menuArea, #viewArea, #officialViewer").removeClass("disableButtons");
 			}, 'json');
+}
+
+
+function selectWord(word) {
+	selectedWord = word;
+	// select correct words
+	$(".selectedWord").addClass("unselectedWord").removeClass("selectedWord");
+	$(".unselectedWord[word='" + selectedWord + "']").addClass("selectedWord")
+										.removeClass("unselectedWord");
+	
+	loadOfficialTable();
+}
+
+function loadOfficialTable() {
+	$.get("backend.php",
+			{'loginInfo': {"allowed": true, 'user': 'me'},
+			'searchArgs': {'text': prevText,
+						'added': prevAdded,
+						'modified': prevModified,
+						'accepted': prevAccepted},
+			'staging': false}, function(data, status, jqXHR) {
+				if(data != null) {
+					officialDefs = data['data'];
+					function createOfficialTd(word, field) {
+						return $("<td class='" + field + "Col'> <p>"
+									+ (word['wordData'][field] || "") + "</p></td>");
+					}
+					var table = $("#officialTable");
+					table.find("tr:gt(0)").remove();
+					for(var i = 0; i < officialDefs.length; i++) {
+						var row = $("<tr>");
+						row.append($("<td class='editCol'><button id='edit_" + i
+								+ "' onclick='moveOfficial(" + i + ");'>Edit</button></td>"));
+						row.append(createOfficialTd(officialDefs[i], "word"));
+						row.append($("<td class='statCol'><p>unedited</p></td>"));
+						row.append(createOfficialTd(officialDefs[i], "root"));
+						row.append(createOfficialTd(officialDefs[i], "pos"));
+						row.append(createOfficialTd(officialDefs[i], "nep"));
+						row.append(createOfficialTd(officialDefs[i], "def"));
+						row.append(createOfficialTd(officialDefs[i], "mod"));
+						row.append(createOfficialTd(officialDefs[i], "date"));
+						row.append($("<td class='other'><p></p></td>"));
+						table.append(row);
+					}
+				} else {
+					alert("loading from official database failed");
+				}
+			}, 'json');
+}
+
+function moveOfficial(index) {
+	$.get("backend.php",
+			{'loginInfo': {"allowed": true, 'user': 'me'},
+			'moveId': officialDefs[index]['wordData']['id'] + ""},
+		function(data, status, jqXHR) {
+			if(data['status']['type'] == 'success') {
+				// reload page, don't notify, since success is expected
+				submitSearch(true);
+			} else {
+				// notify that it failed and leave page
+				alert("moving word to staging failed");
+			}
+		}, 'json');
 }
