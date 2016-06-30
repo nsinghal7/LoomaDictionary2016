@@ -1,5 +1,7 @@
 <?php
 
+	require 'translator.php';
+
 	//edit this value to determine how many words will be assigned to each page
 	$wordsPerPage = 10;
 
@@ -48,7 +50,7 @@
 		$def = 
 
 		//get translation(HARD, PROBLEMS USING URLs AND CONNECTING TO GOOGLE SERVER)
-		$np = 
+		$np = translateToNepali($word);
 		
 		//get the rw (hopefully this will be included in the dictionary api)
 		$rw =
