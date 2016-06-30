@@ -179,7 +179,7 @@
 	}
 
 
-		function findDefinitonsForSingleWordLooma ($word, $loomaConnection) {
+	function findDefinitonsForSingleWordLooma ($word, $loomaConnection) {
 		
 		//get all elements that match the criteria
 		//FIX COLLECTION AND DATABASE NAMES
