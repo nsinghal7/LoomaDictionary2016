@@ -150,6 +150,7 @@
 			return $wordsArray;
 	}
 
+
 	/**
 		only use this to search for a single word and get back all definitions.  may be obsolete now
 	*/
@@ -361,6 +362,15 @@
 
 
 
+	function moveEntryToStaging ($stagingConnection, $loomaConnection, $_id){
+		$doc = $loomaConnection->database_name->collection_name->findOne(array('_id' => $_id));
+
+		$stagingConnection->database_name->collection_name->save($doc);
+
+		$loomaConnection->database_name->collection_name->remove($doc);
+
+		return true;
+	}
 
 
 
