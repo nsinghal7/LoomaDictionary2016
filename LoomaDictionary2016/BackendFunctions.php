@@ -22,7 +22,7 @@
 		if(checkLogin($login))
 		{
 			//default is localhost, insert parameters to specify address of database
-			return new MongoClient();
+			return new MongoClient(192.161.1.128/Looma);
 		}
 		return null;
 	}
@@ -89,115 +89,93 @@
 		return true;
 	}
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 	function findAllDefinitionsSingleWord($args, $stagingConnection, $loomaConnection) {
 
-		//find all entries in stagin database
-		$js = stagingCriteriaToJavascript($args);
+		//find all entries in staging database
+
+		$stagingArray = getDefinitionsFromStaging($args, $stagingConnection);
 
 		//find all entries in looma database
 
+		$loomaArray = getDefinitionsFromLooma ($args, $loomaConnection);
+
 		//find all entries with the same object id and overwrite
 
-		//create array with all staging 
+		$loomaArray = removeOverwrittenEntries($loomaArray, $stagingArray);
 
-		//create array with all words from looma database
-
-		//add stagind paramaters to words in looma array
-
-		//return final array with both arrays combined
+		//combone both arrays
+		$finalArray = combineArrays($loomaArray, $stagingArray);
 	}
 
-	/**
-	*takes an array of parameters to be used in the search query ($args),
-	*a connection to the staging database, and a connection to the looma database
-	*
-	*returns an array with the kind of view (simplified), page number, max number of pages, 
-	*word data (definitions, id, date entered, etc.), and staging data
-	*(whether the word has been accepted, modified, deleted, etc.)
-	*/
-	function readSimplified($args, $stagingConnection, $loomaConnection) {
-		//to do:
-		//if there are no criteria, return everything
-			//if there is just a word, return that word from all databases
-			//else (only drawing from stagind database now)
-				//return everything that satisfies the conditions
-
-		global $wordsPerPage;
-
-		//create array to return at the end
-		$finalArray = array('format' => 'simple', 'page' => $args['page']);
-
-		//boolean to see if all of the fields are false in array $args
-		$bool = $args['added'] or $args['modified'] or $args['accepted'];
-
-		if($bool == 'false'){
-			//we are drawing from both databases.  do we return everything or specify a search query
-			if($args['text'] == ''){
-
-				//get cursors to all elements
-				$stagingCursor = $stagingConnection->database_name->collection_name->find();
-					//adjust database and collection names here to match looma 
-				$loomaCursor = $loomaConnection->database_name->collection_name->find();
-
-				//figure out how many total pages
-				$numTotalWords = $stagingCursor->count(true) + $loomaCursor->count(true);
-				$numPages = $numTotalWords / $wordsPerPage;
-
-				//skip to the correct page (if above the max, just return last page)
-				if ($args['pages'] <= $numPages){
-					//here we need to figure out how much to skip in each cursor, or we just do things inefficiently
-				}
-				//this means it is above the max
-				else{
-					//here we need to figure out how much to skip
-				}
-
-				//put them into the correct format
-				//return an array of everything
-
-			}
-			else{
-				//return everything with the appropriate word (or portion of a word)
-			}
-		}
-
-		//if this is executed, we will only be drawing fron the staging and must filter our results accordingly
-		else{
-			//encode criteria as js function
-			$js = stagingCriteriaToJavascript($args);
-
-			//get all elements that match the criteria
-			$stagingCursor = $stagingConnection->database_name->collection_name->find(array('$where' => $js));
-
-			//figure out how many total pages
-			$numTotalWords = $stagingCursor->count(true)
-			$numPages = $numTotalWords / $wordsPerPage;
-
-			//add the maxPage info to the final array
-			array_push($finalArray, 'maxPage' => $numPages);
-
-			//skip to the correct page (if above the max, just skip to last last page)
-			skipToAppropriateLocation($stagingCursor, $args, $numPages, $numTotalWords);
-
-			//put the words in an array
-			$wordsArray = compileSimpleWordsArray($stagingCursor);
-
-			//add words array to final array
-			array_push ($finalArray, 'words' => $wordsArray);
-
-			//return an array of everything
-			return $finalArray;
-
-		}
+	function getDefintionsFromStaging ($args, $connection) {
 			
+		//encode criteria as js function
+		$js = stagingCriteriaToJavascript($args);
 
-		return array('values' => 'simple');
+		//get all elements that match the criteria
+		$stagingCursor = $connection->database_name->collection_name->find(array('$where' => $js));
+
+		//put the words in an array
+		//remember to add in staging parameters
+		$stagingWordsArray = compileStagingWordsArray($stagingCursor);
+
+		return stagingWordsArray();
 	}
 
-	function getSingleWordFromLooma ($connection) {
 
+	function getDefinitionsFromLooma ($args, $connection) {
+		
+		//get all elements that match the criteria
+		//FIX COLLECTION AND DATABASE NAMES
+		$loomaCursor = $connection->database_name->collection_name->find(array('word' => $args['word']));
+
+		//put the words in an array
+		$loomaWordsArray = compileLoomaWordsArray($loomaCursor);
+
+		return $loomaWordsArray;
 	}
-
 
 	//return a string with the function
 	/**
@@ -206,7 +184,7 @@
 	*	returns a string with the javascript function
 	*/
 	function stagingCriteriaToJavascript($args){
-		$finalFunction = "function() {return this.word.includes(" . $args['text'] . ") && (";
+		$finalFunction = "function() {return this.word.equals(" . $args['text'] . ") && (";
 		if($args['added'] == 'true'){
 			$finalFunction = $finalFunction . "this.added == true ||";
 		}
@@ -222,26 +200,6 @@
 		return $finalFunction;
 	}
 
-	/**
-	*  takes a cursor for the staging database, the search arguments, the max
-	*  number of pages, and the total number of words the cursor can iterate through
-	*
-	*  skips the cursor over the appropriate number of entries.  
-	*/
-	function skipToAppropriateLocation ($stagingCursor, $args, $numPages, $numTotalWords){
-		global $wordsPerPage;
-
-		if($numPages == 1){
-			//do nothing
-		}
-		else if ($args['pages'] <= $numPages){
-			$stagingCursor->skip(($args['pages'] - 1 ) * $wordsPerPage);
-		}
-		//this means it is above the max
-		else{
-			$stagingCursor->skip(($numPages - 1) * $wordsPerPage);
-		}
-	}
 
 	/**
 	*  creates an array with all the words and their data for 
@@ -249,11 +207,28 @@
 	*  takes a cursor to elements in the staging database
 	*	returns the array of all the words snd their data
 	*/
-	function compileSimpleWordsArray ($stagingCursor){
+	function compileStagingWordsArray ($stagingCursor){
 		$wordsArray = array();
 		for ($i = 0; $i < 10; $i = $i + 1){
 			if($stagingCursor->hasNext() == 'true')
 			array_push ($wordsArray, compileSingleSimpleWord($stagingCursor->getNext()));
+		}
+
+		return $wordsArray;
+	}
+
+
+	/**
+	*  creates an array with all the words and their data for 
+	*  entry in the final array of data for simplified view
+	*  takes a cursor to elements in the staging database
+	*	returns the array of all the words snd their data
+	*/
+	function compileLoomaWordsArray ($loomaCursor){
+		$wordsArray = array();
+		for ($i = 0; $i < 10; $i = $i + 1){
+			if($loomaCursor->hasNext() == 'true')
+			array_push ($wordsArray, compileSingleLoomaWord($loomaCursor->getNext()));
 		}
 
 		return $wordsArray;
@@ -270,6 +245,18 @@
 		return $singleWord;
 	}
 
+	/**
+	*  compiles all the data necessary for a single word in simplified view in *preparation for entry in the word array
+	*  takes all the word's data (from the database)
+	*  returns the array for that word
+	*/
+	function compileSingleLoomaWord($allWordData){
+		$singleWord = array('wordData' => array(), 'stagingData' => array());
+		array_push($singleWord['wordData'], compileSimpleWordData($allWordData));
+		array_push($singleWord;['stagingData'], compileDefaultStagingData());
+		return $singleWord;
+	}
+
 	//make sure all the necessary fields are included
 	/**
 	*  creates an array with all the word data required for the simplified view
@@ -278,7 +265,7 @@
 	*/
 	function compileSimpleWordData ($allWordData){
 		return array(
-
+				//object ids
 				'word' => $allWordData['word'], 
 				'pos' => $allWordData['pos'], 
 				'nep' => $allWordData['nep'],
@@ -288,7 +275,97 @@
 			);
 	}
 
-	
+	/**  creates an array of staging data with default entries
+	*    returns the completed array
+	*/
+	function compileDefaultStagingData (){
+		return array(
+			'accepted' => 'false',
+			'modified' => 'false',
+			'deleted' => 'false'
+			);
+	}
+
+	function removeOverwrittenEntries ($betaArray, $dominantArray){
+		//nested for each loop, compare object ids and overwrite entires in the beta array
+
+		$betaCount = ount($betaArray);
+		$dominantCount = count($dominantArray);
+
+		for($indexDominant = 0; $indexDominant < $dominantCount; $indexDominant++) {
+	 		for ($indexBeta=0; $indexBeta < $betaCount; $indexBeta++) { 
+	 			
+	 			//make sure the key for object id is correct
+	 			if ($betaArray[$indexBeta]['ObjectID'] == $dominantArray[$indexDominant]['ObjectID']) {
+	 				unset($betaArray[$indexBeta]);
+	 			}
+	 		}
+		}
+
+		return $betaArray;
+	}
+
+	function combineArrays ($firstArray, $secondArray) {
+		
+		//return the combination of all the entries in both arrays
+		return array_merge_recursive($firstArray, $secondArray);
+
+		//if this is doing weird things, try the non-recursive version
+	}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 	//transfer the data from the staging databse to the Looma database
