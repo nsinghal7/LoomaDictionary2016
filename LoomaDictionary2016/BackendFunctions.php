@@ -1,10 +1,7 @@
 <?php
-
 	require 'translator.php';
-
 	//edit this value to determine how many words will be assigned to each page
 	$wordsPerPage = 10;
-
 	/**
 	*Returns a connection to the staging database.  the address still needs to be specified
 	*/
@@ -16,7 +13,6 @@
 		}
 		return null;
 	}
-
 	/**
 	*Returns a connection to the looma database.  the address still needs to be specified
 	*/
@@ -28,7 +24,6 @@
 		}
 		return null;
 	}
-
 	/**
 	 * Closes the given connection. After this is called, the variable should be unset
 	 * @param unknown $connection The connection to disconnect
@@ -37,7 +32,6 @@
 		
 		//I don't think you actually want to do this..... discuss
 	}
-
 	/**
 	*creates an entry in the stagin database
 	*takes the word that the entry will be created around, 
@@ -48,13 +42,11 @@
 		
 		//get definition(find api)
 		$def = 
-
 		//get translation(HARD, PROBLEMS USING URLs AND CONNECTING TO GOOGLE SERVER)
 		$np = translateToNepali($word);
 		
 		//get the rw (hopefully this will be included in the dictionary api)
 		$rw =
-
 		//get the POS (hopefully this is included in the dictionary api)
 		$POS = 
 		
@@ -65,8 +57,6 @@
 		$numDigits = 16;
 		$multiplier = 10 ** $numDigits;
 		$random = rand(0, $multiplier) / $multiplier;
-
-
 		//put everything into a doc
 		$doc = array(
 		"_id" => ObjectId();
@@ -83,116 +73,53 @@
 				'deleted' => false
 				)
 			);
-
 		// insert the doc into the database
 		$stagingConnection->database_name->collection_name->save($doc);
-
 		return true;
 	}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 	function readStagingDatabase ($args, $stagingConnection){
 			global $wordsPerPage;
-
-
 			//encode criteria as js function
 			$js = stagingCriteriaToJavascript($args);
-
 			//get all elements that match the criteria
 			$stagingCursor = $stagingConnection->database_name->collection_name->find(array('$where' => $js));
-
 			//figure out how many total pages
 			$numTotalWords = $stagingCursor->count(true)
 			$numPages = $numTotalWords / $wordsPerPage;
-
 			//skip to the correct page (if above the max, just skip to last page)
 			skipToAppropriateLocation($stagingCursor, $args, $numPages, $numTotalWords);
-
 			//put the words in an array
 			$wordsArray = compileStagingWordsArray($stagingCursor);
-
 			return $wordsArray;
 	}
-
-
 	/**
 		only use this to search for a single word and get back all definitions.  may be obsolete now
 	*/
 	function findAllDefinitionsSingleWordStaging($args, $stagingConnection, $loomaConnection) {
-
 		//find all entries in staging database
-
 		$stagingArray = getDefinitionsFromStaging($args, $stagingConnection);
-
 		return $stagingArray;
 	}
-
 	function getDefintionsFromStaging ($args, $connection) {
 			
 		//encode criteria as js function
 		$js = stagingCriteriaToJavascript($args);
-
 		//get all elements that match the criteria
 		$stagingCursor = $connection->database_name->collection_name->find(array('$where' => $js));
-
 		//put the words in an array
 		//remember to add in staging parameters
 		$stagingWordsArray = compileStagingWordsArray($stagingCursor);
-
 		return stagingWordsArray();
 	}
-
-
 	function findDefinitonsForSingleWordLooma ($word, $loomaConnection) {
 		
 		//get all elements that match the criteria
 		//FIX COLLECTION AND DATABASE NAMES
 		$loomaCursor = $connection->database_name->collection_name->find(array('word' => $args['word']));
-
 		//put the words in an array
 		$loomaWordsArray = compileLoomaWordsArray($loomaCursor);
-
 		return $loomaWordsArray;
 	}
-
 	//return a string with the function
 	/**
 	*  Generates a javascript function in string form to perform the search query
@@ -212,11 +139,8 @@
 		}
 		//append the necessary ending to the javascript function
 		$finalFunction = substr($finalFunction, 0, -2) . ") ; } ";
-
 		return $finalFunction;
 	}
-
-
 	/**
 	*  creates an array with all the words and their data for 
 	*  entry in the final array of data for simplified view
@@ -229,11 +153,8 @@
 			if($stagingCursor->hasNext() == 'true')
 			array_push ($wordsArray, compileSingleSimpleWord($stagingCursor->getNext()));
 		}
-
 		return $wordsArray;
 	}
-
-
 	/**
 	*  creates an array with all the words and their data for 
 	*  entry in the final array of data for simplified view
@@ -246,10 +167,8 @@
 			if($loomaCursor->hasNext() == 'true')
 			array_push ($wordsArray, compileSingleLoomaWord($loomaCursor->getNext()));
 		}
-
 		return $wordsArray;
 	}
-
 	/**
 	*  compiles all the data necessary for a single word in simplified view in preparation for entry in the word array
 	*  takes all the word's data (from the database)
@@ -260,7 +179,6 @@
 		array_push($singleWord['wordData'], compileSimpleWordData($allWordData));
 		return $singleWord;
 	}
-
 	/**
 	*  compiles all the data necessary for a single word in simplified view in *preparation for entry in the word array
 	*  takes all the word's data (from the database)
@@ -272,7 +190,6 @@
 		array_push($singleWord;['stagingData'], compileDefaultStagingData());
 		return $singleWord;
 	}
-
 	//make sure all the necessary fields are included
 	/**
 	*  creates an array with all the word data required for the simplified view
@@ -290,8 +207,6 @@
 				'date' => $allWordData['date_entered'],
 			);
 	}
-
-
 	/**
 	*  takes a cursor for the staging database, the search arguments, the max
 	*  number of pages, and the total number of words the cursor can iterate through
@@ -300,7 +215,6 @@
 	*/
 	function skipToAppropriateLocation ($stagingCursor, $args, $numPages, $numTotalWords){
 		global $wordsPerPage;
-
 		if($numPages == 1){
 			//do nothing
 		}
@@ -312,70 +226,12 @@
 			$stagingCursor->skip(($numPages - 1) * $wordsPerPage);
 		}
 	}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 	function moveEntryToStaging ($stagingConnection, $loomaConnection, $_id){
 		$doc = $loomaConnection->database_name->collection_name->findOne(array('_id' => $_id));
-
 		$stagingConnection->database_name->collection_name->save($doc);
-
 		$loomaConnection->database_name->collection_name->remove($doc);
-
 		return true;
 	}
-
-
-
 	//transfer the data from the staging databse to the Looma database
 	/**
 	* transefers all the accepted changes from the staging database to the looma database
@@ -384,22 +240,17 @@
 	* returns true
 	*/
 	function publish($stagingConnection, $loomaConnection) {
-
 		$stagingCursor = $stagingConnection->database_name->collection_name->find();
-
 		foreach($stagingCursor as $doc){
 			//check to make sure the object has not been deleted and has been accepted
 			if($doc['stagingData']['deleted'] == 'false' and $doc['stagingData']['accepted'] == 'true')
 			{
 				//convert to correct format
 				$newDoc = convert($doc);
-
 				//remove from staging
 				$stagingConnection->database_name->collection_name->remove($doc);
-
 				//adjust database and collection name!!!
 				$loomaConnection->database_name->collection_name->save($newDoc);
-
 			}
 			//if it has been deleted, remove it
 			else if ($doc['stagingData']['deleted'] == 'true')
@@ -408,11 +259,8 @@
 				$stagingConnection->database_name->collection_name->remove($doc);
 			}
 		}
-
 		return true;
 	}
-
-
 	//edit this fuction if you would like to adapt this function for somethign other than dictionary words
 	/**
 	*converts a doc from the staging version to the version entered into the looma database
@@ -422,7 +270,6 @@
 	function convert($doc)
 	{
 		$dateEntered = getDateAndTime("America/Los_Angeles");
-
 		return $newDoc = array (
 				//object id
 				"ch_id" => "3EN06", //figure out what this is
@@ -436,7 +283,6 @@
 				"date_entered" => $dateEntered
 				);
 	}
-
 	/**
 	*Takes the new documet to be incorporated into the staging 
 	*database and a connection to that database
@@ -446,7 +292,6 @@
 		$connection->database_name->collection_name->save($new);
 		return true;
 	}
-
 	/**
 	* Takes the timezone to be used in the generation of the timestamp
 	* returns a string with the date and time in the specified format
