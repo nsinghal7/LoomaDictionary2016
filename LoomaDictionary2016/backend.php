@@ -4,7 +4,8 @@
 	$testword = array('wordData' =>
 						array('word' => 'test', 'pos' => 'noun', 'nep' => 'sklfj',
 						'def' => 'a large quiz', 'mod' => 'me',
-						'date' => '1/24/2012 01:23:45am', 'other' => 'nothing'),
+						'date' => '1/24/2012 01:23:45am', 'id' => 'asdklfjals',
+						'ch_id' => 'sdlkf'),
 					'stagingData' =>
 						array('added' => true, 'modified' => true, 'accepted' => true,
 						'deleted' => false));
@@ -48,43 +49,14 @@
 		return true;
 	}
 	
-	/**
-	 * Reads all definitions that match the inputted search arguments and returns them
-	 * @param array $args The search arguments
-	 * @param connection $officialConnection The connection to the official database
-	 * @param connection $stagingConnection The connection to the staging database
-	 * @return array An array in the following format:
-	 * {format: 'simple', page: the page of the search (integer),
-	 * 		maxPage: the maximum page available with the same search (integer),
-	 * 		words: array of staging-style word objects
-	 * }
-	 */
-	function readSimplified($args, $officialConnection, $stagingConnection) {
+	function readStaging($args, $stagingConnection) {
 		global $testword;
-		$ans = array('format' => 'simple', 'page' => 1, 'maxPage' => 1, 'words' =>
-				array($testword));
-		return $ans;
+		return array("page" => 1, "maxPage" => 1, "words" => array($testword, $testword, $testword, $testword, $testword, $testword, $testword, $testword, $testword, $testword, $testword, $testword, $testword, $testword, $testword, $testword));
 	}
 	
-	/**
-	 * Reads all definitions that match the inputted search arguments and returns them along
-	 * with all other definitions for those words
-	 * @param array $args The search arguments
-	 * @param connection $officialConnection The connection to the official database
-	 * @param connection $stagingConnection The connection to the staging database
-	 * @return array An array in the following format:
-	 * {format: 'simple', page: the page of the search (integer),
-	 * 		maxPage: the maximum page available with the same search (integer),
-	 * 		words: array of staging-style word objects
-	 * }
-	 */
-	function readAdvanced($args, $officialConnection, $stagingConnection) {
+	function readOfficial($args, $officialConnection) {
 		global $testword;
-		
-		$ans = array('format' => 'advanced', 'page' => 1, 'maxPage' => 1, 'words' =>
-				array($testword, $testword, $testword, $testword, $testword, $testword,
-						$testword, $testword, $testword, $testword, $testword));
-		return $ans;
+		return array($testword);
 	}
 	
 	/**
@@ -140,6 +112,10 @@
 		return $testword;
 	}
 	
+	function moveToStaging($moveId, $officialConnection, $stagingConnection, $user) {
+		return true;
+	}
+	
 	$officialConnection;
 	$stagingConnection;
 	
@@ -172,12 +148,10 @@
 									'value' => "added words, skipped $skipped words");
 		} elseif ($_SERVER['REQUEST_METHOD'] == 'GET' and isset($_REQUEST['searchArgs'])) {
 			// searches for the definitions specified by the 'searchArgs' and returns results
-			if ($_REQUEST['simplified'] == "true") {
-				$response['data'] = readSimplified($_REQUEST['searchArgs'],
-												$officialConnection, $stagingConnection);
+			if ($_REQUEST['staging'] == "true") {
+				$response['data'] = readStaging($_REQUEST['searchArgs'], $stagingConnection);
 			} else {
-				$response['data'] = readAdvanced($_REQUEST['searchArgs'],
-												$officialConnection, $stagingConnection);
+				$response['data'] = readOfficial($_REQUEST['searchArgs'], $officialConnection);
 			}
 		} elseif ($_SERVER['REQUEST_METHOD'] == 'GET' and isset($_REQUEST['publish'])) {
 			// publishes accepted changes to the official database
@@ -201,6 +175,14 @@
 				$response['status'] = array('type' => 'error',
 												'value' => 'modification failed');
 			}
+		} elseif($_SERVER['REQUEST_METHOD'] == 'GET' and isset($_REQUEST['moveId'])) {
+			$success = moveToStaging($_REQUEST['moveId'], $officialConnection,
+									$stagingConnection, $_REQUEST['loginInfo']['user']);
+			if($success) {
+				$response['status'] = array('type' => 'success');
+			} else {
+				$response['status'] = array('type' => 'error', 'value' => 'moving failed');
+			}
 		} else {
 			// the arguments didn't match any acceptable requests
 			$response['status'] = array('type' => 'error', 'value' => 'invalid request',
@@ -215,6 +197,7 @@
 	
 	//return json encoded response
 	$encoded = json_encode($response);
+	error_log("$encoded");
 	header('Content-type: application/json');
 	exit($encoded);
 	

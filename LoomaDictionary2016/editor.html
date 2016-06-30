@@ -31,7 +31,6 @@
 	<form id="searchForm" class="centeredSection">
 		<input type="text" name="wordPart" id="wordPart" placeholder="Enter Search Term Here">
 		<input type="button" value="Search" id="searchButton" onclick="submitSearch()">
-		Simplified View: <input type="checkbox" id="simplified" name="simplified">
 		<br><br>
 		Added: <input type="checkbox" name="added" id="added">
 		Modified: <input type="checkbox" name="modified" id="modified">
@@ -45,6 +44,7 @@
 	<div id="resultsArea">
 		<table id="resultsTable">
 			<tr>
+				<th class="selectCol">Selected</th>
 				<th class="wordCol">Word</th>
 				<th class="statCol">Status</th>
 				<th class="rootCol">Root Word</th>
@@ -71,6 +71,23 @@
 		</div>
 	</div>
 	
+</div>
+
+<div id="officialViewer">
+	<table id="officialTable">
+		<tr>
+			<th class="editCol"></th>
+			<th class="wordCol">Word</th>
+			<th class="statCol">Status</th>
+			<th class="rootCol">Root Word</th>
+			<th class="posCol">POS</th>
+			<th class="nepCol">Nepali</th>
+			<th class="defCol">Definition</th>
+			<th class="modCol">Modified By</th>
+			<th class="dateCol">Date Modified</th>
+			<th class="otherCol">Other Info</th>
+		</tr>
+	</table>
 </div>
 
 
