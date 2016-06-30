@@ -89,6 +89,24 @@
 		return true;
 	}
 
+	function findAllDefinitionsSingleWord($args, $stagingConnection, $loomaConnection) {
+
+		//find all entries in stagin database
+		$js = stagingCriteriaToJavascript($args);
+
+		//find all entries in looma database
+
+		//find all entries with the same object id and overwrite
+
+		//create array with all staging 
+
+		//create array with all words from looma database
+
+		//add stagind paramaters to words in looma array
+
+		//return final array with both arrays combined
+	}
+
 	/**
 	*takes an array of parameters to be used in the search query ($args),
 	*a connection to the staging database, and a connection to the looma database
@@ -146,7 +164,7 @@
 		//if this is executed, we will only be drawing fron the staging and must filter our results accordingly
 		else{
 			//encode criteria as js function
-			$js = criteriaToJavascript($args);
+			$js = stagingCriteriaToJavascript($args);
 
 			//get all elements that match the criteria
 			$stagingCursor = $stagingConnection->database_name->collection_name->find(array('$where' => $js));
@@ -176,6 +194,10 @@
 		return array('values' => 'simple');
 	}
 
+	function getSingleWordFromLooma ($connection) {
+
+	}
+
 
 	//return a string with the function
 	/**
@@ -183,7 +205,7 @@
 	*  takes all the necessary search arguments to be incorperated
 	*	returns a string with the javascript function
 	*/
-	function criteriaToJavascript($args){
+	function stagingCriteriaToJavascript($args){
 		$finalFunction = "function() {return this.word.includes(" . $args['text'] . ") && (";
 		if($args['added'] == 'true'){
 			$finalFunction = $finalFunction . "this.added == true ||";
@@ -266,27 +288,7 @@
 			);
 	}
 
-	//there's a lot of work left to do on this one
-	/**
-	*takes an array of parameters to be used in the search query ($args),
-	*a connection to the staging database, and a connection to the looma database
-	*
-	*returns an array with the kind of view (advanced), page number, max number of pages, 
-	*word data (definitions, id, date entered, etc.), and staging data
-	*(whether the word has been accepted, modified, deleted, etc.)
-	*/
-	function readAdvanced($args, $stagingConnection, $loomaConnection) {
-		global $wordsPerPage;
-
-		//returns all the definitions for the words
-
-		//cases for args that are sent over
-			//
-
-		$finalArray = array('format' => 'advanced', 'page' => 1, 'maxPage' => 1,);
-
-		return $finalArray;
-	}
+	
 
 
 	//transfer the data from the staging databse to the Looma database
