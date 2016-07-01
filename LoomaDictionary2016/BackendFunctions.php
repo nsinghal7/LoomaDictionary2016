@@ -3,24 +3,37 @@
 	/**
 	 *	Author: Colton
 	 *  Date: 7/1/16
-	 *	Filename: Backend Functions
+	 *	Filename: BackendFunctions.php
 	 *
 	 *	Description:
 	 *	This file contains the functions necessary to interact with the looma
 	 *	database and staging database to retrieve and store dictionary entries.
 	 *	It also interacts with the various apis necessary to retrieve translations 
-	 *	and definitions to create new entries.  The main methods are as follows:
-	 *	Create entry - this function creates a new entry in the staging database given
+	 *	and definitions to create new entries.  The main functions intended for use
+	 *	by other files are as follows:
+	 *
+	 *	createEntry - this function creates a new entry in the staging database given
 	 *	a word. 
-	 *	Read Staging Database - this function returns a page of results in the staging
+	 *
+	 *	readStagingDatabase - this function returns a page of results in the staging
 	 *	database, as specified by the arguments passed to it
+	 *
+	 * 	Find Definition with ID - this function takes an ID and looks for a matching
+	 *	entry first in the staging database, then in the looma database, and returns
+	 *	false if it finds nothing.
+	 *
+	 * 	findDefinitonsForSingleWordLooma - this function finda all the definitions 
+	 * 	for a given word in the Looma database, returning an array with all the 
+	 * 	entries found
+	 *	
+	 * 	publish - this function publishes all the accepted changes to the looma 
+	 *  database
 	 * 	
-	 * 	
-	 * 	
-	 * 	
-	 * 	
-	 * 	
-	 * 	
+	 *	updateStaging - this function saves a document to the staging database.  If 
+	 * 	the document already exists, then it is overwritten by the new doc
+	 *	
+	 * 	There are also functions to create connections to each database, and a dummy 
+	 * 	function to check login until the working one is finished
 	 * 	
 	 */
 
@@ -31,6 +44,9 @@
 	//edit this value to determine how many words will be assigned to each page
 	$wordsPerPage = 10;
 
+	/**
+	*	Dummy function to always return true
+	*/
 	function checkLogin ($login){
 		return 'true';
 	}
@@ -47,6 +63,9 @@
 		return null;
 	}
 
+	/**
+	* returns true when either a string 'true' or a boolean true is entered
+	*/
 	function checkTrue ($bool){
 		if ($bool == true or $bool === 'true'){
 			return true;
@@ -126,6 +145,9 @@
 		return true;
 	}
 
+	/**
+	 *	Generates a random number given a certain number of digits
+	 */
 	function generateRandomNumber ($numDigits){
 		$numDigits = 16;
 		$multiplier = 10 ** $numDigits;
@@ -154,12 +176,14 @@
 	*	a connection to the looma database, and a connection to the staging database
 	*/
 	function findDefinitionWithID ($_id, $loomaConnection, $stagingConnection) {
+		//first look for the entry in the staging databse
 		$stagingDefinition = $stagingConnection->database_name->collection_name->findOne(array('_id' => $_id));
 
 		if ($stagingDefinition != null){
 			return $stagingDefinition;
 		}
 
+		//since the entry wasn't in the staging database, check the Looma database
 		//fix database and collection names
 		$loomaDefinition = $loomaConnection->database_name->collection_name->findOne(array('_id' => $_id));
 
@@ -195,7 +219,14 @@
 
 
 
-
+	/**
+	 *	Creates an array of entries to be displayed on a single page of the website
+	 *
+	 *	takes an array of arguments specifying the page number and search query
+	 *  Also takes a connection to the staging database
+	 *
+	 *	returns an array of all the words for that page
+	 */
 	function readStagingDatabase ($args, $stagingConnection){
 			global $wordsPerPage;
 
@@ -233,7 +264,7 @@
 	}
 
 
-
+	//this function may be obsolete now because it does not take page numbers into account
 	function getDefintionsFromStaging ($args, $connection) {
 			
 		//encode criteria as js function
@@ -249,7 +280,14 @@
 		return stagingWordsArray();
 	}
 
-
+	/**
+	 *	Searches the Looma database and finds all the definitions it contains for 
+	 *	a single word
+	 *
+	 *	Takes the desired word and a connection to the Looma database
+	 *
+	 *	Returns an array with all the definitions found
+	 */
 	function findDefinitonsForSingleWordLooma ($word, $loomaConnection) {
 		
 		//get all elements that match the criteria
@@ -435,7 +473,12 @@
 
 
 
-
+	/**
+	 * Moves an entry from the looma database to the staging database
+	 * Takes a connection to each database, as well of the id of the object to be
+	 * moved and the user requesting to move the object
+	 * Returns true
+	 */
 	function moveEntryToStaging ($stagingConnection, $loomaConnection, $_id, $user){
 		$doc = $loomaConnection->database_name->collection_name->findOne(array('_id' => $_id));
 
