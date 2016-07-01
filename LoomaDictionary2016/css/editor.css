@@ -198,5 +198,33 @@ table  tr  td  p {
 	position: fixed;
 	bottom: 0px;
 	z-index: 90;
-	background-color: white;
+	background-color: #f9eaff;
+	overflow: hidden;
+}
+
+
+#footerLabel {
+	border-left: 3px solid black;
+	border-top: 3px solid black;
+	border-top-left-radius: 5px;
+	border-top-right-radius: 5px;
+	border-bottom: 0px;
+	padding: 5px;
+	display: inline-block;
+	float: left;
+}
+
+#footerSpacer {
+	border-bottom: 3px solid black;
+	border-left: 3px solid black;
+	border-bottom-left-radius: 5px;
+	padding: 5px;
+	display: inline-block;
+	margin-left: -3px;
+	overflow: hidden;
+	width: calc(100% - 162px); /* change me */
+}
+
+#officialTable {
+	clear: left;
 }
