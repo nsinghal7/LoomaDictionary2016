@@ -149,7 +149,7 @@
 			$stagingCursor = $stagingConnection->database_name->collection_name->find(array('$where' => $js));
 
 			//figure out how many total pages
-			$numTotalWords = $stagingCursor->count(true)
+			$numTotalWords = $stagingCursor->count(true);
 			$numPages = $numTotalWords / $wordsPerPage;
 
 			//skip to the correct page (if above the max, just skip to last page)
@@ -278,7 +278,7 @@
 	function compileSingleLoomaWord($allWordData){
 		$singleWord = array('wordData' => array(), 'stagingData' => array());
 		array_push($singleWord['wordData'], compileSimpleWordData($allWordData));
-		array_push($singleWord;['stagingData'], compileDefaultStagingData());
+		array_push($singleWord['stagingData'], compileDefaultStagingData());
 		return $singleWord;
 	}
 
@@ -297,9 +297,9 @@
 				'np' => $allWordData['np'],
 				'def' => $allWordData['def'], 
 				'mod' => $allWordData['mod'],
-				'rand' =>  generateRandomNumber(16);
+				'rand' =>  generateRandomNumber(16),
 				'date_entered' => $allWordData['date_entered'],
-				'mod' => $allWordData['user'];
+				'mod' => $allWordData['user']
 			);
 	}
 

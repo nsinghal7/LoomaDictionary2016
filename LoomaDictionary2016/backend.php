@@ -45,16 +45,19 @@
 	 * @param string $user the name of the user
 	 * @return boolean true if the entry was created successfully, false otherwise
 	 */
-	function createEntry($word, $officialConnection, $stagingConnection, $user) {
+	function createEntryWrapper($word, $officialConnection, $stagingConnection, $user) {
 		return true;
 	}
 	
-	function readStaging($args, $stagingConnection) {
+	function readStagingWrapper($args, $stagingConnection) {
 		global $testword;
-		return array("page" => 1, "maxPage" => 1, "words" => array($testword, $testword, $testword, $testword, $testword, $testword, $testword, $testword, $testword, $testword, $testword, $testword, $testword, $testword, $testword, $testword));
+		return array("page" => 1, "maxPage" => 1, "words" => array($testword,
+				$testword, $testword, $testword, $testword, $testword, $testword,
+				$testword, $testword, $testword, $testword, $testword, $testword, $testword,
+				$testword, $testword));
 	}
 	
-	function readOfficial($args, $officialConnection) {
+	function readOfficialWrapper($args, $officialConnection) {
 		global $testword;
 		return array($testword);
 	}
@@ -66,7 +69,7 @@
 	 * @param string $user The user
 	 * @return boolean True if publishing succeeded, false otherwise
 	 */
-	function publish($officialConnection, $stagingConnection, $user) {
+	function publishWrapper($officialConnection, $stagingConnection, $user) {
 		return true;
 	}
 	
@@ -85,7 +88,7 @@
 	 * differentiate it from a failure and a modification (since now the page should reload
 	 * to get the official entry or nothing)
 	 */
-	function updateStaging($change, $officialConnection, $stagingConnection, $user) {
+	function updateStagingWrapper($change, $officialConnection, $stagingConnection, $user) {
 		global $testword;
 		// should also automatically turn on modified and off accepted for field modifications
 		// but not for status modifications. Should also update other non-editable wordData
@@ -112,7 +115,7 @@
 		return $testword;
 	}
 	
-	function moveToStaging($moveId, $officialConnection, $stagingConnection, $user) {
+	function moveToStagingWrapper($moveId, $officialConnection, $stagingConnection, $user) {
 		return true;
 	}
 	
@@ -132,7 +135,7 @@
 			$list = json_decode($_REQUEST['wordList']);
 			$skipped = 0;
 			foreach ($list as $word) {
-				$success = createEntry($word, $officialConnection, $stagingConnection,
+				$success = createEntryWrapper($word, $officialConnection, $stagingConnection,
 											$_REQUEST['loginInfo']['user']);
 				if (!$success) {
 					if(!isset($response['skipped'])) {
@@ -149,13 +152,15 @@
 		} elseif ($_SERVER['REQUEST_METHOD'] == 'GET' and isset($_REQUEST['searchArgs'])) {
 			// searches for the definitions specified by the 'searchArgs' and returns results
 			if ($_REQUEST['staging'] == "true") {
-				$response['data'] = readStaging($_REQUEST['searchArgs'], $stagingConnection);
+				$response['data'] = readStagingWrapper($_REQUEST['searchArgs'],
+						$stagingConnection);
 			} else {
-				$response['data'] = readOfficial($_REQUEST['searchArgs'], $officialConnection);
+				$response['data'] = readOfficialWrapper($_REQUEST['searchArgs'],
+						$officialConnection);
 			}
 		} elseif ($_SERVER['REQUEST_METHOD'] == 'GET' and isset($_REQUEST['publish'])) {
 			// publishes accepted changes to the official database
-			$success = publish($officialConnection, $stagingConnection,
+			$success = publishWrapper($officialConnection, $stagingConnection,
 								$_REQUEST['loginInfo']['user']);
 			if($success) {
 				$response['status'] = array('type' => 'success');
@@ -164,8 +169,8 @@
 			}
 		} elseif($_SERVER['REQUEST_METHOD'] == 'POST' and isset($_REQUEST['mod'])) {
 			// modifies the definition in the way specified by the 'mod'
-			$success = updateStaging($_REQUEST['mod'], $officialConnection, $stagingConnection,
-										$_REQUEST['loginInfo']['user']);
+			$success = updateStagingWrapper($_REQUEST['mod'], $officialConnection,
+								$stagingConnection, $_REQUEST['loginInfo']['user']);
 			if($success) {
 				$response['status'] = array('type' => 'success');
 				// if successful, also return the new value of the word
@@ -176,7 +181,7 @@
 												'value' => 'modification failed');
 			}
 		} elseif($_SERVER['REQUEST_METHOD'] == 'GET' and isset($_REQUEST['moveId'])) {
-			$success = moveToStaging($_REQUEST['moveId'], $officialConnection,
+			$success = moveToStagingWrapper($_REQUEST['moveId'], $officialConnection,
 									$stagingConnection, $_REQUEST['loginInfo']['user']);
 			if($success) {
 				$response['status'] = array('type' => 'success');
