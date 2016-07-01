@@ -167,6 +167,11 @@ function submitSearch(oldSearch) {
 				for(var i = 0; i < words.length; i++) {
 					var word = words[i];
 					
+					// deal with possible boolean to string conversions in JSON transfer
+					["modified", "added", "accepted", "deleted"].forEach(function(field, i, a) {
+						word['stagingData'][field] = isTrue(word['stagingData'][field]);
+					});
+					
 					//creates a new row for the table and fills it with the data from the word
 					var row = createTableEntry(word, i);
 					
@@ -366,7 +371,7 @@ function selectWord(word) {
 function loadOfficialTable() {
 	$.get("backend.php",
 			{'loginInfo': {"allowed": true, 'user': 'me'},
-			'searchArgs': {'staging': false, 'word': selectedWord},
+			'searchArgs': {'staging': false, 'word': selectedWord}},
 			function(data, status, jqXHR) {
 				if(data != null) {
 					officialDefs = data['data'];
@@ -417,4 +422,9 @@ function moveOfficial(index) {
 				alert("moving word to staging failed");
 			}
 		}, 'json');
+}
+
+
+function isTrue(input) {
+	return input === true or input == "true";
 }
