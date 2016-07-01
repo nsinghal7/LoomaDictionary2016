@@ -303,7 +303,8 @@
 		//remove overwritten definitions
 		$loomaArray = removeOverwrittenEntries($loomaArray, $stagingArray);
 
-		return $loomaArray;
+		//make sure indecies are consecutive
+		return array_merge($loomaArray);
 	}
 
 	function removeOverwrittenEntries ($betaArray, $dominantArray){
