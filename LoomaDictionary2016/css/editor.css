@@ -199,6 +199,7 @@ table  tr  td  p {
 	bottom: 0px;
 	z-index: 90;
 	overflow: hidden;
+	pointer-events: none;
 }
 
 
@@ -212,10 +213,12 @@ table  tr  td  p {
 	float: left;
 	margin-bottom: -3px;
 	background-color: #f9eaff;
+	pointer-events: all;
 }
 
 #officialTable {
 	clear: left;
 	border-top: 3px solid black;
 	background-color: #f9eaff;
+	pointer-events: all;
 }
