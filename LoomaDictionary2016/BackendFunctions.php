@@ -247,7 +247,11 @@
 			//put the words in an array
 			$wordsArray = compileStagingWordsArray($stagingCursor);
 
-			return $wordsArray;
+			//FIX THIS BY ADDING APPROPRIATE METADATA BEFORE THE WORDSARRAY
+			$finalArray = array(    , $wordsArray);
+			
+
+			return $finalArray;
 	}
 
 
