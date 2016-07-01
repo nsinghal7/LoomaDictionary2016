@@ -24,7 +24,7 @@
 		if(checkLogin($login))
 		{
 			//default is localhost, insert parameters to specify address of database
-			return new MongoClient(192.161.1.128/Looma);
+			return new MongoClient();
 		}
 		return null;
 	}
@@ -297,7 +297,6 @@
 				'date_entered' => $allWordData['date_entered'],
 				'mod' => $allWordData['user'];
 			);
-
 	}
 
 
