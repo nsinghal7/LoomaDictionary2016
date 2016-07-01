@@ -5,6 +5,10 @@
 	//edit this value to determine how many words will be assigned to each page
 	$wordsPerPage = 10;
 
+	function checkLogin ($login){
+		return 'true';
+	}
+
 	/**
 	*Returns a connection to the staging database.  the address still needs to be specified
 	*/
@@ -286,7 +290,7 @@
 	*/
 	function compileSimpleWordData ($allWordData){
 		return array(
-				'_id' : ObjectId(),
+				'_id' => ObjectId(),
 				'en' => $allWordData['en'], 
 				'rw' => $allWordData['rw'],
 				'part' => $allWordData['part'], 
