@@ -1,41 +1,7 @@
 <?php
 	date_default_timezone_set("America/Los_Angeles");
-
-	$testword = array('wordData' =>
-						array('word' => 'test', 'pos' => 'noun', 'nep' => 'sklfj',
-						'def' => 'a large quiz', 'mod' => 'me',
-						'date' => '1/24/2012 01:23:45am', 'id' => 'asdklfjals',
-						'ch_id' => 'sdlkf'),
-					'stagingData' =>
-						array('added' => true, 'modified' => true, 'accepted' => true,
-						'deleted' => false));
-
-	/**
-	 * Opens a connection to the official database and returns it
-	 * @param unknown $login The login information of the user which must be verified before
-	 * the connection can be created
-	 * @return a new connection object if successful, otherwise return null
-	 */
-	function openOfficialConnection($login) {
-		return 2;
-	}
 	
-	/**
-	 * Opens a connection to the staging database and returns it
-	 * @param unknown $login The login information of the user which must be verified before
-	 * the connection can be created
-	 * @return a new connection object if successful, otherwise return null
-	 */
-	function openStagingConnection($login) {
-		return 2;
-	}
-	
-	/**
-	 * Closes the given connection. After this is called, the variable should be unset
-	 * @param unknown $connection The connection to disconnect
-	 */
-	function closeConnection($connection) {
-	}
+	require "BackendFunctions.php";
 	
 	/**
 	 * Creates new dictionary entries with the given word
@@ -46,20 +12,25 @@
 	 * @return boolean true if the entry was created successfully, false otherwise
 	 */
 	function createEntryWrapper($word, $officialConnection, $stagingConnection, $user) {
-		return true;
+		return createEntry($word, $officialConnection, $stagingConnection, $user);
 	}
 	
+	/**
+	 * Reads entries from the staging database that match the given parameters
+	 * @param unknown $args The parameters for the search
+	 * @param unknown $stagingConnection The connection to the staging database
+	 */
 	function readStagingWrapper($args, $stagingConnection) {
-		global $testword;
-		return array("page" => 1, "maxPage" => 1, "words" => array($testword,
-				$testword, $testword, $testword, $testword, $testword, $testword,
-				$testword, $testword, $testword, $testword, $testword, $testword, $testword,
-				$testword, $testword));
+		return readStagingDatabase($args, $stagingConnection);
 	}
 	
+	/**
+	 * Reads entries from the official database that match the given parameters
+	 * @param unknown $args The parameters for the search
+	 * @param unknown $officialConnection The connection to the staging database
+	 */
 	function readOfficialWrapper($args, $officialConnection) {
-		global $testword;
-		return array($testword);
+		return findDefinitonsForSingleWordLooma($args['word'], $officialConnection);
 	}
 	
 	/**
@@ -70,7 +41,7 @@
 	 * @return boolean True if publishing succeeded, false otherwise
 	 */
 	function publishWrapper($officialConnection, $stagingConnection, $user) {
-		return true;
+		return publish($stagingConnection, $officialConnection, $user);
 	}
 	
 	/**
@@ -89,34 +60,18 @@
 	 * to get the official entry or nothing)
 	 */
 	function updateStagingWrapper($change, $officialConnection, $stagingConnection, $user) {
-		global $testword;
 		// should also automatically turn on modified and off accepted for field modifications
 		// but not for status modifications. Should also update other non-editable wordData
 		// such as 'mod' and 'date'
 		//Also only allow modifications of permitted fields
-		$field = $change["field"];
-		if($field == 'cancel') {
-			// cancel change;
-			return true;
-		} else if($change["deleteToggled"] == "true") {
-			$testword["stagingData"]["deleted"] = !$testword["stagingData"]["deleted"];
-		} elseif($field == "word" or $field == "root" or $field == "pos" or $field == "nep"
-				or $field == "def") {
-			$testword["wordData"][$field] = $change["new"];
-			$testword["stagingData"]["modified"] = true;
-			$testword["stagingData"]["accepted"] = false;
-		} elseif($field == "stat") {
-			$testword["stagingData"]["accepted"] = !$testword["stagingData"]["accepted"];
-		} else {
-			return false;
-		}
-		$testword["wordData"]["mod"] = $user;
-		$testword["wordData"]["date"] = date("m/d/Y h:i:sa");
-		return $testword;
+		
+		//TODO update word
+		$new = null;
+		return updateStaging($new, $stagingConnection);
 	}
 	
 	function moveToStagingWrapper($moveId, $officialConnection, $stagingConnection, $user) {
-		return true;
+		return moveEntryToStaging($stagingConnection, $officialConnection, $moveId, $user);
 	}
 	
 	$officialConnection;
@@ -126,8 +81,8 @@
 		$response['status'] = array( 'type' => 'error', 'value' => 'Not logged in');
 	} else {
 		// attempt to create connections using the login data provided
-		$officialConnection = openOfficialConnection($_REQUEST['loginInfo']);
-		$stagingConnection = openStagingConnection($_REQUEST['loginInfo']);
+		$officialConnection = createConnectionToLooma($_REQUEST['loginInfo']);
+		$stagingConnection = createConnectionToStaging($_REQUEST['loginInfo']);
 		if($officialConnection == null or $stagingConnection == null) {
 			$response['status'] = array('type' => 'error', 'value' => 'Not logged in');
 		} else if ($_SERVER['REQUEST_METHOD'] == 'POST' and isset($_REQUEST['wordList'])) {

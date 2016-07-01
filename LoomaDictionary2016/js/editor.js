@@ -366,11 +366,8 @@ function selectWord(word) {
 function loadOfficialTable() {
 	$.get("backend.php",
 			{'loginInfo': {"allowed": true, 'user': 'me'},
-			'searchArgs': {'text': prevText,
-						'added': prevAdded,
-						'modified': prevModified,
-						'accepted': prevAccepted},
-			'staging': false}, function(data, status, jqXHR) {
+			'searchArgs': {'staging': false, 'word': selectedWord},
+			function(data, status, jqXHR) {
 				if(data != null) {
 					officialDefs = data['data'];
 					function createOfficialTd(word, field) {
