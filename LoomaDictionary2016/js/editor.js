@@ -1,3 +1,32 @@
+/*
+ * File: editor.js
+ * Author: Nikhil Singhal
+ * Date: July 1, 2016
+ * 
+ * this is the javascript that controls the functionality of editor.html.
+ * 
+ * The function of this code is specific to the current setup of the html and may need to
+ * be modified with it.
+ * 
+ * Requires that the html file have already imported jQuery, js/pdfToText.js (which requires
+ * js/pdfjs/pdf.js), and js/findUniqueWords.js
+ * 
+ * Also relies on css classes defined in css/editor.css, and specifications on data
+ * transfer format from backend.php
+ * 
+ * 
+ */
+
+
+
+
+
+
+
+
+
+
+
 /**
  * True if a pdf is being processed and other changes should be prevented, false for normal
  */
@@ -167,6 +196,11 @@ function submitSearch(oldSearch) {
 				for(var i = 0; i < words.length; i++) {
 					var word = words[i];
 					
+					// deal with possible boolean to string conversions in JSON transfer
+					["modified", "added", "accepted", "deleted"].forEach(function(field, i, a) {
+						word['stagingData'][field] = isTrue(word['stagingData'][field]);
+					});
+					
 					//creates a new row for the table and fills it with the data from the word
 					var row = createTableEntry(word, i);
 					
@@ -179,6 +213,12 @@ function submitSearch(oldSearch) {
 }
 
 
+/**
+ * Creates a table entry for the staging table with all necessary fields in the right format
+ * @param word The word object to create it for
+ * @param i The index of that word object in the stored list
+ * @returns the new entry
+ */
 function createTableEntry(word, i) {
 	var row = $('<tr>');
 	
@@ -352,7 +392,11 @@ function edit(type, index) {
 			}, 'json');
 }
 
-
+/**
+ * Called when a word is selected in the staging table and should be displayed in the official
+ * table
+ * @param word The word selected as a string
+ */
 function selectWord(word) {
 	selectedWord = word;
 	// select correct words
@@ -363,10 +407,13 @@ function selectWord(word) {
 	loadOfficialTable();
 }
 
+/**
+ * loads the official table using the selected word (global variable)
+ */
 function loadOfficialTable() {
 	$.get("backend.php",
 			{'loginInfo': {"allowed": true, 'user': 'me'},
-			'searchArgs': {'staging': false, 'word': selectedWord},
+			'searchArgs': {'word': selectedWord}, 'staging': false},
 			function(data, status, jqXHR) {
 				if(data != null) {
 					officialDefs = data['data'];
@@ -404,6 +451,11 @@ function loadOfficialTable() {
 			}, 'json');
 }
 
+/**
+ * moves the word at the given index in the officialDefs array to the staging dictionary
+ * with no other changes
+ * @param index The index of the word to move
+ */
 function moveOfficial(index) {
 	$.get("backend.php",
 			{'loginInfo': {"allowed": true, 'user': 'me'},
@@ -417,4 +469,12 @@ function moveOfficial(index) {
 				alert("moving word to staging failed");
 			}
 		}, 'json');
+}
+
+/**
+ * Checks if the input is true or "true"
+ * @param input The input to check
+ */
+function isTrue(input) {
+	return input === true || input == "true";
 }
