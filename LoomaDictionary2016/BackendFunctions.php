@@ -70,7 +70,7 @@
 
 		//put everything into a doc
 		$doc = array(
-		"_id" => ObjectId();
+		"_id" => ObjectId(),
 		"en" => $word,
 		"rw" => $rw,
 		"np" => $np,
