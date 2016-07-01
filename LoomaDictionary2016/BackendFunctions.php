@@ -218,7 +218,7 @@
 
 
 
-
+	//edit this to make sure the array contains all the necessary info
 	/**
 	 *	Creates an array of entries to be displayed on a single page of the website
 	 *
