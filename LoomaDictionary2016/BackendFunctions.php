@@ -45,10 +45,10 @@
 	/**
 	*creates an entry in the stagin database
 	*takes the word that the entry will be created around, 
-	*the connection to the staging database, and the user name
+	*the connection to the staging database and the official one, and the user name
 	*returns true
 	*/
-	function createEntry($word, $stagingConnection, $user) {
+	function createEntry($word, $officialConnection, $stagingConnection, $user) {
 		
 		//get definition(find api)
 		$def = 
@@ -194,7 +194,7 @@
 		
 		//get all elements that match the criteria
 		//FIX COLLECTION AND DATABASE NAMES
-		$loomaCursor = $connection->database_name->collection_name->find(array('word' => $args['word']));
+		$loomaCursor = $connection->database_name->collection_name->find(array('word' => $word));
 
 		//put the words in an array
 		$loomaWordsArray = compileLoomaWordsArray($loomaCursor);
@@ -316,8 +316,8 @@
 		if($numPages == 1){
 			//do nothing
 		}
-		else if ($args['pages'] <= $numPages){
-			$stagingCursor->skip(($args['pages'] - 1 ) * $wordsPerPage);
+		else if ($args['page'] <= $numPages){
+			$stagingCursor->skip(($args['page'] - 1 ) * $wordsPerPage);
 		}
 		//this means it is above the max
 		else{
@@ -376,7 +376,7 @@
 
 
 
-	function moveEntryToStaging ($stagingConnection, $loomaConnection, $_id){
+	function moveEntryToStaging ($stagingConnection, $loomaConnection, $_id, $user){
 		$doc = $loomaConnection->database_name->collection_name->findOne(array('_id' => $_id));
 
 		$stagingConnection->database_name->collection_name->save($doc);
@@ -395,7 +395,7 @@
 	* takes a connection to the staging database and a connection to the looma database
 	* returns true
 	*/
-	function publish($stagingConnection, $loomaConnection) {
+	function publish($stagingConnection, $loomaConnection, $user) {
 
 		$stagingCursor = $stagingConnection->database_name->collection_name->find();
 
