@@ -37,7 +37,7 @@ function translate($api_key,$text,$target,$source)
  *  
  *  Takes a string with the word to be translated
  *  
- *  Returns 
+ *  Returns a string with the translated text
  */
 function translateToNepali($word){
 
