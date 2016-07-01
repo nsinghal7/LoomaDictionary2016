@@ -1,5 +1,31 @@
 <?php
 
+	/**
+	 *	Author: Colton
+	 *  Date: 7/1/16
+	 *	Filename: Backend Functions
+	 *
+	 *	Description:
+	 *	This file contains the functions necessary to interact with the looma
+	 *	database and staging database to retrieve and store dictionary entries.
+	 *	It also interacts with the various apis necessary to retrieve translations 
+	 *	and definitions to create new entries.  The main methods are as follows:
+	 *	Create entry - this function creates a new entry in the staging database given
+	 *	a word. 
+	 *	Read Staging Database - this function returns a page of results in the staging
+	 *	database, as specified by the arguments passed to it
+	 * 	
+	 * 	
+	 * 	
+	 * 	
+	 * 	
+	 * 	
+	 * 	
+	 * 	
+	 */
+
+
+
 	require 'translator.php';
 
 	//edit this value to determine how many words will be assigned to each page
