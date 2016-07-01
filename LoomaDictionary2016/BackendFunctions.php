@@ -218,7 +218,7 @@
 
 
 
-
+	//edit this to make sure the array contains all the necessary info
 	/**
 	 *	Creates an array of entries to be displayed on a single page of the website
 	 *
@@ -247,7 +247,11 @@
 			//put the words in an array
 			$wordsArray = compileStagingWordsArray($stagingCursor);
 
-			return $wordsArray;
+			//FIX THIS BY ADDING APPROPRIATE METADATA BEFORE THE WORDSARRAY
+			$finalArray = array(    , $wordsArray);
+			
+
+			return $finalArray;
 	}
 
 
