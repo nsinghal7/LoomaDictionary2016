@@ -413,7 +413,7 @@ function selectWord(word) {
 function loadOfficialTable() {
 	$.get("backend.php",
 			{'loginInfo': {"allowed": true, 'user': 'me'},
-			'searchArgs': {'word': selectedWord}, 'staging': false}
+			'searchArgs': {'word': selectedWord}, 'staging': false},
 			function(data, status, jqXHR) {
 				if(data != null) {
 					officialDefs = data['data'];
@@ -476,5 +476,5 @@ function moveOfficial(index) {
  * @param input The input to check
  */
 function isTrue(input) {
-	return input === true or input == "true";
+	return input === true || input == "true";
 }
