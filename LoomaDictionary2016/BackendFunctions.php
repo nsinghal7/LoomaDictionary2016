@@ -22,7 +22,7 @@
 	}
 
 	function checkTrue ($bool){
-		if ($bool == true or $bool == 'true'){
+		if ($bool == true or $bool === 'true'){
 			return true;
 		}
 		else {
@@ -121,8 +121,31 @@
 
 
 
+	/**
+	*   finds a definition with the specified object id.  If it is stagin, it
+	*	returns that one.  If not, it looks for it in the looma database.  If no
+	*	such object exists, it returns false.  Takes the object id as a string, 
+	*	a connection to the looma database, and a connection to the staging database
+	*/
+	function findDefinitionWithID ($_id, $loomaConnection, $stagingConnection) {
+		$stagingDefinition = $stagingConnection->database_name->collection_name->findOne(array('_id' => $_id));
+
+		if ($stagingDefinition != null){
+			return $stagingDefinition;
+		}
+
+		//fix database and collection names
+		$loomaDefinition = $loomaConnection->database_name->collection_name->findOne(array('_id' => $_id));
+
+		if ($loomaDefinition != null){
+			return $loomaDefinition;
+		}
+
+		//this means an object with the specified id could not be found.
+		return false;
 
 
+	}
 
 
 
@@ -182,6 +205,8 @@
 
 		return $stagingArray;
 	}
+
+
 
 	function getDefintionsFromStaging ($args, $connection) {
 			
