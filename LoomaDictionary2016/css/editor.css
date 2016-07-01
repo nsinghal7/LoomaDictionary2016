@@ -1,3 +1,18 @@
+/*
+File: editor.css
+Author: Nikhil Singhal
+Date: July 1, 2016
+
+Defines styles for editor.html
+
+includes styles for various classes and specific elements. this style sheet is not currently
+designed to be applicable to other sites, but instead to format this specific page as
+efficiently as possible
+
+*/
+
+
+
 @CHARSET "UTF-8";
 html {
 	height: 100%;
