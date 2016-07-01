@@ -9,6 +9,16 @@
      *  funciton that will translate to Nepali from english given a certain word
      */
 
+
+/**
+ *  translates text into a specified language
+ *
+ *  Takes a server api key, the text to be translated, a target language,
+ *  and the source language
+ *
+ *  Returns an array from the JSON returned by the google translate API
+ *
+ */
 function translate($api_key,$text,$target,$source)
 {
     $url = 'https://www.googleapis.com/language/translate/v2?q=' . rawurlencode($text) . '&target='. $target .'&format=text&source='. $source .'&key='.$api_key . '';
@@ -22,13 +32,22 @@ function translate($api_key,$text,$target,$source)
     return $obj;
 }   
 
+/**
+ *  Translates an english word to nepali
+ *  
+ *  Takes a string with the word to be translated
+ *  
+ *  Returns 
+ */
 function translateToNepali($word){
 
 	$api_key = 'AIzaSyDl6vZfYbT9z8NumsSJSjdq77wIRqVHy7M';
 	$text = $word;
 	$source = "en";
 	$target = "ne";
-	return translate($api_key,$text,$target,$source);
+	$obj = translate($api_key,$text,$target,$source);
+
+    return $obj['data']['translations'][0]['translatedText'];
 }
  
 
