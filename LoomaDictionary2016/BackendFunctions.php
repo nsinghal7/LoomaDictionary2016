@@ -264,7 +264,7 @@
 	}
 
 
-	//this function may be obsolete now because it does not take page numbers into account
+
 	function getDefintionsFromStaging ($args, $connection) {
 			
 		//encode criteria as js function
@@ -288,7 +288,7 @@
 	 *
 	 *	Returns an array with all the definitions found
 	 */
-	function findDefinitonsForSingleWordLooma ($word, $loomaConnection) {
+	function findDefinitonsForSingleWordLooma ($word, $loomaConnection, $stagingConnection) {
 		
 		//get all elements that match the criteria
 		//FIX COLLECTION AND DATABASE NAMES
@@ -297,7 +297,29 @@
 		//put the words in an array
 		$loomaWordsArray = compileLoomaWordsArray($loomaCursor);
 
-		return $loomaWordsArray;
+		//find all entries in the staging database
+		$stagingArray = getDefinitionsFromStaging($args, $stagingConnection);
+
+		//remove overwritten definitions
+		$loomaArray = removeOverwrittenEntries($loomaArray, $stagingArray);
+
+		return $loomaArray;
+	}
+
+	function removeOverwrittenEntries ($betaArray, $dominantArray){
+		//nested for each loop, compare object ids and overwrite entires in the beta array
+		$betaCount = ount($betaArray);
+		$dominantCount = count($dominantArray);
+		for($indexDominant = 0; $indexDominant < $dominantCount; $indexDominant++) {
+	 		for ($indexBeta=0; $indexBeta < $betaCount; $indexBeta++) { 
+	 			
+	 			//make sure the key for object id is correct
+	 			if ($betaArray[$indexBeta]['_id'] == $dominantArray[$indexDominant]['_id']) {
+	 				unset($betaArray[$indexBeta]);
+	 			}
+	 		}
+		}
+		return $betaArray;
 	}
 
 	//return a string with the function
