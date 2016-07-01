@@ -21,6 +21,15 @@
 		return null;
 	}
 
+	function checkTrue ($bool){
+		if ($bool == true or $bool == 'true'){
+			return true;
+		}
+		else {
+			return false;
+		}
+	}
+
 	/**
 	*Returns a connection to the looma database.  the address still needs to be specified
 	*/
