@@ -198,33 +198,24 @@ table  tr  td  p {
 	position: fixed;
 	bottom: 0px;
 	z-index: 90;
-	background-color: #f9eaff;
 	overflow: hidden;
 }
 
 
 #footerLabel {
-	border-left: 3px solid black;
-	border-top: 3px solid black;
+	border: 3px solid black;
 	border-top-left-radius: 5px;
 	border-top-right-radius: 5px;
-	border-bottom: 0px;
+	border-bottom: 3px solid #f9eaff;
 	padding: 5px;
 	display: inline-block;
 	float: left;
-}
-
-#footerSpacer {
-	border-bottom: 3px solid black;
-	border-left: 3px solid black;
-	border-bottom-left-radius: 5px;
-	padding: 5px;
-	display: inline-block;
-	margin-left: -3px;
-	overflow: hidden;
-	width: calc(100% - 162px); /* change me */
+	margin-bottom: -3px;
+	background-color: #f9eaff;
 }
 
 #officialTable {
 	clear: left;
+	border-top: 3px solid black;
+	background-color: #f9eaff;
 }
