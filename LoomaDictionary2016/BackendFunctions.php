@@ -3,24 +3,37 @@
 	/**
 	 *	Author: Colton
 	 *  Date: 7/1/16
-	 *	Filename: Backend Functions
+	 *	Filename: BackendFunctions.php
 	 *
 	 *	Description:
 	 *	This file contains the functions necessary to interact with the looma
 	 *	database and staging database to retrieve and store dictionary entries.
 	 *	It also interacts with the various apis necessary to retrieve translations 
-	 *	and definitions to create new entries.  The main methods are as follows:
-	 *	Create entry - this function creates a new entry in the staging database given
+	 *	and definitions to create new entries.  The main functions intended for use
+	 *	by other files are as follows:
+	 *
+	 *	createEntry - this function creates a new entry in the staging database given
 	 *	a word. 
-	 *	Read Staging Database - this function returns a page of results in the staging
+	 *
+	 *	readStagingDatabase - this function returns a page of results in the staging
 	 *	database, as specified by the arguments passed to it
+	 *
+	 * 	Find Definition with ID - this function takes an ID and looks for a matching
+	 *	entry first in the staging database, then in the looma database, and returns
+	 *	false if it finds nothing.
+	 *
+	 * 	findDefinitonsForSingleWordLooma - this function finda all the definitions 
+	 * 	for a given word in the Looma database, returning an array with all the 
+	 * 	entries found
+	 *	
+	 * 	publish - this function publishes all the accepted changes to the looma 
+	 *  database
 	 * 	
-	 * 	
-	 * 	
-	 * 	
-	 * 	
-	 * 	
-	 * 	
+	 *	updateStaging - this function saves a document to the staging database.  If 
+	 * 	the document already exists, then it is overwritten by the new doc
+	 *	
+	 * 	There are also functions to create connections to each database, and a dummy 
+	 * 	function to check login until the working one is finished
 	 * 	
 	 */
 
