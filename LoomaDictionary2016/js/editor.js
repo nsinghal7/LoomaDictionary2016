@@ -271,7 +271,7 @@ function createTableEntry(word, i) {
 	row.append($('<td class="dateCol"><p>'
 			+ (word['wordData']["date"]) + '</p></td>'));
 	row.append($('<td class="otherCol"><p>id: ' + word['wordData']['id'] + 
-			" ch_id: " + word['wordData']['ch_id'] + '</p></td>'));
+			+ '</p></td>'));
 	return row;
 }
 
@@ -342,8 +342,13 @@ function pageChange() {
  * @param index The row of the cell changed (corresponds to the index in the word list
  */
 function edit(type, index) {
-	// get correct element
+	
+	// disable all of screen until the response so that there won't be any collisions
+	$("#menuArea, #viewArea, #officialViewer").addClass("disableButtons");
+	
+	// get correct id to get statCol button element (delete and cancel don't have ids)
 	var id_type = (type == 'cancel' || type == 'delete') ? 'stat' : type;
+	// get correct element
 	var elem = $("#" + id_type + "_" + index);
 	// confirm a cancel, which takes immediate effect in removing a definition from staging
 	if(type == 'cancel' && !confirm(
@@ -351,13 +356,10 @@ function edit(type, index) {
 		return;
 	}
 	
-	// if published, stat button should have no effect
+	// if published, stat button should have no effect (can't be accepted without a change)
 	if(type == 'stat' && elem.text() == 'unedited') {
 		return;
 	}
-	
-	// disable all of screen until the response so that there won't be any collisions
-	$("#menuArea, #viewArea, #officialViewer").addClass("disableButtons");
 	
 	// request change
 	$.post('backend.php', {'loginInfo': {'allowed': true, 'user': 'me'},
@@ -437,7 +439,6 @@ function loadOfficialTable() {
 						row.append(createOfficialTd(officialDefs[i], "date"));
 						row.append($("<td class='other'><p>id: "
 								+ officialDefs[i]['wordData']['id'] 
-								+ " ch_id: " + officialDefs[i]['wordData']['ch_id']
 								+ "</p></td>"));
 						table.append(row);
 					}

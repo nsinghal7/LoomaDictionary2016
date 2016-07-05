@@ -141,9 +141,61 @@
 	 * 
 	 * 
 	 */
-	date_default_timezone_set("America/Los_Angeles");
-	
+	 
 	require "BackendFunctions.php";
+	
+	$wordDataConversions = array(array("_id", "id"), array("en", "word"), array("rw", "root"),
+								 array("np", "nep"), array("part", "pos"), array("def", "def"),
+								 array("rand", "rand"), array("date_entered", "date"),
+								 array("mod", "mod"));
+	
+	
+	/**
+	 * Converts the word either to or from front/back end versions
+	 * @param unknown $word The word to convert
+	 * @param unknown $toBackend True if should be converted to backend, false if to front end
+	 * @return the converted word
+	 */
+	function convertWord($word, $toBackend) {
+		global $wordDataConversions;
+		// in case $toBackend's boolean value as an int isn't 1/0
+		$from = $toBackend ? 1 : 0;
+		$to = $toBackend ? 0 : 1;
+		
+		$new = array("wordData" => array(), "stagingData" => $word["stagingData"]);
+		foreach ($wordDataConversions as $conversion) {
+			$new["wordData"][$conversion[$to]] = $word["wordData"][$conversion[$from]];
+		}
+		return $new;
+	}
+	
+	/**
+	 * Converts all words in the list using the convertWord() function. The original list WILL
+	 * be modified
+	 * @param unknown $list The list to convert
+	 * @param unknown $toBackend True if should be converted to backend, false if to front end
+	 * @return the converted list
+	 */
+	function convertWordList($list, $toBackend) {
+		foreach ($list as $key => $word) {
+			$list[$key] = convertWord($word, $toBackend);
+		}
+		return $list;
+	}
+	
+	
+	
+	/*
+	 * The following wrapper methods are designed such that any formatting of front end
+	 * data can be separated out from the response code as well as the BackendFunctions.php
+	 * general code. Wrappers that currently seem useless should be kept in case changes are
+	 * necessary and for consistency with the others that require wrappers.
+	 */
+	
+	
+	
+	
+	
 	
 	/**
 	 * Creates new dictionary entries with the given word
@@ -154,16 +206,21 @@
 	 * @return boolean true if the entry was created successfully, false otherwise
 	 */
 	function createEntryWrapper($word, $officialConnection, $stagingConnection, $user) {
-		return createEntry($word, $officialConnection, $stagingConnection, $user);
+		return createEntry(convertWord($word, true), $officialConnection, $stagingConnection,
+							$user);
 	}
 	
 	/**
 	 * Reads entries from the staging database that match the given parameters
 	 * @param unknown $args The parameters for the search
 	 * @param unknown $stagingConnection The connection to the staging database
+	 * @return object in the following format: {page: (int), maxPage: (int),
+	 * 											words: frontend word array}
 	 */
 	function readStagingWrapper($args, $stagingConnection) {
-		return readStagingDatabase($args, $stagingConnection);
+		$out = readStagingDatabase($args, $stagingConnection);
+		convertWordList($out["words"], false);
+		return $out;
 	}
 	
 	/**
@@ -171,9 +228,11 @@
 	 * @param unknown $args The parameters for the search
 	 * @param unknown $officialConnection The connection to the official database
 	 * @param unknown $stagingConnection The connection to the staging database
+	 * @return array of frontend words
 	 */
 	function readOfficialWrapper($args, $officialConnection, $stagingConnection) {
-		return findDefinitonsForSingleWordLooma($args['word'], $officialConnection);
+		return convertWordList(findDefinitonsForSingleWordLooma($args['word'],
+													$officialConnection), false);
 	}
 	
 	/**
@@ -192,8 +251,8 @@
 	 * @param array $change an array containing information about the change in the following
 	 * format: { wordId: the id of the word to change (string), field: name of field to change
 	 * (string, uses frontend names, which don't always correspond to backend names),
-	 * new: the new value of the field (string), deleteToggled: true if 'deleted' should be
-	 * toggled (boolean)
+	 * new: the new value of the field (string, may not be relevant), deleteToggled: true if
+	 * 'deleted' should be toggled, in which case all else will be ignored (boolean)}
 	 * @param connection $officialConnection The connection to the official database
 	 * @param connection $stagingConnection The connection to the staging database
 	 * @param string $user the user
@@ -203,14 +262,26 @@
 	 * to get the official entry or nothing)
 	 */
 	function updateStagingWrapper($change, $officialConnection, $stagingConnection, $user) {
-		// should also automatically turn on modified and off accepted for field modifications
-		// but not for status modifications. Should also update other non-editable wordData
-		// such as 'mod' and 'date'
-		//Also only allow modifications of permitted fields
+		$former = findDefinitionWithID($change["wordId"], $officialConnection,
+														$stagingConnection);
+		if($change["deleteToggled"] == "true") {
+			$former["stagingData"]["deleted"] = !$former["stagingData"]["deleted"];
+		} elseif($change["field"] == "cancel") {
+			removeStaging($change["wordId"], $stagingConnection);
+			return;
+		} elseif ($change["field"] == "stat") {
+			$former["stagingData"]["accepted"] = !former["stagingData"]["accepted"];
+		} elseif (in_array($change["field"], array("word", "root", "nep", "pos", "def"))) {
+			// for all of these the value just needs to be updated to $change["new"]
+			$former["wordData"][$change["field"]] = $change["new"];
+		} else {
+			// illegal update attempt
+			return false;
+		}
 		
-		//TODO update word
-		$new = null;
-		return updateStaging($new, $stagingConnection);
+		// assumes that updateStaging will take care of changing the modifier, date modified,
+		// and all staging data, since these are general tasks.
+		return updateStaging(convertWord($former), $stagingConnection, $user);
 	}
 	
 	function moveToStagingWrapper($moveId, $officialConnection, $stagingConnection, $user) {
