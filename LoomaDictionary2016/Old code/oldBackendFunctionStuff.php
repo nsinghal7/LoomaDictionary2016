@@ -124,4 +124,20 @@
 		//combone both arrays
 		$finalArray = combineArrays($loomaArray, $stagingArray);
 	}
+
+
+
+
+
+	/**
+		only use this to search for a single word and get back all definitions.  may be obsolete now
+	*/
+	function findAllDefinitionsSingleWordStaging($args, $stagingConnection, $loomaConnection) {
+
+		//find all entries in staging database
+
+		$stagingArray = getDefinitionsFromStaging($args, $stagingConnection);
+
+		return $stagingArray;
+	}
 ?>

@@ -449,6 +449,7 @@
 	function moveEntryToStaging ($stagingConnection, $loomaConnection, $_id, $user){
 		$doc = $loomaConnection->selectDB($loomaDB)->selectCollection($loomaCollection)->findOne(array('_id' => $_id));
 
+		$doc = 
 		//fix database and collection name
 		$stagingConnection->selectDB($stagingDB)->selectCollection($stagingCollection)->save($doc);
 
@@ -475,7 +476,7 @@
 			if($doc['stagingData']['deleted'] == 'false' and $doc['stagingData']['accepted'] == 'true')
 			{
 				//convert to correct format
-				$newDoc = convert($doc, $user);
+				$newDoc = convertFromStagingToLooma($doc, $user);
 
 				//remove from staging
 				$stagingConnection->selectDB($stagingDB)->selectCollection($stagingCollection)->remove($doc);
@@ -502,12 +503,14 @@
 	*takes the doc in staging database form
 	*returns that doc with the information required for entry into the Looma database
 	*/
-	function convert($doc, $user)
+	function convertFromStagingToLooma($doc, $user)
 	{
 		$dateEntered = getDateAndTime("America/Los_Angeles");
 
+		$doc = $doc['wordData'];
+
 		return $newDoc = array (
-				//object id
+				'_id' => $doc['_id']
 				//"ch_id" => "3EN06",
 				"en" => $doc["en"],
 				"rw" => $doc["rw"],
@@ -538,5 +541,32 @@
 		date_default_timezone_set($timezone);
 		return $dateEntered = date('m-d-Y') . " at " . date('h:i:sa');
 	}
+
+
+	//convert from dictionary to staging style (add staging data)
+	function convertFromLoomaToStaging ($doc){
+		$finalArray = array('wordData' => $doc, 'stagingData' => generateBlankStagingData());
+
+		return $finalArray;
+	}
+
+	function generateBlankStagingData () {
+		return array(
+				'added' => false, 'modified' => false, 'accepted' => false,
+				'deleted' => false
+			);
+	}
+
+
+//convet back and forth between the format on the fron end and the format used in the backend
+
+	function convertFromFrontToStaging ($doc){
+		$finalArray
+	}
+
+	function convertFromStagingToFront ($doc){
+
+	}
+
  
 ?>
