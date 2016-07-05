@@ -1,6 +1,6 @@
 <?php
 
-//make sure searching for word data before accessing word or id
+//make sure searching for word data before accessing word or id, but take out word data in convert method before putting into dictionary.  dont assume word data when pulling from looma database
 
 	/**
 	 *	Author: Colton
@@ -153,10 +153,18 @@
 				)
 			);
 
-		// insert the doc into the database
-		$stagingConnection->database_name->collection_name->save($doc);
+		//check to see if a similar definition already exists
+		if(checkForSimilarDefinition()){
 
-		return true;
+			// insert the doc into the database
+			$stagingConnection->selectDB($stagingDB)->selectCollection($stagingCollection)->save($doc);
+			
+			return true;
+		}
+		else{
+			return false;
+		}
+		
 	}
 
 	/**
@@ -188,7 +196,7 @@
 
 		//since the entry wasn't in the staging database, check the Looma database
 		//fix database and collection names
-		$loomaDefinition = $loomaConnection->database_name->collection_name->findOne(array('_id' => $_id));
+		$loomaDefinition = $loomaConnection->selectDB($stagingDB)->selectCollection($stagingCollection)->findOne(array('_id' => $_id));
 
 		if ($loomaDefinition != null){
 			return $loomaDefinition;
@@ -221,7 +229,7 @@
 			$js = stagingCriteriaToJavascript($args);
 
 			//get all elements that match the criteria
-			$stagingCursor = $stagingConnection->database_name->collection_name->find(array('$where' => $js));
+			$stagingCursor = $stagingConnection->selectDB($stagingDB)->selectCollection($stagingCollection)->find(array('$where' => $js));
 
 			//figure out how many total pages
 			$numTotalWords = $stagingCursor->count(true);
@@ -233,8 +241,8 @@
 			//put the words in an array
 			$wordsArray = compileStagingWordsArray($stagingCursor);
 
-			//FIX THIS BY ADDING APPROPRIATE METADATA BEFORE THE WORDSARRAY
-			$finalArray = array(    , $wordsArray);
+			//create array with appropriate metadata in the beginning
+			$finalArray = array( $args['page'], $numPages, $wordsArray);
 			
 
 			return $finalArray;
@@ -250,7 +258,7 @@
 		$js = stagingCriteriaToJavascript($args);
 
 		//get all elements that match the criteria
-		$stagingCursor = $connection->database_name->collection_name->find(array('$where' => $js));
+		$stagingCursor = $connection->selectDB($stagingDB)->selectCollection($stagingCollection)->find(array('$where' => $js));
 
 		//put the words in an array
 		//remember to add in staging parameters
@@ -271,7 +279,7 @@
 		
 		//get all elements that match the criteria
 		//FIX COLLECTION AND DATABASE NAMES
-		$loomaCursor = $connection->database_name->collection_name->find(array('word' => $word));
+		$loomaCursor = $connection->selectDB($loomaDB)->selectCollection($loomaCollection)->find(array('word' => $word));
 
 		//put the words in an array
 		$loomaWordsArray = compileLoomaWordsArray($loomaCursor);
@@ -447,12 +455,13 @@
 	 * Returns true
 	 */
 	function moveEntryToStaging ($stagingConnection, $loomaConnection, $_id, $user){
-		$doc = $loomaConnection->database_name->collection_name->findOne(array('_id' => $_id));
+		$doc = $loomaConnection->selectDB($loomaDB)->selectCollection($loomaCollection)->findOne(array('_id' => $_id));
 
+		$doc = 
 		//fix database and collection name
-		$stagingConnection->database_name->collection_name->save($doc);
+		$stagingConnection->selectDB($stagingDB)->selectCollection($stagingCollection)->save($doc);
 
-		$loomaConnection->database_name->collection_name->remove($doc);
+		$loomaConnection->selectDB($loomaDB)->selectCollection($loomaCollection)->remove($doc);
 
 		return true;
 	}
@@ -468,27 +477,27 @@
 	*/
 	function publish($stagingConnection, $loomaConnection, $user) {
 
-		$stagingCursor = $stagingConnection->database_name->collection_name->find();
+		$stagingCursor = $stagingConnection->selectDB($stagingDB)->selectCollection($stagingCollection)->find();
 
 		foreach($stagingCursor as $doc){
 			//check to make sure the object has not been deleted and has been accepted
 			if($doc['stagingData']['deleted'] == 'false' and $doc['stagingData']['accepted'] == 'true')
 			{
 				//convert to correct format
-				$newDoc = convert($doc, $user);
+				$newDoc = convertFromStagingToLooma($doc, $user);
 
 				//remove from staging
-				$stagingConnection->database_name->collection_name->remove($doc);
+				$stagingConnection->selectDB($stagingDB)->selectCollection($stagingCollection)->remove($doc);
 
 				//adjust database and collection name!!!
-				$loomaConnection->database_name->collection_name->save($newDoc);
+				$loomaConnection->selectDB($loomaDB)->selectCollection($loomaCollection)->save($newDoc);
 
 			}
 			//if it has been deleted, remove it
 			else if ($doc['stagingData']['deleted'] == 'true')
 			{
 				//remove from database
-				$stagingConnection->database_name->collection_name->remove($doc);
+				$stagingConnection->selectDB($stagingDB)->selectCollection($stagingCollection)->remove($doc);
 			}
 		}
 
@@ -502,12 +511,14 @@
 	*takes the doc in staging database form
 	*returns that doc with the information required for entry into the Looma database
 	*/
-	function convert($doc, $user)
+	function convertFromStagingToLooma($doc, $user)
 	{
 		$dateEntered = getDateAndTime("America/Los_Angeles");
 
+		$doc = $doc['wordData'];
+
 		return $newDoc = array (
-				//object id
+				'_id' => $doc['_id']
 				//"ch_id" => "3EN06",
 				"en" => $doc["en"],
 				"rw" => $doc["rw"],
@@ -522,13 +533,25 @@
 
 	/**
 	*Takes the new documet to be incorporated into the staging 
-	*database and a connection to that database
+	*database, a connection to that database, and a string with the user modifying
+	*the entry
+	*
 	*Returns true
 	*/
-	function updateStaging($new, $connection) {
-		$connection->database_name->collection_name->save($new);
+	function updateStaging($new, $connection, $user) {
+		$collection = $connection->selectDB($stagingDB)->selectCollection($stagingCollection);
+
+		//update user and modified status
+		$new['wordData']['mod'] = $user;
+		$new['stagingData']['modified'] = true;
+
+		//save it to the collection
+		$collection->save($new);
+
 		return true;
 	}
+
+	function 
 
 	/**
 	* Takes the timezone to be used in the generation of the timestamp
@@ -538,5 +561,32 @@
 		date_default_timezone_set($timezone);
 		return $dateEntered = date('m-d-Y') . " at " . date('h:i:sa');
 	}
+
+
+	//convert from dictionary to staging style (add staging data)
+	function convertFromLoomaToStaging ($doc){
+		$finalArray = array('wordData' => $doc, 'stagingData' => generateBlankStagingData());
+
+		return $finalArray;
+	}
+
+	function generateBlankStagingData () {
+		return array(
+				'added' => false, 'modified' => false, 'accepted' => false,
+				'deleted' => false
+			);
+	}
+
+	function removeStaging ($_id, $stagingConnection) {
+		//remove object with id
+
+
+	}
+
+//work on this
+	function checkForSimilarDefintion () {
+		return true;
+	}
+
  
 ?>
