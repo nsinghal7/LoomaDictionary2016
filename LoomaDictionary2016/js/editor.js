@@ -271,7 +271,7 @@ function createTableEntry(word, i) {
 	row.append($('<td class="dateCol"><p>'
 			+ (word['wordData']["date"]) + '</p></td>'));
 	row.append($('<td class="otherCol"><p>id: ' + word['wordData']['id'] + 
-			" ch_id: " + word['wordData']['ch_id'] + '</p></td>'));
+			+ '</p></td>'));
 	return row;
 }
 
@@ -437,7 +437,6 @@ function loadOfficialTable() {
 						row.append(createOfficialTd(officialDefs[i], "date"));
 						row.append($("<td class='other'><p>id: "
 								+ officialDefs[i]['wordData']['id'] 
-								+ " ch_id: " + officialDefs[i]['wordData']['ch_id']
 								+ "</p></td>"));
 						table.append(row);
 					}
