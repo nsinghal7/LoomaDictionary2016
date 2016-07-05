@@ -1,5 +1,7 @@
 <?php
 
+//make sure searching for word data before accessing word or id
+
 	/**
 	 *	Author: Colton
 	 *  Date: 7/1/16
@@ -44,6 +46,24 @@
 	//edit this value to determine how many words will be assigned to each page
 	$wordsPerPage = 10;
 
+	//enter address to staging database here
+	$stagingAddress = '';
+
+	//enter address to Looma database here
+	$loomaAddress = '';
+
+	//Change to reflect Looma database name
+	$loomaDB = '';
+
+	//change to reflect the collection you would like to use within the staging database
+	$loomaCollection = '';
+
+	//Change to reflect Looma database name
+	$stagingDB = '';
+
+	//change to reflect the collection you would like to use within the staging database
+	$stagingCollection = '';
+
 	/**
 	*	Dummy function to always return true
 	*/
@@ -57,8 +77,9 @@
 	function createConnectionToStaging($login){
 		if(checkLogin($login))
 		{
+			global $stagingAddress;
 			//default is localhost, insert parameters to specify address of database
-			return new MongoClient();
+			return new MongoClient($stagingAddress);
 		}
 		return null;
 	}
@@ -81,21 +102,14 @@
 	function createConnectionToLooma($login){
 		if(checkLogin($login))
 		{
+			global $loomaAddress;
 			//default is localhost, insert parameters to specify address of database
-			return new MongoClient();
+			return new MongoClient($loomaAddress);
 		}
 		return null;
 	}
 
-	/**
-	 * Closes the given connection. After this is called, the variable should be unset
-	 * @param unknown $connection The connection to disconnect
-	 */
-	function closeConnection($connection) {
-		
-		//I don't think you actually want to do this..... discuss
-	}
-
+	//this method should be replaced depending on the format and type of data being entered
 	/**
 	*creates an entry in the stagin database
 	*takes the word that the entry will be created around, 
@@ -123,7 +137,7 @@
 		$random = generateRandomNumber(16);
 
 		//put everything into a doc
-		$doc = array(
+		$doc = array( "wordData" => array(
 		"_id" => ObjectId(),
 		"en" => $word,
 		"rw" => $rw,
@@ -132,7 +146,7 @@
 		"def" => $def,
 		"rand" => $random,
 		"date_entered" => $dateCreated,
-		"mod" => $user,
+		"mod" => $user),
 		"stagingData" => array(
 				'added' => true, 'modified' => false, 'accepted' => false,
 				'deleted' => false
@@ -157,18 +171,7 @@
 	}
 
 
-
-
-
-
-
-
-
-
-
-
-
-
+	//change database and connection names depending on database being used
 	/**
 	*   finds a definition with the specified object id.  If it is stagin, it
 	*	returns that one.  If not, it looks for it in the looma database.  If no
@@ -196,23 +199,6 @@
 
 
 	}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -256,19 +242,8 @@
 
 
 	/**
-		only use this to search for a single word and get back all definitions.  may be obsolete now
-	*/
-	function findAllDefinitionsSingleWordStaging($args, $stagingConnection, $loomaConnection) {
-
-		//find all entries in staging database
-
-		$stagingArray = getDefinitionsFromStaging($args, $stagingConnection);
-
-		return $stagingArray;
-	}
-
-
-
+	 *
+	 */
 	function getDefintionsFromStaging ($args, $connection) {
 			
 		//encode criteria as js function
@@ -286,7 +261,7 @@
 
 	/**
 	 *	Searches the Looma database and finds all the definitions it contains for 
-	 *	a single word
+	 *	a single word but removes all duplicates already in the staging database
 	 *
 	 *	Takes the desired word and a connection to the Looma database
 	 *
@@ -334,7 +309,7 @@
 	*	returns a string with the javascript function
 	*/
 	function stagingCriteriaToJavascript($args){
-		$finalFunction = "function() {return this.word.equals(" . $args['text'] . ") && (";
+		$finalFunction = "function() {return this.word.includes(" . $args['text'] . ") && (";
 		if($args['added'] == 'true'){
 			$finalFunction = $finalFunction . "this.added == true ||";
 		}
@@ -465,41 +440,6 @@
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 	/**
 	 * Moves an entry from the looma database to the staging database
 	 * Takes a connection to each database, as well of the id of the object to be
@@ -509,6 +449,7 @@
 	function moveEntryToStaging ($stagingConnection, $loomaConnection, $_id, $user){
 		$doc = $loomaConnection->database_name->collection_name->findOne(array('_id' => $_id));
 
+		//fix database and collection name
 		$stagingConnection->database_name->collection_name->save($doc);
 
 		$loomaConnection->database_name->collection_name->remove($doc);
@@ -534,7 +475,7 @@
 			if($doc['stagingData']['deleted'] == 'false' and $doc['stagingData']['accepted'] == 'true')
 			{
 				//convert to correct format
-				$newDoc = convert($doc);
+				$newDoc = convert($doc, $user);
 
 				//remove from staging
 				$stagingConnection->database_name->collection_name->remove($doc);
@@ -561,20 +502,20 @@
 	*takes the doc in staging database form
 	*returns that doc with the information required for entry into the Looma database
 	*/
-	function convert($doc)
+	function convert($doc, $user)
 	{
 		$dateEntered = getDateAndTime("America/Los_Angeles");
 
 		return $newDoc = array (
 				//object id
-				"ch_id" => "3EN06", //figure out what this is
+				//"ch_id" => "3EN06",
 				"en" => $doc["en"],
 				"rw" => $doc["rw"],
 				"np" => $doc["np"],
 				"part" => $doc["part"],
 				"def" => $doc["def"],
 				"rand" => $doc["rand"],
-				"mod" => $doc["mod"],
+				"mod" => $user,
 				"date_entered" => $dateEntered
 				);
 	}
