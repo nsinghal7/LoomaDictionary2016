@@ -153,10 +153,18 @@
 				)
 			);
 
-		// insert the doc into the database
-		$stagingConnection->selectDB($stagingDB)->selectCollection($stagingCollection)->save($doc);
+		//check to see if a similar definition already exists
+		if(checkForSimilarDefinition()){
 
-		return true;
+			// insert the doc into the database
+			$stagingConnection->selectDB($stagingDB)->selectCollection($stagingCollection)->save($doc);
+			
+			return true;
+		}
+		else{
+			return false;
+		}
+		
 	}
 
 	/**
@@ -525,7 +533,9 @@
 
 	/**
 	*Takes the new documet to be incorporated into the staging 
-	*database and a connection to that database
+	*database, a connection to that database, and a string with the user modifying
+	*the entry
+	*
 	*Returns true
 	*/
 	function updateStaging($new, $connection, $user) {
@@ -567,15 +577,15 @@
 			);
 	}
 
+	function removeStaging ($_id, $stagingConnection) {
+		//remove object with id
 
-//convet back and forth between the format on the fron end and the format used in the backend
-//figure out what 
-	function convertFromFrontToStaging ($doc){
-		$finalArray
+
 	}
 
-	function convertFromStagingToFront ($doc){
-
+//work on this
+	function checkForSimilarDefintion () {
+		return true;
 	}
 
  
