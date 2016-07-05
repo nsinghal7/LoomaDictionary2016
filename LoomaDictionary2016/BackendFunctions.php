@@ -528,10 +528,20 @@
 	*database and a connection to that database
 	*Returns true
 	*/
-	function updateStaging($new, $connection) {
-		$connection->selectDB($stagingDB)->selectCollection($stagingCollection)->save($new);
+	function updateStaging($new, $connection, $user) {
+		$collection = $connection->selectDB($stagingDB)->selectCollection($stagingCollection);
+
+		//update user and modified status
+		$new['wordData']['mod'] = $user;
+		$new['stagingData']['modified'] = true;
+
+		//save it to the collection
+		$collection->save($new);
+
 		return true;
 	}
+
+	function 
 
 	/**
 	* Takes the timezone to be used in the generation of the timestamp
@@ -559,7 +569,7 @@
 
 
 //convet back and forth between the format on the fron end and the format used in the backend
-
+//figure out what 
 	function convertFromFrontToStaging ($doc){
 		$finalArray
 	}
