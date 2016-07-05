@@ -1,6 +1,6 @@
 <?php
 
-//make sure searching for word data before accessing word or id
+//make sure searching for word data before accessing word or id, but take out word data in convert method before putting into dictionary.  dont assume word data when pulling from looma database
 
 	/**
 	 *	Author: Colton
@@ -154,7 +154,7 @@
 			);
 
 		// insert the doc into the database
-		$stagingConnection->database_name->collection_name->save($doc);
+		$stagingConnection->selectDB($stagingDB)->selectCollection($stagingCollection)->save($doc);
 
 		return true;
 	}
@@ -188,7 +188,7 @@
 
 		//since the entry wasn't in the staging database, check the Looma database
 		//fix database and collection names
-		$loomaDefinition = $loomaConnection->database_name->collection_name->findOne(array('_id' => $_id));
+		$loomaDefinition = $loomaConnection->selectDB($stagingDB)->selectCollection($stagingCollection)->findOne(array('_id' => $_id));
 
 		if ($loomaDefinition != null){
 			return $loomaDefinition;
@@ -221,7 +221,7 @@
 			$js = stagingCriteriaToJavascript($args);
 
 			//get all elements that match the criteria
-			$stagingCursor = $stagingConnection->database_name->collection_name->find(array('$where' => $js));
+			$stagingCursor = $stagingConnection->selectDB($stagingDB)->selectCollection($stagingCollection)->find(array('$where' => $js));
 
 			//figure out how many total pages
 			$numTotalWords = $stagingCursor->count(true);
@@ -250,7 +250,7 @@
 		$js = stagingCriteriaToJavascript($args);
 
 		//get all elements that match the criteria
-		$stagingCursor = $connection->database_name->collection_name->find(array('$where' => $js));
+		$stagingCursor = $connection->selectDB($stagingDB)->selectCollection($stagingCollection)->find(array('$where' => $js));
 
 		//put the words in an array
 		//remember to add in staging parameters
@@ -271,7 +271,7 @@
 		
 		//get all elements that match the criteria
 		//FIX COLLECTION AND DATABASE NAMES
-		$loomaCursor = $connection->database_name->collection_name->find(array('word' => $word));
+		$loomaCursor = $connection->selectDB($loomaDB)->selectCollection($loomaCollection)->find(array('word' => $word));
 
 		//put the words in an array
 		$loomaWordsArray = compileLoomaWordsArray($loomaCursor);
@@ -447,12 +447,12 @@
 	 * Returns true
 	 */
 	function moveEntryToStaging ($stagingConnection, $loomaConnection, $_id, $user){
-		$doc = $loomaConnection->database_name->collection_name->findOne(array('_id' => $_id));
+		$doc = $loomaConnection->selectDB($loomaDB)->selectCollection($loomaCollection)->findOne(array('_id' => $_id));
 
 		//fix database and collection name
-		$stagingConnection->database_name->collection_name->save($doc);
+		$stagingConnection->selectDB($stagingDB)->selectCollection($stagingCollection)->save($doc);
 
-		$loomaConnection->database_name->collection_name->remove($doc);
+		$loomaConnection->selectDB($loomaDB)->selectCollection($loomaCollection)->remove($doc);
 
 		return true;
 	}
@@ -468,7 +468,7 @@
 	*/
 	function publish($stagingConnection, $loomaConnection, $user) {
 
-		$stagingCursor = $stagingConnection->database_name->collection_name->find();
+		$stagingCursor = $stagingConnection->selectDB($stagingDB)->selectCollection($stagingCollection)->find();
 
 		foreach($stagingCursor as $doc){
 			//check to make sure the object has not been deleted and has been accepted
@@ -478,17 +478,17 @@
 				$newDoc = convert($doc, $user);
 
 				//remove from staging
-				$stagingConnection->database_name->collection_name->remove($doc);
+				$stagingConnection->selectDB($stagingDB)->selectCollection($stagingCollection)->remove($doc);
 
 				//adjust database and collection name!!!
-				$loomaConnection->database_name->collection_name->save($newDoc);
+				$loomaConnection->selectDB($loomaDB)->selectCollection($loomaCollection)->save($newDoc);
 
 			}
 			//if it has been deleted, remove it
 			else if ($doc['stagingData']['deleted'] == 'true')
 			{
 				//remove from database
-				$stagingConnection->database_name->collection_name->remove($doc);
+				$stagingConnection->selectDB($stagingDB)->selectCollection($stagingCollection)->remove($doc);
 			}
 		}
 
@@ -526,7 +526,7 @@
 	*Returns true
 	*/
 	function updateStaging($new, $connection) {
-		$connection->database_name->collection_name->save($new);
+		$connection->selectDB($stagingDB)->selectCollection($stagingCollection)->save($new);
 		return true;
 	}
 
