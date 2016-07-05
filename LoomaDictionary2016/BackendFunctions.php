@@ -233,8 +233,8 @@
 			//put the words in an array
 			$wordsArray = compileStagingWordsArray($stagingCursor);
 
-			//FIX THIS BY ADDING APPROPRIATE METADATA BEFORE THE WORDSARRAY
-			$finalArray = array(    , $wordsArray);
+			//create array with appropriate metadata in the beginning
+			$finalArray = array( $args['page'], $numPages, $wordsArray);
 			
 
 			return $finalArray;
