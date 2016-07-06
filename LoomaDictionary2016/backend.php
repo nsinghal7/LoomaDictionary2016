@@ -177,7 +177,6 @@
 	 * @return the converted list
 	 */
 	function convertWordList($list, $toBackend) {
-		error_log("aslkjdfaslkdfjlasjdfljasdf" . json_encode($list));
 		foreach ($list as $key => $word) {
 			$list[$key] = convertWord($word, $toBackend);
 		}
@@ -220,7 +219,6 @@
 	 */
 	function readStagingWrapper($args, $stagingConnection) {
 		$out = readStagingDatabase($args, $stagingConnection);
-		error_log("test test test " . json_encode($out));
 		convertWordList($out["words"], false);
 		return $out;
 	}
@@ -233,9 +231,8 @@
 	 * @return array of frontend words
 	 */
 	function readOfficialWrapper($args, $officialConnection, $stagingConnection) {
-		error_log("a");
 		return convertWordList(findDefinitonsForSingleWordLooma($args['word'],
-													$officialConnection), false);
+													$officialConnection, $stagingConnection), false);
 	}
 	
 	/**
@@ -328,7 +325,7 @@
 						$stagingConnection);
 			} else {
 				$response['data'] = readOfficialWrapper($_REQUEST['searchArgs'],
-						$officialConnection);
+						$officialConnection, $stagingConnection);
 			}
 		} elseif ($_SERVER['REQUEST_METHOD'] == 'GET' and isset($_REQUEST['publish'])) {
 			// publishes accepted changes to the official database
@@ -371,7 +368,6 @@
 	
 	//return json encoded response
 	$encoded = json_encode($response);
-	error_log("$encoded");
 	header('Content-type: application/json');
 	exit($encoded);
 	
