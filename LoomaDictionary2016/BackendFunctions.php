@@ -68,7 +68,7 @@
 	*	Dummy function to always return true
 	*/
 	function checkLogin ($login){
-		return 'true';
+		return true;
 	}
 
 	/**
@@ -238,7 +238,7 @@
 			$stagingCursor = $stagingConnection->selectDB($stagingDB)->selectCollection($stagingCollection)->find(array('$where' => $js));
 
 			//figure out how many total pages
-			$numTotalWords = $stagingCursor->count(true);
+			$numTotalWords = $stagingCursor->count();
 			$numPages = ($numTotalWords + $wordsPerPage - 1) / $wordsPerPage;
 
 			if($numPages < 1){
@@ -246,13 +246,13 @@
 			}
 
 			//skip to the correct page (if above the max, just skip to last page)
-			skipToAppropriateLocation($stagingCursor, $args, $numPages, $numTotalWords);
+			$page = skipToAppropriateLocation($stagingCursor, $args, $numPages, $numTotalWords);
 
 			//put the words in an array
 			$wordsArray = compileStagingWordsArray($stagingCursor);
 
 			//create array with appropriate metadata in the beginning
-			$finalArray = array( "page"=> $args['page'], "maxPage" => $numPages, "words" => $wordsArray);
+			$finalArray = array( "page"=> $page, "maxPage" => $numPages, "words" => $wordsArray);
 			
 
 			return $finalArray;
@@ -366,7 +366,7 @@
 	function compileStagingWordsArray ($stagingCursor){
 		$wordsArray = array();
 		for ($i = 0; $i < $wordsPerPage; $i = $i + 1){
-			if($stagingCursor->hasNext() == 'true')
+			if($stagingCursor->hasNext())
 			array_push ($wordsArray, compileSingleSimpleWord($stagingCursor->getNext()));
 		}
 
@@ -383,7 +383,7 @@
 	function compileLoomaWordsArray ($loomaCursor){
 		$wordsArray = array();
 		for ($i = 0; $i < $loomaCursor->count(); $i = $i + 1){
-			if($loomaCursor->hasNext() == 'true')
+			if($loomaCursor->hasNext())
 			array_push ($wordsArray, compileSingleLoomaWord($loomaCursor->getNext()));
 		}
 
@@ -447,14 +447,17 @@
 
 		if($numPages <= 1){
 			//do nothing
+			return $args['page'];
 		}
 		else if ($args['page'] <= $numPages){
 			$amount = ($args['page'] - 1 ) * $wordsPerPage;
 			$stagingCursor->skip($amount);
+			return $args['page'];
 		}
 		//this means it is above the max
 		else{
 			$stagingCursor->skip(($numPages - 1) * $wordsPerPage);
+			return $numPages;
 		}
 	}
 
