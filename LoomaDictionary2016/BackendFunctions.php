@@ -259,7 +259,7 @@
 	/**
 	 *
 	 */
-	function getDefintionsFromStaging ($args, $connection) {
+	function getDefinitionsFromStaging ($args, $connection) {
 		global $stagingDB;
 		global $stagingCollection;
 			
