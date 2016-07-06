@@ -273,7 +273,7 @@
 		//remember to add in staging parameters
 		$stagingWordsArray = compileStagingWordsArray($stagingCursor);
 
-		return stagingWordsArray();
+		return stagingWordsArray;
 	}
 
 	/**
@@ -306,7 +306,7 @@
 
 	function removeOverwrittenEntries ($betaArray, $dominantArray){
 		//nested for each loop, compare object ids and overwrite entires in the beta array
-		$betaCount = ount($betaArray);
+		$betaCount = count($betaArray);
 		$dominantCount = count($dominantArray);
 		for($indexDominant = 0; $indexDominant < $dominantCount; $indexDominant++) {
 	 		for ($indexBeta=0; $indexBeta < $betaCount; $indexBeta++) { 
