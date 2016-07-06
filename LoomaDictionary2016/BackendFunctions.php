@@ -240,7 +240,11 @@
 
 			//figure out how many total pages
 			$numTotalWords = $stagingCursor->count(true);
-			$numPages = $numTotalWords / $wordsPerPage;
+			$numPages = ($numTotalWords + $wordsPerPage - 1) / $wordsPerPage;
+
+			if($numPages < 1){
+				$numPages = 1;
+			}
 
 			//skip to the correct page (if above the max, just skip to last page)
 			skipToAppropriateLocation($stagingCursor, $args, $numPages, $numTotalWords);
