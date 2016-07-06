@@ -518,7 +518,7 @@
 		$doc = $doc['wordData'];
 
 		return $newDoc = array (
-				'_id' => $doc['_id']
+				'_id' => $doc['_id'],
 				//"ch_id" => "3EN06",
 				"en" => $doc["en"],
 				"rw" => $doc["rw"],
@@ -551,7 +551,6 @@
 		return true;
 	}
 
-	function 
 
 	/**
 	* Takes the timezone to be used in the generation of the timestamp
