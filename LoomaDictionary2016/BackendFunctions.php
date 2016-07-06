@@ -270,7 +270,8 @@
 		$js = stagingCriteriaToJavascript($args);
 
 		//get all elements that match the criteria
-		$stagingCursor = $connection->selectDB($stagingDB)->selectCollection($stagingCollection)->find(array('$where' => $js));
+		$stagingCursor = $connection->selectDB($stagingDB)->selectCollection($stagingCollection)->find();
+		error_log("num words: " . $stagingCursor->count());
 
 		//put the words in an array
 		//remember to add in staging parameters
@@ -365,8 +366,8 @@
 	*/
 	function compileStagingWordsArray ($stagingCursor){
 		$wordsArray = array();
-		for ($i = 0; $i < $wordsPerPage; $i = $i + 1){
-			if($stagingCursor->hasNext())
+		for ($i = 0; $i < $wordsPerPage and $stagingCursor->hasNext(); $i = $i + 1){
+			error_log("COPY");
 			array_push ($wordsArray, compileSingleSimpleWord($stagingCursor->getNext()));
 		}
 
