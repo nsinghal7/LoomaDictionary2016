@@ -138,7 +138,6 @@
 
 		//put everything into a doc
 		$doc = array( "wordData" => array(
-		"_id" => ObjectId(),
 		"en" => $word,
 		"rw" => $rw,
 		"np" => $np,
@@ -366,7 +365,7 @@
 	*/
 	function compileStagingWordsArray ($stagingCursor){
 		$wordsArray = array();
-		for ($i = 0; $i < 10; $i = $i + 1){
+		for ($i = 0; $i < $wordsPerPage; $i = $i + 1){
 			if($stagingCursor->hasNext() == 'true')
 			array_push ($wordsArray, compileSingleSimpleWord($stagingCursor->getNext()));
 		}
@@ -397,8 +396,8 @@
 	*  returns the array for that word
 	*/
 	function compileSingleSimpleWord($allWordData){
-		$singleWord = array('wordData' => array(), 'stagingData' => $allWordData['stagingData']);
-		array_push($singleWord['wordData'], compileSimpleWordData($allWordData));
+		$singleWord = array('wordData' => compileSimpleWordData($allWordData), 'stagingData' => $allWordData['stagingData']);
+
 		return $singleWord;
 	}
 
@@ -408,9 +407,8 @@
 	*  returns the array for that word
 	*/
 	function compileSingleLoomaWord($allWordData){
-		$singleWord = array('wordData' => array(), 'stagingData' => array());
-		array_push($singleWord['wordData'], compileSimpleWordData($allWordData));
-		array_push($singleWord['stagingData'], compileDefaultStagingData());
+		$singleWord = array('wordData' => compileSimpleWordData($allWordData), 'stagingData' => compileDefaultStagingData();
+
 		return $singleWord;
 	}
 
@@ -422,14 +420,14 @@
 	*/
 	function compileSimpleWordData ($allWordData){
 		return array(
-				'_id' => ObjectId(),
+				'_id' => $allWordData['_id'],
 				'en' => $allWordData['en'], 
 				'rw' => $allWordData['rw'],
 				'part' => $allWordData['part'], 
 				'np' => $allWordData['np'],
 				'def' => $allWordData['def'], 
 				'mod' => $allWordData['mod'],
-				'rand' =>  generateRandomNumber(16),
+				'rand' =>  $allWordData['rand'],
 				'date_entered' => $allWordData['date_entered'],
 				'mod' => $allWordData['user']
 			);
