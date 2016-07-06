@@ -435,7 +435,7 @@
 				'mod' => $allWordData['mod'],
 				'rand' =>  $allWordData['rand'],
 				'date_entered' => $allWordData['date_entered'],
-				'mod' => $allWordData['user']
+
 			);
 	}
 
