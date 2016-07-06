@@ -298,7 +298,7 @@
 		$stagingArray = getDefinitionsFromStaging($args, $stagingConnection);
 
 		//remove overwritten definitions
-		$loomaArray = removeOverwrittenEntries($loomaArray, $stagingArray);
+		$loomaArray = removeOverwrittenEntries($loomaWordsArray, $stagingArray);
 
 		//make sure indecies are consecutive
 		return $loomaArray;
