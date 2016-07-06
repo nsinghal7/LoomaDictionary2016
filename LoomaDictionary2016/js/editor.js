@@ -353,11 +353,13 @@ function edit(type, index) {
 	// confirm a cancel, which takes immediate effect in removing a definition from staging
 	if(type == 'cancel' && !confirm(
 			"Are you sure you want to revert all unpublished changes to this entry?")) {
+		$("#menuArea, #viewArea, #officialViewer").removeClass("disableButtons");
 		return;
 	}
 	
 	// if published, stat button should have no effect (can't be accepted without a change)
 	if(type == 'stat' && elem.text() == 'unedited') {
+		$("#menuArea, #viewArea, #officialViewer").removeClass("disableButtons");
 		return;
 	}
 	

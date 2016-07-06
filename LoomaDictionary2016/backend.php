@@ -281,7 +281,7 @@
 		
 		// assumes that updateStaging will take care of changing the modifier, date modified,
 		// and all staging data, since these are general tasks.
-		return updateStaging(convertWord($former), $stagingConnection, $user);
+		return updateStaging(convertWord($former, true), $stagingConnection, $user);
 	}
 	
 	function moveToStagingWrapper($moveId, $officialConnection, $stagingConnection, $user) {
