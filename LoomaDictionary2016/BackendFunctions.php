@@ -235,10 +235,11 @@
 			$js = stagingCriteriaToJavascript($args);
 
 			//get all elements that match the criteria
-			$stagingCursor = $stagingConnection->selectDB($stagingDB)->selectCollection($stagingCollection)->find(array('$where' => $js));
+			$stagingCursor = $stagingConnection->selectDB($stagingDB)->selectCollection($stagingCollection)->find();
 
 			//figure out how many total pages
 			$numTotalWords = $stagingCursor->count();
+			error_log("num words: " . $numTotalWords);
 			$numPages = ($numTotalWords + $wordsPerPage - 1) / $wordsPerPage;
 
 			if($numPages < 1){
@@ -250,6 +251,8 @@
 
 			//put the words in an array
 			$wordsArray = compileStagingWordsArray($stagingCursor);
+			
+			error_log("thingy: " . count($wordsArray));
 
 			//create array with appropriate metadata in the beginning
 			$finalArray = array( "page"=> $page, "maxPage" => $numPages, "words" => $wordsArray);
@@ -271,13 +274,12 @@
 
 		//get all elements that match the criteria
 		$stagingCursor = $connection->selectDB($stagingDB)->selectCollection($stagingCollection)->find();
-		error_log("num words: " . $stagingCursor->count());
 
 		//put the words in an array
 		//remember to add in staging parameters
 		$stagingWordsArray = compileStagingWordsArray($stagingCursor);
 
-		return stagingWordsArray;
+		return $stagingWordsArray;
 	}
 
 	/**
@@ -370,6 +372,7 @@
 		$wordsArray = array();
 		for ($i = 0; $i < $wordsPerPage and $stagingCursor->hasNext(); $i = $i + 1){
 			error_log("COPY");
+			error_log("other: " . json_encode(debug_backtrace()));
 			array_push ($wordsArray, compileSingleSimpleWord($stagingCursor->getNext()));
 		}
 
@@ -450,6 +453,7 @@
 
 		if($numPages <= 1){
 			//do nothing
+			error_log("I DO NOTHING");
 			return $args['page'];
 		}
 		else if ($args['page'] <= $numPages){
