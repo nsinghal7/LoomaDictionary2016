@@ -365,6 +365,8 @@
 	*	returns the array of all the words snd their data
 	*/
 	function compileStagingWordsArray ($stagingCursor){
+		global $wordsPerPage;
+
 		$wordsArray = array();
 		for ($i = 0; $i < $wordsPerPage and $stagingCursor->hasNext(); $i = $i + 1){
 			error_log("COPY");
