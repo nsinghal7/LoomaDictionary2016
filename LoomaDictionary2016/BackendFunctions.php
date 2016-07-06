@@ -407,7 +407,7 @@
 	*  returns the array for that word
 	*/
 	function compileSingleLoomaWord($allWordData){
-		$singleWord = array('wordData' => compileSimpleWordData($allWordData), 'stagingData' => compileDefaultStagingData();
+		$singleWord = array('wordData' => compileSimpleWordData($allWordData), 'stagingData' => compileDefaultStagingData());
 
 		return $singleWord;
 	}
