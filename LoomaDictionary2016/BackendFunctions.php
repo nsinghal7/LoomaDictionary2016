@@ -301,7 +301,7 @@
 		$loomaArray = removeOverwrittenEntries($loomaArray, $stagingArray);
 
 		//make sure indecies are consecutive
-		return array_merge($loomaArray);
+		return $loomaArray;
 	}
 
 	function removeOverwrittenEntries ($betaArray, $dominantArray){
@@ -317,7 +317,7 @@
 	 			}
 	 		}
 		}
-		return $betaArray;
+		return array_merge($betaArray);
 	}
 
 	//return a string with the function
