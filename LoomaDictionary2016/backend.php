@@ -177,6 +177,7 @@
 	 * @return the converted list
 	 */
 	function convertWordList($list, $toBackend) {
+		error_log("aslkjdfaslkdfjlasjdfljasdf" . json_encode($list));
 		foreach ($list as $key => $word) {
 			$list[$key] = convertWord($word, $toBackend);
 		}
@@ -219,6 +220,7 @@
 	 */
 	function readStagingWrapper($args, $stagingConnection) {
 		$out = readStagingDatabase($args, $stagingConnection);
+		error_log("test test test " . json_encode($out));
 		convertWordList($out["words"], false);
 		return $out;
 	}
@@ -231,6 +233,7 @@
 	 * @return array of frontend words
 	 */
 	function readOfficialWrapper($args, $officialConnection, $stagingConnection) {
+		error_log("a");
 		return convertWordList(findDefinitonsForSingleWordLooma($args['word'],
 													$officialConnection), false);
 	}
@@ -363,9 +366,6 @@
 					'request' => json_encode($_REQUEST));
 		}
 	}
-	
-	closeConnection($officialConnection);
-	closeConnection($stagingConnection);
 	unset($officialConnection);
 	unset($stagingConnection);
 	
