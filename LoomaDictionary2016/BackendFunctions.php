@@ -155,7 +155,8 @@
 
 		//check to see if a similar definition already exists
 		if(checkForSimilarDefinition()){
-
+			global $stagingDB;
+			global $stagingCollection;
 			// insert the doc into the database
 			$stagingConnection->selectDB($stagingDB)->selectCollection($stagingCollection)->save($doc);
 			
@@ -187,8 +188,12 @@
 	*	a connection to the looma database, and a connection to the staging database
 	*/
 	function findDefinitionWithID ($_id, $loomaConnection, $stagingConnection) {
+		global $stagingDB;
+		global $stagingCollection;
+		global $loomaDB;
+		global $loomaCollection;
 		//first look for the entry in the staging databse
-		$stagingDefinition = $stagingConnection->database_name->collection_name->findOne(array('_id' => $_id));
+		$stagingDefinition = $stagingConnection->selectDB($stagingDB)->selectCollection($stagingCollection)->findOne(array('_id' => $_id));
 
 		if ($stagingDefinition != null){
 			return $stagingDefinition;
@@ -196,7 +201,7 @@
 
 		//since the entry wasn't in the staging database, check the Looma database
 		//fix database and collection names
-		$loomaDefinition = $loomaConnection->selectDB($stagingDB)->selectCollection($stagingCollection)->findOne(array('_id' => $_id));
+		$loomaDefinition = $loomaConnection->selectDB($loomaDB)->selectCollection($loomaCollection)->findOne(array('_id' => $_id));
 
 		if ($loomaDefinition != null){
 			return $loomaDefinition;
@@ -223,6 +228,8 @@
 	 */
 	function readStagingDatabase ($args, $stagingConnection){
 			global $wordsPerPage;
+			global $stagingDB;
+			global $stagingCollection;
 
 
 			//encode criteria as js function
@@ -253,6 +260,8 @@
 	 *
 	 */
 	function getDefintionsFromStaging ($args, $connection) {
+		global $stagingDB;
+		global $stagingCollection;
 			
 		//encode criteria as js function
 		$js = stagingCriteriaToJavascript($args);
@@ -276,7 +285,8 @@
 	 *	Returns an array with all the definitions found
 	 */
 	function findDefinitonsForSingleWordLooma ($word, $loomaConnection, $stagingConnection) {
-		
+		global $loomaDB;
+		global $loomaCollection;
 		//get all elements that match the criteria
 		//FIX COLLECTION AND DATABASE NAMES
 		$loomaCursor = $connection->selectDB($loomaDB)->selectCollection($loomaCollection)->find(array('word' => $word));
@@ -420,6 +430,8 @@
 	*/
 	function skipToAppropriateLocation ($stagingCursor, $args, $numPages, $numTotalWords){
 		global $wordsPerPage;
+		global $stagingDB;
+		global $stagingCollection;
 
 		if($numPages == 1){
 			//do nothing
@@ -455,6 +467,11 @@
 	 * Returns true
 	 */
 	function moveEntryToStaging ($stagingConnection, $loomaConnection, $_id, $user){
+		global $stagingDB;
+		global $stagingCollection;
+		global $loomaDB;
+		global $loomaCollection;
+		
 		$doc = $loomaConnection->selectDB($loomaDB)->selectCollection($loomaCollection)->findOne(array('_id' => $_id));
 
 		$doc = 
@@ -476,6 +493,11 @@
 	* returns true
 	*/
 	function publish($stagingConnection, $loomaConnection, $user) {
+		
+		global $stagingDB;
+		global $stagingCollection;
+		global $loomaDB;
+		global $loomaCollection;
 
 		$stagingCursor = $stagingConnection->selectDB($stagingDB)->selectCollection($stagingCollection)->find();
 
@@ -539,6 +561,8 @@
 	*Returns true
 	*/
 	function updateStaging($new, $connection, $user) {
+		global $stagingDB;
+		global $stagingCollection;
 		$collection = $connection->selectDB($stagingDB)->selectCollection($stagingCollection);
 
 		//update user and modified status
@@ -577,6 +601,8 @@
 	}
 
 	function removeStaging ($_id, $stagingConnection) {
+		global $stagingDB;
+		global $stagingCollection;
 		//remove object with id
 
 
