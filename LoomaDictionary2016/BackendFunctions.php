@@ -53,16 +53,16 @@
 	$loomaAddress = '';
 
 	//Change to reflect Looma database name
-	$loomaDB = '';
+	$loomaDB = 'fakeLooma';
 
 	//change to reflect the collection you would like to use within the staging database
-	$loomaCollection = '';
+	$loomaCollection = 'official';
 
 	//Change to reflect Looma database name
-	$stagingDB = '';
+	$stagingDB = 'fakeLooma';
 
 	//change to reflect the collection you would like to use within the staging database
-	$stagingCollection = '';
+	$stagingCollection = 'staging';
 
 	/**
 	*	Dummy function to always return true
@@ -249,7 +249,7 @@
 			$wordsArray = compileStagingWordsArray($stagingCursor);
 
 			//create array with appropriate metadata in the beginning
-			$finalArray = array( $args['page'], $numPages, $wordsArray);
+			$finalArray = array( "page"=> $args['page'], "maxPage" => $numPages, "words" => $wordsArray);
 			
 
 			return $finalArray;
@@ -289,7 +289,7 @@
 		global $loomaCollection;
 		//get all elements that match the criteria
 		//FIX COLLECTION AND DATABASE NAMES
-		$loomaCursor = $connection->selectDB($loomaDB)->selectCollection($loomaCollection)->find(array('word' => $word));
+		$loomaCursor = $loomaConnection->selectDB($loomaDB)->selectCollection($loomaCollection)->find(array('word' => $word));
 
 		//put the words in an array
 		$loomaWordsArray = compileLoomaWordsArray($loomaCursor);
@@ -327,18 +327,28 @@
 	*	returns a string with the javascript function
 	*/
 	function stagingCriteriaToJavascript($args){
-		$finalFunction = "function() {return this.word.includes(" . $args['text'] . ") && (";
+		$bool = false;
+		
+		$finalFunction = "function() {return this.en == '" . $args['text'] . "' && (";
 		if($args['added'] == 'true'){
 			$finalFunction = $finalFunction . "this.added == true ||";
+			$bool = true;
 		}
 		if($args['modified'] == 'true'){
 						$finalFunction = $finalFunction . "this.modified == true ||";
+						$bool = true;
 		}
 		if($args['accepted'] == 'true'){
 						$finalFunction = $finalFunction . "this.accepted == true ||";
+						$bool = true;
 		}
 		//append the necessary ending to the javascript function
-		$finalFunction = substr($finalFunction, 0, -2) . ") ; } ";
+		
+		if($bool){
+			$finalFunction = substr($finalFunction, 0, -2) . ") ; } ";
+		} else {
+			$finalFunction = substr($finalFunction, 0, -4) . " ; } ";
+		}
 
 		return $finalFunction;
 	}
@@ -433,11 +443,12 @@
 		global $stagingDB;
 		global $stagingCollection;
 
-		if($numPages == 1){
+		if($numPages <= 1){
 			//do nothing
 		}
 		else if ($args['page'] <= $numPages){
-			$stagingCursor->skip(($args['page'] - 1 ) * $wordsPerPage);
+			$amount = ($args['page'] - 1 ) * $wordsPerPage;
+			$stagingCursor->skip($amount);
 		}
 		//this means it is above the max
 		else{
