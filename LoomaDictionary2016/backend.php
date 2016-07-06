@@ -270,7 +270,7 @@
 			removeStaging($change["wordId"], $stagingConnection);
 			return;
 		} elseif ($change["field"] == "stat") {
-			$former["stagingData"]["accepted"] = !former["stagingData"]["accepted"];
+			$former["stagingData"]["accepted"] = !$former["stagingData"]["accepted"];
 		} elseif (in_array($change["field"], array("word", "root", "nep", "pos", "def"))) {
 			// for all of these the value just needs to be updated to $change["new"]
 			$former["wordData"][$change["field"]] = $change["new"];
