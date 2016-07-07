@@ -192,7 +192,8 @@
 		global $loomaDB;
 		global $loomaCollection;
 		//first look for the entry in the staging databse
-		$stagingDefinition = $stagingConnection->selectDB($stagingDB)->selectCollection($stagingCollection)->findOne(array('_id' => $_id));
+		var_dump( $_id);
+		$stagingDefinition = $stagingConnection->selectDB($stagingDB)->selectCollection($stagingCollection)->findOne(array('_id' => new MongoId($_id['$id'])));
 
 		if ($stagingDefinition != null){
 			return $stagingDefinition;
@@ -252,8 +253,6 @@
 			//put the words in an array
 			$wordsArray = compileStagingWordsArray($stagingCursor);
 			
-			error_log("thingy: " . count($wordsArray));
-
 			//create array with appropriate metadata in the beginning
 			$finalArray = array( "page"=> $page, "maxPage" => $numPages, "words" => $wordsArray);
 			
@@ -371,8 +370,6 @@
 
 		$wordsArray = array();
 		for ($i = 0; $i < $wordsPerPage and $stagingCursor->hasNext(); $i = $i + 1){
-			error_log("COPY");
-			error_log("other: " . json_encode(debug_backtrace()));
 			array_push ($wordsArray, compileSingleSimpleWord($stagingCursor->getNext()));
 		}
 
@@ -453,7 +450,6 @@
 
 		if($numPages <= 1){
 			//do nothing
-			error_log("I DO NOTHING");
 			return $args['page'];
 		}
 		else if ($args['page'] <= $numPages){

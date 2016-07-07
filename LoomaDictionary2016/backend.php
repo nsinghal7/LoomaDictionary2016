@@ -170,8 +170,8 @@
 	}
 	
 	/**
-	 * Converts all words in the list using the convertWord() function. The original list WILL
-	 * be modified
+	 * Converts all words in the list using the convertWord() function. The original list should
+	 * be modified, but for some reason isn't
 	 * @param unknown $list The list to convert
 	 * @param unknown $toBackend True if should be converted to backend, false if to front end
 	 * @return the converted list
@@ -219,7 +219,8 @@
 	 */
 	function readStagingWrapper($args, $stagingConnection) {
 		$out = readStagingDatabase($args, $stagingConnection);
-		convertWordList($out["words"], false);
+		$out["words"] = convertWordList($out["words"], false);
+		
 		return $out;
 	}
 	
