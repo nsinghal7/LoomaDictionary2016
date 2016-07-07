@@ -270,8 +270,7 @@ function createTableEntry(word, i) {
 			+ (word['wordData']["mod"]) + '</p></td>'));
 	row.append($('<td class="dateCol"><p>'
 			+ (word['wordData']["date"]) + '</p></td>'));
-	row.append($('<td class="otherCol"><p>id: ' + word['wordData']['id'] + 
-			+ '</p></td>'));
+	row.append($('<td class="otherCol"><p> id: ' + word['wordData']['id']['$id'] +'</p></td>'));
 	return row;
 }
 
@@ -441,7 +440,7 @@ function loadOfficialTable() {
 						row.append(createOfficialTd(officialDefs[i], "mod"));
 						row.append(createOfficialTd(officialDefs[i], "date"));
 						row.append($("<td class='other'><p>id: "
-								+ officialDefs[i]['wordData']['id'] 
+								+ officialDefs[i]['wordData']['id']['$id'] 
 								+ "</p></td>"));
 						table.append(row);
 					}

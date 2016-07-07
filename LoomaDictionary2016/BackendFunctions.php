@@ -291,7 +291,7 @@
 		
 
 		//find all entries in the staging database
-		$stagingArray = getDefinitionsFromStaging($args, $stagingConnection);
+		$stagingArray = getDefinitionsFromStaging(array("text" => $word), $stagingConnection);
 
 		//remove overwritten definitions
 		$loomaArray = removeOverwrittenEntries($loomaWordsArray, $stagingArray);
@@ -309,7 +309,7 @@
 	 		for ($indexBeta=0; $indexBeta < $betaCount; $indexBeta++) { 
 	 			
 	 			//make sure the key for object id is correct
-	 			if ($betaArray[$indexBeta]['wordData']['_id']['$id'] == $dominantArray[$indexDominant]['_id']['$id']) {
+	 			if ($betaArray[$indexBeta]['wordData']['_id']->{'$id'} == $dominantArray[$indexDominant]['wordData']['_id']->{'$id'}) {
 	 				unset($betaArray[$indexBeta]);
 	 			}
 	 		}
@@ -322,9 +322,9 @@
 	 * replaced if the front end sends different arguments than for the Dictionary Editor
 	 * @param unknown $args The arguments to parse. expects the following fields:
 	 * text: (string)
-	 * added: (boolean)
-	 * modified: (boolean)
-	 * accepted: (boolean) (when true, should search for accepted OR deleted, since both are
+	 * added: (boolean or null)
+	 * modified: (boolean or null)
+	 * accepted: (boolean or null) (when true, should search for accepted OR deleted, since both are
 	 * publishable)
 	 */
 	function stagingCriteriaToMongoQuery($args) {
