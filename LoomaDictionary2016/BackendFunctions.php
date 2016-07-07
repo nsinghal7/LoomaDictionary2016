@@ -157,7 +157,7 @@
 			global $stagingDB;
 			global $stagingCollection;
 			// insert the doc into the database
-			$stagingConnection->selectDB($stagingDB)->selectCollection($stagingCollection)->save($doc);
+			$stagingConnection->selectDB($stagingDB)->selectCollection($stagingCollection)->save(moveWordDataUpLevel($doc));
 			
 			return true;
 		}
@@ -577,19 +577,23 @@
 	*database, a connection to that database, and a string with the user modifying
 	*the entry
 	*
-	*Returns true
+	*Returns the modified word
 	*/
-	function updateStaging($new, $connection, $user) {
+	function updateStaging($new, $connection, $user, $isStagingChange) {
 		global $stagingDB;
 		global $stagingCollection;
 		$collection = $connection->selectDB($stagingDB)->selectCollection($stagingCollection);
 
 		//update user and modified status
 		$new['wordData']['mod'] = $user;
-		$new['stagingData']['modified'] = true;
+		if(!$isStagingChange) {
+			$new['stagingData']['modified'] = true;
+			$new['stagingData']['accepted'] = false;
+		}
+		$new['wordData']['date_entered'] = getDateAndTime('America/Los_Angeles');
 
 		//save it to the collection
-		$collection->save($new);
+		$collection->save(moveWordDataUpLevel($new));
 
 		return true;
 	}
@@ -630,6 +634,17 @@
 //work on this
 	function checkForSimilarDefintion () {
 		return true;
+	}
+	
+	/**
+	 * Moves the word data to the same level as the staging data. May modify the given entry
+	 * in unwanted ways, so it should not be used after calling
+	 * @param unknown $word The word to modify
+	 */
+	function moveWordDataUpLevel($word) {
+		$ans = $word['wordData'];
+		$ans['stagingData'] = $word['stagingData'];
+		return $ans;
 	}
 
  

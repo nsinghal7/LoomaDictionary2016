@@ -269,12 +269,13 @@
 			$former["stagingData"]["deleted"] = !$former["stagingData"]["deleted"];
 		} elseif($change["field"] == "cancel") {
 			removeStaging($change["wordId"], $stagingConnection);
-			return;
+			return true;
 		} elseif ($change["field"] == "stat") {
 			$former["stagingData"]["accepted"] = !$former["stagingData"]["accepted"];
 		} elseif (in_array($change["field"], array("word", "root", "nep", "pos", "def"))) {
 			// for all of these the value just needs to be updated to $change["new"]
 			$former["wordData"][$change["field"]] = $change["new"];
+			return updateStaging(convertWord($former, true), $stagingConnection, $user, false);
 		} else {
 			// illegal update attempt
 			return false;
@@ -282,7 +283,7 @@
 		
 		// assumes that updateStaging will take care of changing the modifier, date modified,
 		// and all staging data, since these are general tasks.
-		return updateStaging(convertWord($former, true), $stagingConnection, $user);
+		return updateStaging(convertWord($former, true), $stagingConnection, $user, true);
 	}
 	
 	function moveToStagingWrapper($moveId, $officialConnection, $stagingConnection, $user) {
