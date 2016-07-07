@@ -309,7 +309,7 @@
 	 		for ($indexBeta=0; $indexBeta < $betaCount; $indexBeta++) { 
 	 			
 	 			//make sure the key for object id is correct
-	 			if ($betaArray[$indexBeta]['wordData']['_id'] == $dominantArray[$indexDominant]['_id']) {
+	 			if ($betaArray[$indexBeta]['wordData']['_id']['$id'] == $dominantArray[$indexDominant]['_id']['$id']) {
 	 				unset($betaArray[$indexBeta]);
 	 			}
 	 		}
@@ -348,7 +348,6 @@
 			}
 			$condition = array('$and' => array($condition, array('$or' => $list)));
 		}
-		error_log(json_encode($condition));
 		return $condition;
 	}
 
@@ -488,7 +487,9 @@
 
 		$stagingConnection->selectDB($stagingDB)->selectCollection($stagingCollection)->save(moveWordDataUpLevel(compileSingleLoomaWord($doc)));
 
-		$loomaConnection->selectDB($loomaDB)->selectCollection($loomaCollection)->remove($doc);
+		//shouldn't remove the entry, since it will be replaced upon publishing. this way,
+		// if the user reverts the change, the old version will still exist
+		//$loomaConnection->selectDB($loomaDB)->selectCollection($loomaCollection)->remove($doc);
 
 		return true;
 	}
