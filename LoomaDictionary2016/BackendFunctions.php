@@ -292,16 +292,17 @@
 		global $loomaCollection;
 		//get all elements that match the criteria
 		//FIX COLLECTION AND DATABASE NAMES
-		$loomaCursor = $loomaConnection->selectDB($loomaDB)->selectCollection($loomaCollection)->find(array('word' => $word));
-
+		$loomaCursor = $loomaConnection->selectDB($loomaDB)->selectCollection($loomaCollection)->find(array('en' => $word));
 		//put the words in an array
 		$loomaWordsArray = compileLoomaWordsArray($loomaCursor);
+		
 
 		//find all entries in the staging database
 		$stagingArray = getDefinitionsFromStaging($args, $stagingConnection);
 
 		//remove overwritten definitions
 		$loomaArray = removeOverwrittenEntries($loomaWordsArray, $stagingArray);
+		
 
 		//make sure indecies are consecutive
 		return $loomaArray;
@@ -315,7 +316,7 @@
 	 		for ($indexBeta=0; $indexBeta < $betaCount; $indexBeta++) { 
 	 			
 	 			//make sure the key for object id is correct
-	 			if ($betaArray[$indexBeta]['_id'] == $dominantArray[$indexDominant]['_id']) {
+	 			if ($betaArray[$indexBeta]['wordData']['_id'] == $dominantArray[$indexDominant]['_id']) {
 	 				unset($betaArray[$indexBeta]);
 	 			}
 	 		}
@@ -408,7 +409,7 @@
 	*  returns the array for that word
 	*/
 	function compileSingleLoomaWord($allWordData){
-		$singleWord = array('wordData' => compileSimpleWordData($allWordData), 'stagingData' => compileDefaultStagingData());
+		$singleWord = array('wordData' => compileSimpleWordData($allWordData), 'stagingData' => generateBlankStagingData());
 
 		return $singleWord;
 	}
@@ -488,12 +489,9 @@
 		global $stagingCollection;
 		global $loomaDB;
 		global $loomaCollection;
-		
-		$doc = $loomaConnection->selectDB($loomaDB)->selectCollection($loomaCollection)->findOne(array('_id' => $_id));
+		$doc = $loomaConnection->selectDB($loomaDB)->selectCollection($loomaCollection)->findOne(array('_id' => new MongoId($_id['$id'])));
 
-		$doc = 
-		//fix database and collection name
-		$stagingConnection->selectDB($stagingDB)->selectCollection($stagingCollection)->save($doc);
+		$stagingConnection->selectDB($stagingDB)->selectCollection($stagingCollection)->save(moveWordDataUpLevel(compileSingleLoomaWord($doc)));
 
 		$loomaConnection->selectDB($loomaDB)->selectCollection($loomaCollection)->remove($doc);
 
@@ -635,13 +633,18 @@
 	}
 	
 	/**
-	 * Moves the word data to the same level as the staging data. May modify the given entry
-	 * in unwanted ways, so it should not be used after calling
+	 * Moves the word data to the same level as the staging data.
 	 * @param unknown $word The word to modify
 	 */
 	function moveWordDataUpLevel($word) {
-		$ans = $word['wordData'];
-		$ans['stagingData'] = $word['stagingData'];
+		$ans = array();
+		foreach($word['wordData'] as $key => $val) {
+			$ans[$key] = $val;
+		}
+		$ans['stagingData'] = array();
+		foreach($word['stagingData'] as $key => $val) {
+			$ans['stagingData'][$key] = $val;
+		}
 		return $ans;
 	}
 

@@ -372,7 +372,6 @@
 	
 	//return json encoded response
 	$encoded = json_encode($response);
-	error_log($encoded);
 	header('Content-type: application/json');
 	exit($encoded);
 	
