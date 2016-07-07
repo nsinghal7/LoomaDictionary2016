@@ -88,7 +88,7 @@
 	* returns true when either a string 'true' or a boolean true is entered
 	*/
 	function checkTrue ($bool){
-		if ($bool == true or $bool === 'true'){
+		if ($bool === true or $bool == 'true'){
 			return true;
 		}
 		else {
@@ -157,7 +157,7 @@
 			global $stagingDB;
 			global $stagingCollection;
 			// insert the doc into the database
-			$stagingConnection->selectDB($stagingDB)->selectCollection($stagingCollection)->save($doc);
+			$stagingConnection->selectDB($stagingDB)->selectCollection($stagingCollection)->save(moveWordDataUpLevel($doc));
 			
 			return true;
 		}
@@ -192,18 +192,18 @@
 		global $loomaDB;
 		global $loomaCollection;
 		//first look for the entry in the staging databse
-		$stagingDefinition = $stagingConnection->selectDB($stagingDB)->selectCollection($stagingCollection)->findOne(array('_id' => $_id));
+		$stagingDefinition = $stagingConnection->selectDB($stagingDB)->selectCollection($stagingCollection)->findOne(array('_id' => new MongoId($_id['$id'])));
 
 		if ($stagingDefinition != null){
-			return $stagingDefinition;
+			return compileSingleSimpleWord($stagingDefinition);
 		}
 
 		//since the entry wasn't in the staging database, check the Looma database
 		//fix database and collection names
-		$loomaDefinition = $loomaConnection->selectDB($loomaDB)->selectCollection($loomaCollection)->findOne(array('_id' => $_id));
+		$loomaDefinition = $loomaConnection->selectDB($loomaDB)->selectCollection($loomaCollection)->findOne(array('_id' => new MongoId($_id['$id'])));
 
 		if ($loomaDefinition != null){
-			return $loomaDefinition;
+			return compileSingleLoomaWord($loomaDefinition);
 		}
 
 		//this means an object with the specified id could not be found.
@@ -230,16 +230,11 @@
 			global $stagingDB;
 			global $stagingCollection;
 
-
-			//encode criteria as js function
-			$js = stagingCriteriaToJavascript($args);
-
 			//get all elements that match the criteria
-			$stagingCursor = $stagingConnection->selectDB($stagingDB)->selectCollection($stagingCollection)->find();
+			$stagingCursor = $stagingConnection->selectDB($stagingDB)->selectCollection($stagingCollection)->find(stagingCriteriaToMongoQuery($args));
 
 			//figure out how many total pages
 			$numTotalWords = $stagingCursor->count();
-			error_log("num words: " . $numTotalWords);
 			$numPages = ($numTotalWords + $wordsPerPage - 1) / $wordsPerPage;
 
 			if($numPages < 1){
@@ -252,8 +247,6 @@
 			//put the words in an array
 			$wordsArray = compileStagingWordsArray($stagingCursor);
 			
-			error_log("thingy: " . count($wordsArray));
-
 			//create array with appropriate metadata in the beginning
 			$finalArray = array( "page"=> $page, "maxPage" => $numPages, "words" => $wordsArray);
 			
@@ -268,12 +261,9 @@
 	function getDefinitionsFromStaging ($args, $connection) {
 		global $stagingDB;
 		global $stagingCollection;
-			
-		//encode criteria as js function
-		$js = stagingCriteriaToJavascript($args);
 
 		//get all elements that match the criteria
-		$stagingCursor = $connection->selectDB($stagingDB)->selectCollection($stagingCollection)->find();
+		$stagingCursor = $connection->selectDB($stagingDB)->selectCollection($stagingCollection)->find(stagingCriteriaToMongoQuery($args));
 
 		//put the words in an array
 		//remember to add in staging parameters
@@ -295,16 +285,17 @@
 		global $loomaCollection;
 		//get all elements that match the criteria
 		//FIX COLLECTION AND DATABASE NAMES
-		$loomaCursor = $loomaConnection->selectDB($loomaDB)->selectCollection($loomaCollection)->find(array('word' => $word));
-
+		$loomaCursor = $loomaConnection->selectDB($loomaDB)->selectCollection($loomaCollection)->find(array('en' => $word));
 		//put the words in an array
 		$loomaWordsArray = compileLoomaWordsArray($loomaCursor);
+		
 
 		//find all entries in the staging database
-		$stagingArray = getDefinitionsFromStaging($args, $stagingConnection);
+		$stagingArray = getDefinitionsFromStaging(array("text" => $word), $stagingConnection);
 
 		//remove overwritten definitions
 		$loomaArray = removeOverwrittenEntries($loomaWordsArray, $stagingArray);
+		
 
 		//make sure indecies are consecutive
 		return $loomaArray;
@@ -318,45 +309,46 @@
 	 		for ($indexBeta=0; $indexBeta < $betaCount; $indexBeta++) { 
 	 			
 	 			//make sure the key for object id is correct
-	 			if ($betaArray[$indexBeta]['_id'] == $dominantArray[$indexDominant]['_id']) {
+	 			if ($betaArray[$indexBeta]['wordData']['_id']->{'$id'} == $dominantArray[$indexDominant]['wordData']['_id']->{'$id'}) {
 	 				unset($betaArray[$indexBeta]);
 	 			}
 	 		}
 		}
 		return array_merge($betaArray);
 	}
-
-	//return a string with the function
+	
 	/**
-	*  Generates a javascript function in string form to perform the search query
-	*  takes all the necessary search arguments to be incorperated
-	*	returns a string with the javascript function
-	*/
-	function stagingCriteriaToJavascript($args){
-		$bool = false;
+	 * Creates a MongoDB query that can be used to search for the given arguments. Should be
+	 * replaced if the front end sends different arguments than for the Dictionary Editor
+	 * @param unknown $args The arguments to parse. expects the following fields:
+	 * text: (string)
+	 * added: (boolean or null)
+	 * modified: (boolean or null)
+	 * accepted: (boolean or null) (when true, should search for accepted OR deleted, since both are
+	 * publishable)
+	 */
+	function stagingCriteriaToMongoQuery($args) {
+		$condition = array("en" => array('$regex' => new MongoRegex("/.*" . $args["text"] . ".*/s")));
 		
-		$finalFunction = "function() {return this.en == '" . $args['text'] . "' && (";
-		if($args['added'] == 'true'){
-			$finalFunction = $finalFunction . "this.added == true ||";
-			$bool = true;
+		$added = checkTrue($args['added']);
+		$modified = checkTrue($args['modified']);
+		$accepted = checkTrue($args['accepted']);
+		if($added or $modified or $accepted) {
+			// need to add another condition
+			$list = array();
+			if($added) {
+				$list[] = array("stagingData.added" => true);
+			}
+			if($modified) {
+				$list[] = array("stagingData.modified" => true);
+			}
+			if($accepted) {
+				$list[] = array("stagingData.accepted" => true);
+				$list[] = array("stagingData.deleted" => true);
+			}
+			$condition = array('$and' => array($condition, array('$or' => $list)));
 		}
-		if($args['modified'] == 'true'){
-						$finalFunction = $finalFunction . "this.modified == true ||";
-						$bool = true;
-		}
-		if($args['accepted'] == 'true'){
-						$finalFunction = $finalFunction . "this.accepted == true ||";
-						$bool = true;
-		}
-		//append the necessary ending to the javascript function
-		
-		if($bool){
-			$finalFunction = substr($finalFunction, 0, -2) . ") ; } ";
-		} else {
-			$finalFunction = substr($finalFunction, 0, -4) . " ; } ";
-		}
-
-		return $finalFunction;
+		return $condition;
 	}
 
 
@@ -371,8 +363,6 @@
 
 		$wordsArray = array();
 		for ($i = 0; $i < $wordsPerPage and $stagingCursor->hasNext(); $i = $i + 1){
-			error_log("COPY");
-			error_log("other: " . json_encode(debug_backtrace()));
 			array_push ($wordsArray, compileSingleSimpleWord($stagingCursor->getNext()));
 		}
 
@@ -413,7 +403,7 @@
 	*  returns the array for that word
 	*/
 	function compileSingleLoomaWord($allWordData){
-		$singleWord = array('wordData' => compileSimpleWordData($allWordData), 'stagingData' => compileDefaultStagingData());
+		$singleWord = array('wordData' => compileSimpleWordData($allWordData), 'stagingData' => generateBlankStagingData());
 
 		return $singleWord;
 	}
@@ -453,7 +443,6 @@
 
 		if($numPages <= 1){
 			//do nothing
-			error_log("I DO NOTHING");
 			return $args['page'];
 		}
 		else if ($args['page'] <= $numPages){
@@ -494,14 +483,13 @@
 		global $stagingCollection;
 		global $loomaDB;
 		global $loomaCollection;
-		
-		$doc = $loomaConnection->selectDB($loomaDB)->selectCollection($loomaCollection)->findOne(array('_id' => $_id));
+		$doc = $loomaConnection->selectDB($loomaDB)->selectCollection($loomaCollection)->findOne(array('_id' => new MongoId($_id['$id'])));
 
-		$doc = 
-		//fix database and collection name
-		$stagingConnection->selectDB($stagingDB)->selectCollection($stagingCollection)->save($doc);
+		$stagingConnection->selectDB($stagingDB)->selectCollection($stagingCollection)->save(moveWordDataUpLevel(compileSingleLoomaWord($doc)));
 
-		$loomaConnection->selectDB($loomaDB)->selectCollection($loomaCollection)->remove($doc);
+		//shouldn't remove the entry, since it will be replaced upon publishing. this way,
+		// if the user reverts the change, the old version will still exist
+		//$loomaConnection->selectDB($loomaDB)->selectCollection($loomaCollection)->remove($doc);
 
 		return true;
 	}
@@ -522,14 +510,14 @@
 		global $loomaDB;
 		global $loomaCollection;
 
-		$stagingCursor = $stagingConnection->selectDB($stagingDB)->selectCollection($stagingCollection)->find();
+		$stagingCursor = $stagingConnection->selectDB($stagingDB)->selectCollection($stagingCollection)->find(stagingCriteriaToMongoQuery(array("text" => "", "added" => false, "modified" => false, "accepted" => true, "deleted" => true)));
 
 		foreach($stagingCursor as $doc){
 			//check to make sure the object has not been deleted and has been accepted
-			if($doc['stagingData']['deleted'] == 'false' and $doc['stagingData']['accepted'] == 'true')
+			if(!checkTrue($doc['stagingData']['deleted']) and checkTrue($doc['stagingData']['accepted']))
 			{
 				//convert to correct format
-				$newDoc = convertFromStagingToLooma($doc, $user);
+				$newDoc = convertFromStagingToLooma(compileSingleSimpleWord($doc), $user);
 
 				//remove from staging
 				$stagingConnection->selectDB($stagingDB)->selectCollection($stagingCollection)->remove($doc);
@@ -539,7 +527,7 @@
 
 			}
 			//if it has been deleted, remove it
-			else if ($doc['stagingData']['deleted'] == 'true')
+			else if (checkTrue($doc['stagingData']['deleted']))
 			{
 				//remove from database
 				$stagingConnection->selectDB($stagingDB)->selectCollection($stagingCollection)->remove($doc);
@@ -562,7 +550,7 @@
 
 		$doc = $doc['wordData'];
 
-		return $newDoc = array (
+		return array (
 				'_id' => $doc['_id'],
 				//"ch_id" => "3EN06",
 				"en" => $doc["en"],
@@ -581,19 +569,23 @@
 	*database, a connection to that database, and a string with the user modifying
 	*the entry
 	*
-	*Returns true
+	*Returns the modified word
 	*/
-	function updateStaging($new, $connection, $user) {
+	function updateStaging($new, $connection, $user, $isStagingChange) {
 		global $stagingDB;
 		global $stagingCollection;
 		$collection = $connection->selectDB($stagingDB)->selectCollection($stagingCollection);
 
 		//update user and modified status
 		$new['wordData']['mod'] = $user;
-		$new['stagingData']['modified'] = true;
+		if(!$isStagingChange) {
+			$new['stagingData']['modified'] = true;
+			$new['stagingData']['accepted'] = false;
+		}
+		$new['wordData']['date_entered'] = getDateAndTime('America/Los_Angeles');
 
 		//save it to the collection
-		$collection->save($new);
+		$collection->save(moveWordDataUpLevel($new));
 
 		return true;
 	}
@@ -627,13 +619,29 @@
 		global $stagingDB;
 		global $stagingCollection;
 		//remove object with id
-
-
+		$stagingConnection->selectDB($stagingDB)->selectCollection($stagingCollection)->remove(array("_id" => new MongoId($_id['$id'])));
 	}
 
 //work on this
 	function checkForSimilarDefintion () {
 		return true;
+	}
+	
+	/**
+	 * Moves the word data to the same level as the staging data. (aka turn it from backend
+	 * version to database version)
+	 * @param unknown $word The word to modify
+	 */
+	function moveWordDataUpLevel($word) {
+		$ans = array();
+		foreach($word['wordData'] as $key => $val) {
+			$ans[$key] = $val;
+		}
+		$ans['stagingData'] = array();
+		foreach($word['stagingData'] as $key => $val) {
+			$ans['stagingData'][$key] = $val;
+		}
+		return $ans;
 	}
 
  

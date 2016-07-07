@@ -170,8 +170,8 @@
 	}
 	
 	/**
-	 * Converts all words in the list using the convertWord() function. The original list WILL
-	 * be modified
+	 * Converts all words in the list using the convertWord() function. The original list should
+	 * be modified, but for some reason isn't
 	 * @param unknown $list The list to convert
 	 * @param unknown $toBackend True if should be converted to backend, false if to front end
 	 * @return the converted list
@@ -219,7 +219,8 @@
 	 */
 	function readStagingWrapper($args, $stagingConnection) {
 		$out = readStagingDatabase($args, $stagingConnection);
-		convertWordList($out["words"], false);
+		$out["words"] = convertWordList($out["words"], false);
+		
 		return $out;
 	}
 	
@@ -264,24 +265,27 @@
 	function updateStagingWrapper($change, $officialConnection, $stagingConnection, $user) {
 		$former = findDefinitionWithID($change["wordId"], $officialConnection,
 														$stagingConnection);
+		$former = convertWord($former, false);
+		
 		if($change["deleteToggled"] == "true") {
 			$former["stagingData"]["deleted"] = !$former["stagingData"]["deleted"];
 		} elseif($change["field"] == "cancel") {
 			removeStaging($change["wordId"], $stagingConnection);
-			return;
+			return true;
 		} elseif ($change["field"] == "stat") {
 			$former["stagingData"]["accepted"] = !$former["stagingData"]["accepted"];
 		} elseif (in_array($change["field"], array("word", "root", "nep", "pos", "def"))) {
 			// for all of these the value just needs to be updated to $change["new"]
 			$former["wordData"][$change["field"]] = $change["new"];
+			return updateStaging(convertWord($former, true), $stagingConnection, $user, false);
 		} else {
 			// illegal update attempt
 			return false;
 		}
-		
+		$out = convertWord($former, true);
 		// assumes that updateStaging will take care of changing the modifier, date modified,
 		// and all staging data, since these are general tasks.
-		return updateStaging(convertWord($former, true), $stagingConnection, $user);
+		return updateStaging($out, $stagingConnection, $user, true);
 	}
 	
 	function moveToStagingWrapper($moveId, $officialConnection, $stagingConnection, $user) {

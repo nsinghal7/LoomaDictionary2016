@@ -252,7 +252,7 @@ function createTableEntry(word, i) {
 	} else if(word['stagingData']['added']) {
 		stat = "add<wbr>ed";
 	} else {
-		stat = "pub<wbr>lish<wbr>ed";
+		stat = "un<wbr>ed<wbr>it<wbr>ed";
 	}
 	
 	//adds data to the row from the word object
@@ -270,8 +270,7 @@ function createTableEntry(word, i) {
 			+ (word['wordData']["mod"]) + '</p></td>'));
 	row.append($('<td class="dateCol"><p>'
 			+ (word['wordData']["date"]) + '</p></td>'));
-	row.append($('<td class="otherCol"><p>id: ' + word['wordData']['id'] + 
-			+ '</p></td>'));
+	row.append($('<td class="otherCol"><p> id: ' + word['wordData']['id']['$id'] +'</p></td>'));
 	return row;
 }
 
@@ -371,6 +370,7 @@ function edit(type, index) {
 											&& type == "stat") || type == 'delete'}},
 			function(data, status, jqXHR) {
 				// called on server response
+				console.log("here");
 				if(data['status']['type'] == 'success') {
 					// don't alert user, since success is assumed, and keep server's change
 					words[index] = data['new'];
@@ -440,7 +440,7 @@ function loadOfficialTable() {
 						row.append(createOfficialTd(officialDefs[i], "mod"));
 						row.append(createOfficialTd(officialDefs[i], "date"));
 						row.append($("<td class='other'><p>id: "
-								+ officialDefs[i]['wordData']['id'] 
+								+ officialDefs[i]['wordData']['id']['$id'] 
 								+ "</p></td>"));
 						table.append(row);
 					}
@@ -462,7 +462,7 @@ function loadOfficialTable() {
 function moveOfficial(index) {
 	$.get("backend.php",
 			{'loginInfo': {"allowed": true, 'user': 'me'},
-			'moveId': officialDefs[index]['wordData']['id'] + ""},
+			'moveId': officialDefs[index]['wordData']['id']},
 		function(data, status, jqXHR) {
 			if(data['status']['type'] == 'success') {
 				// reload page, don't notify, since success is expected
