@@ -88,7 +88,7 @@
 	* returns true when either a string 'true' or a boolean true is entered
 	*/
 	function checkTrue ($bool){
-		if ($bool == true or $bool === 'true'){
+		if ($bool === true or $bool == 'true'){
 			return true;
 		}
 		else {
@@ -230,12 +230,8 @@
 			global $stagingDB;
 			global $stagingCollection;
 
-
-			//encode criteria as js function
-			$js = stagingCriteriaToJavascript($args);
-
 			//get all elements that match the criteria
-			$stagingCursor = $stagingConnection->selectDB($stagingDB)->selectCollection($stagingCollection)->find();
+			$stagingCursor = $stagingConnection->selectDB($stagingDB)->selectCollection($stagingCollection)->find(stagingCriteriaToMongoQuery($args));
 
 			//figure out how many total pages
 			$numTotalWords = $stagingCursor->count();
@@ -265,12 +261,9 @@
 	function getDefinitionsFromStaging ($args, $connection) {
 		global $stagingDB;
 		global $stagingCollection;
-			
-		//encode criteria as js function
-		$js = stagingCriteriaToJavascript($args);
 
 		//get all elements that match the criteria
-		$stagingCursor = $connection->selectDB($stagingDB)->selectCollection($stagingCollection)->find();
+		$stagingCursor = $connection->selectDB($stagingDB)->selectCollection($stagingCollection)->find(stagingCriteriaToMongoQuery($args));
 
 		//put the words in an array
 		//remember to add in staging parameters
@@ -323,38 +316,40 @@
 		}
 		return array_merge($betaArray);
 	}
-
-	//return a string with the function
+	
 	/**
-	*  Generates a javascript function in string form to perform the search query
-	*  takes all the necessary search arguments to be incorperated
-	*	returns a string with the javascript function
-	*/
-	function stagingCriteriaToJavascript($args){
-		$bool = false;
+	 * Creates a MongoDB query that can be used to search for the given arguments. Should be
+	 * replaced if the front end sends different arguments than for the Dictionary Editor
+	 * @param unknown $args The arguments to parse. expects the following fields:
+	 * text: (string)
+	 * added: (boolean)
+	 * modified: (boolean)
+	 * accepted: (boolean) (when true, should search for accepted OR deleted, since both are
+	 * publishable)
+	 */
+	function stagingCriteriaToMongoQuery($args) {
+		$condition = array("en" => array('$regex' => new MongoRegex("/.*" . $args["text"] . ".*/s")));
 		
-		$finalFunction = "function() {return this.en == '" . $args['text'] . "' && (";
-		if($args['added'] == 'true'){
-			$finalFunction = $finalFunction . "this.added == true ||";
-			$bool = true;
+		$added = checkTrue($args['added']);
+		$modified = checkTrue($args['modified']);
+		$accepted = checkTrue($args['accepted']);
+		if($added or $modified or $accepted) {
+			// need to add another condition
+			$list = array();
+			if($added) {
+				$list[] = array("stagingData.added" => true);
+			}
+			if($modified) {
+				$list[] = array("stagingData.modified" => true);
+			}
+			if($accepted) {
+				$list[] = array("stagingData.accepted" => true);
+				$list[] = array("stagingData.deleted" => true);
+			}
+			$condition = array('$and' => array($condition, array('$or' => $list)));
 		}
-		if($args['modified'] == 'true'){
-						$finalFunction = $finalFunction . "this.modified == true ||";
-						$bool = true;
-		}
-		if($args['accepted'] == 'true'){
-						$finalFunction = $finalFunction . "this.accepted == true ||";
-						$bool = true;
-		}
-		//append the necessary ending to the javascript function
-		
-		if($bool){
-			$finalFunction = substr($finalFunction, 0, -2) . ") ; } ";
-		} else {
-			$finalFunction = substr($finalFunction, 0, -4) . " ; } ";
-		}
-
-		return $finalFunction;
+		error_log(json_encode($condition));
+		return $condition;
 	}
 
 
@@ -514,7 +509,7 @@
 		global $loomaDB;
 		global $loomaCollection;
 
-		$stagingCursor = $stagingConnection->selectDB($stagingDB)->selectCollection($stagingCollection)->find();
+		$stagingCursor = $stagingConnection->selectDB($stagingDB)->selectCollection($stagingCollection)->find(stagingCriteriaToMongoQuery(array("text" => "", "added" => false, "modified" => false, "accepted" => true, "deleted" => true)));
 
 		foreach($stagingCursor as $doc){
 			//check to make sure the object has not been deleted and has been accepted
@@ -633,7 +628,8 @@
 	}
 	
 	/**
-	 * Moves the word data to the same level as the staging data.
+	 * Moves the word data to the same level as the staging data. (aka turn it from backend
+	 * version to database version)
 	 * @param unknown $word The word to modify
 	 */
 	function moveWordDataUpLevel($word) {
