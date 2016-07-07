@@ -514,7 +514,7 @@
 
 		foreach($stagingCursor as $doc){
 			//check to make sure the object has not been deleted and has been accepted
-			if($doc['stagingData']['deleted'] == 'false' and $doc['stagingData']['accepted'] == 'true')
+			if(!checkTrue($doc['stagingData']['deleted']) and checkTrue($doc['stagingData']['accepted']))
 			{
 				//convert to correct format
 				$newDoc = convertFromStagingToLooma($doc, $user);
@@ -527,7 +527,7 @@
 
 			}
 			//if it has been deleted, remove it
-			else if ($doc['stagingData']['deleted'] == 'true')
+			else if (checkTrue($doc['stagingData']['deleted']))
 			{
 				//remove from database
 				$stagingConnection->selectDB($stagingDB)->selectCollection($stagingCollection)->remove($doc);
