@@ -192,19 +192,18 @@
 		global $loomaDB;
 		global $loomaCollection;
 		//first look for the entry in the staging databse
-		var_dump( $_id);
 		$stagingDefinition = $stagingConnection->selectDB($stagingDB)->selectCollection($stagingCollection)->findOne(array('_id' => new MongoId($_id['$id'])));
 
 		if ($stagingDefinition != null){
-			return $stagingDefinition;
+			return compileSingleSimpleWord($stagingDefinition);
 		}
 
 		//since the entry wasn't in the staging database, check the Looma database
 		//fix database and collection names
-		$loomaDefinition = $loomaConnection->selectDB($loomaDB)->selectCollection($loomaCollection)->findOne(array('_id' => $_id));
+		$loomaDefinition = $loomaConnection->selectDB($loomaDB)->selectCollection($loomaCollection)->findOne(array('_id' => new MongoId($_id['$id'])));
 
 		if ($loomaDefinition != null){
-			return $loomaDefinition;
+			return compileSingleLoomaWord($loomaDefinition);
 		}
 
 		//this means an object with the specified id could not be found.
@@ -240,7 +239,6 @@
 
 			//figure out how many total pages
 			$numTotalWords = $stagingCursor->count();
-			error_log("num words: " . $numTotalWords);
 			$numPages = ($numTotalWords + $wordsPerPage - 1) / $wordsPerPage;
 
 			if($numPages < 1){

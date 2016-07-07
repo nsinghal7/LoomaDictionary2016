@@ -265,6 +265,8 @@
 	function updateStagingWrapper($change, $officialConnection, $stagingConnection, $user) {
 		$former = findDefinitionWithID($change["wordId"], $officialConnection,
 														$stagingConnection);
+		$former = convertWord($former, false);
+		
 		if($change["deleteToggled"] == "true") {
 			$former["stagingData"]["deleted"] = !$former["stagingData"]["deleted"];
 		} elseif($change["field"] == "cancel") {
@@ -280,10 +282,10 @@
 			// illegal update attempt
 			return false;
 		}
-		
+		$out = convertWord($former, true);
 		// assumes that updateStaging will take care of changing the modifier, date modified,
 		// and all staging data, since these are general tasks.
-		return updateStaging(convertWord($former, true), $stagingConnection, $user, true);
+		return updateStaging($out, $stagingConnection, $user, true);
 	}
 	
 	function moveToStagingWrapper($moveId, $officialConnection, $stagingConnection, $user) {
@@ -370,6 +372,7 @@
 	
 	//return json encoded response
 	$encoded = json_encode($response);
+	error_log($encoded);
 	header('Content-type: application/json');
 	exit($encoded);
 	
