@@ -517,7 +517,7 @@
 			if(!checkTrue($doc['stagingData']['deleted']) and checkTrue($doc['stagingData']['accepted']))
 			{
 				//convert to correct format
-				$newDoc = convertFromStagingToLooma($doc, $user);
+				$newDoc = convertFromStagingToLooma(compileSingleSimpleWord($doc), $user);
 
 				//remove from staging
 				$stagingConnection->selectDB($stagingDB)->selectCollection($stagingCollection)->remove($doc);
@@ -550,7 +550,7 @@
 
 		$doc = $doc['wordData'];
 
-		return $newDoc = array (
+		return array (
 				'_id' => $doc['_id'],
 				//"ch_id" => "3EN06",
 				"en" => $doc["en"],
@@ -619,8 +619,7 @@
 		global $stagingDB;
 		global $stagingCollection;
 		//remove object with id
-
-
+		$stagingConnection->selectDB($stagingDB)->selectCollection($stagingCollection)->remove(array("_id" => new MongoId($_id['$id'])));
 	}
 
 //work on this
