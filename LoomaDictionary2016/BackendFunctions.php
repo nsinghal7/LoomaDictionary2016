@@ -193,63 +193,114 @@
 	}
 	
 	
+	/**
+	 * Looks up the word in the pearson longman's wordwise dictionary and returns it formatted
+	 * @param unknown $word The word to look up
+	 * @return a list of objects with the following properties: def, rw, pos
+	 */
+	function lookUpWord($word) {
+		$url = "http://api.pearson.com/v2/dictionaries/wordwise/entries?limit=100&headword=" . rawurlencode($word);
+		$ch = curl_init($url);
+		curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+		$response = curl_exec($ch);
+		curl_close($ch);
+		$obj = $obj =json_decode($response, true); //true converts stdClass to associative array.
+		$messyList = $obj['results'];
+		$ans = array();
+		foreach($messyList as $messy) {
+			if($messy["headword"] == $word) {
+				$senses = isset($messy["senses"]) ? $messy["senses"] : array();
+				foreach($senses as $sense) {
+					$def = array();
+					$def['def'] = isset($sense['definition']) ? $sense['definition'] : "";
+					$def['pos'] = $messy["part_of_speech"];
+					$def['rw'] = ""; // this dictionary doesn't have root words
+					$ans[] = $def;
+				}
+			}
+		}
+		return $ans;
+	}
+	
 
 	//this method should be replaced depending on the format and type of data being entered
 	/**
-	*creates an entry in the stagin database
-	*takes the word that the entry will be created around, 
-	*the connection to the staging database and the official one, and the user name
-	*returns true
-	*/
+	 * Creates definitions for the given word and adds them all to the staging dictionary
+	 * @param unknown $word the word to create entries for
+	 * @param unknown $officialConnection The official database connection
+	 * @param unknown $stagingConnection the staging database connection
+	 * @param unknown $user the user
+	 * @return boolean True if all definitions were successfully added, false if ANY failed
+	 */
 	function createEntry($word, $officialConnection, $stagingConnection, $user) {
 		
+		$dictionaryData = lookUpWord($word);
+		
+		$fullSuccess = true;
+		
+		foreach($dictionaryData as $definition) {
+			$fullSuccess &= createIndividualDefinition($word, $definition, $officialConnection, $stagingConnection, $user);
+		}
+		
+		return $fullSuccess;
+	}
+	
+	/**
+	 * Creates a definition (one document in the database) and adds it to the staging database
+	 * @param unknown $word the word to define
+	 * @param unknown $definition The definition object to be put into the database
+	 * @param unknown $officialConnection The connection to the official database
+	 * @param unknown $stagingConnection The connection to the staging database
+	 * @param unknown $user the user responsible
+	 * @return boolean true if successful, false if failed
+	 */
+	function createIndividualDefinition($word, $definition, $officialConnection, $stagingConnection, $user) {
 		//get definition(find api)
-		$def = 
-
+		$def = $definition['def'];
+		
 		//get translation
 		$np = translateToNepali($word);
 		
 		//get the rw (hopefully this will be included in the dictionary api)
-		$rw =
-
+		$rw = $definition['rw'];
+		
 		//get the POS (hopefully this is included in the dictionary api)
-		$POS = 
+		$POS = $definition['pos'];
 		
 		//get the date and time
 		$dateCreated = getDateAndTime("America/Los_Angeles");
 		
 		//generate random number
 		$random = generateRandomNumber(16);
-
+		
 		//put everything into a doc
 		$doc = array( "wordData" => array(
-		"en" => $word,
-		"rw" => $rw,
-		"np" => $np,
-		"part" => $POS,
-		"def" => $def,
-		"rand" => $random,
-		"date_entered" => $dateCreated,
-		"mod" => $user),
-		"stagingData" => array(
-				'added' => true, 'modified' => false, 'accepted' => false,
-				'deleted' => false
+				"en" => $word,
+				"rw" => $rw,
+				"np" => $np,
+				"part" => $POS,
+				"def" => $def,
+				"rand" => $random,
+				"date_entered" => $dateCreated,
+				"mod" => $user),
+				"stagingData" => array(
+						'added' => true, 'modified' => false, 'accepted' => false,
+						'deleted' => false
 				)
-			);
-
+		);
+		
 		//check to see if a similar definition already exists
-		if(checkForSimilarDefinition()){
+		if(!checkForSimilarDefinition()){
 			global $stagingDB;
 			global $stagingCollection;
 			// insert the doc into the database
 			$stagingConnection->selectDB($stagingDB)->selectCollection($stagingCollection)->save(moveWordDataUpLevel($doc));
-			
+				
 			return true;
 		}
 		else{
 			return false;
 		}
-		
 	}
 
 	/**
@@ -708,7 +759,7 @@
 
 //work on this
 	function checkForSimilarDefinition () {
-		return true;
+		return false;
 	}
 	
 	/**
