@@ -92,6 +92,12 @@
 	 * }
 	 * 
 	 * 
+	 * getting the progress session:
+	 * get {
+	 * 		progress: anything
+	 * }
+	 * 
+	 * 
 	 * Passes back the data in the following format for varying requests and outcomes. All
 	 * data returned is in JSON format.
 	 * 
@@ -135,6 +141,15 @@
 	 * {
 	 * 		status: {
 	 * 				type: 'success'
+	 * 		}
+	 * }
+	 * 
+	 * 
+	 * getting the progress session:
+	 * {
+	 * 		progress: {
+	 * 				position: (int),
+	 * 				length: (int)
 	 * 		}
 	 * }
 	 * 
@@ -288,10 +303,26 @@
 		return updateStaging($out, $stagingConnection, $user, true);
 	}
 	
+	/**
+	 * Wrapper for copying an entry from the official database to the staging database so
+	 * it can be edited. While to the user it looks like it is being moved, the entry is only
+	 * copied in order to preserve its original state until publishing
+	 * @param unknown $moveId The id of the object to move
+	 * @param unknown $officialConnection The connection to the official database
+	 * @param unknown $stagingConnection The connection to the staging database
+	 * @param unknown $user The user responsible
+	 * @return true if successful, false otherwise
+	 */
 	function moveToStagingWrapper($moveId, $officialConnection, $stagingConnection, $user) {
 		return moveEntryToStaging($stagingConnection, $officialConnection, $moveId, $user);
 	}
 	
+	/**
+	 * Wrapper for getting the progress session of the current user.
+	 * @param unknown $appConnection The connection to the app database
+	 * @param unknown $user The user requesting the session
+	 * @return {"position": how many words have been parsed, "length": how many total}
+	 */
 	function getProgressWrapper($appConnection, $user) {
 		return getUploadProgress($appConnection, $user);
 	}
