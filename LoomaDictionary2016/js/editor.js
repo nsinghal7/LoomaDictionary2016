@@ -134,7 +134,9 @@ function processPDF() {
 	Pdf2TextClass().convertPDF(file, function(page, total) {}, function(text) {
 		// called when the pdf is fully converted to text. Finds all unique words
 		progress.text("Processing text");
-		var words = findUniqueWordsFromString(text);
+		var words = findUniqueWordsFromString(text).map(function(word) {
+			return word.toLowerCase();
+		});
 		
 		// uploads the words to the backend to be added to the dictionary
 		$.post("backend.php",
