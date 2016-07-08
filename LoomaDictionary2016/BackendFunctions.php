@@ -413,9 +413,11 @@
 	 *
 	 *	Takes the desired word and a connection to the Looma database
 	 *
+	 *Also takes $overwritten, which, if true, specifies that overwritten entries should be shown
+	 *
 	 *	Returns an array with all the definitions found
 	 */
-	function findDefinitonsForSingleWordLooma ($word, $loomaConnection, $stagingConnection) {
+	function findDefinitonsForSingleWordLooma ($word, $loomaConnection, $stagingConnection, $overwritten) {
 		global $loomaDB;
 		global $loomaCollection;
 		//get all elements that match the criteria
@@ -425,11 +427,15 @@
 		$loomaWordsArray = compileLoomaWordsArray($loomaCursor);
 		
 
-		//find all entries in the staging database
-		$stagingArray = getDefinitionsFromStaging(array("text" => $word), $stagingConnection);
-
-		//remove overwritten definitions
-		$loomaArray = removeOverwrittenEntries($loomaWordsArray, $stagingArray);
+		if(checkTrue($overwritten)) {
+			$loomaArray = $loomaWordsArray;
+		} else {
+			//find all entries in the staging database
+			$stagingArray = getDefinitionsFromStaging(array("text" => $word), $stagingConnection);
+			
+			//remove overwritten definitions
+			$loomaArray = removeOverwrittenEntries($loomaWordsArray, $stagingArray);
+		}
 		
 
 		//make sure indecies are consecutive

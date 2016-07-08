@@ -78,6 +78,12 @@ var prevAccepted = false;
 var selectedWord = "";
 
 /**
+ * If true, official searches and word selections should show overwritten entries, if false,
+ * act as normal
+ */
+var showOverwritten = false;
+
+/**
  * The id returned by setInterval while using it to update the progress bar
  */
 var progressTimer;
@@ -449,7 +455,8 @@ function submitOfficialSearch() {
 function loadOfficialTable() {
 	$.get("backend.php",
 			{'loginInfo': {"allowed": true, 'user': 'me'},
-			'searchArgs': {'word': selectedWord}, 'staging': false},
+			'searchArgs': {'word': selectedWord, 'overwritten': showOverwritten},
+			'staging': false},
 			function(data, status, jqXHR) {
 				if(data != null) {
 					officialDefs = data['data'];
@@ -504,6 +511,19 @@ function moveOfficial(index) {
 				alert("moving word to staging failed");
 			}
 		}, 'json');
+}
+
+/**
+ * Toggles the show/hide overwritten button and resubmits the table with the new setting
+ */
+function toggleOverwrite() {
+	function getClass() {
+		return showOverwritten ? "toggledOn" : "toggledOff";
+	}
+	$("#showOverwriteButton").removeClass(getClass());
+	showOverwritten = !showOverwritten;
+	$("#showOverwriteButton").addClass(getClass());
+	loadOfficialTable();
 }
 
 /**

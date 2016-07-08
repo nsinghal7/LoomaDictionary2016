@@ -61,7 +61,8 @@
 	 * get {
 	 * 		staging: false or "false"
 	 * 		searchArgs: {
-	 * 						word: the word to search for (string)
+	 * 						word: the word to search for (string),
+	 * 						overwritten: true if should show overwritten entries too
 	 * 					}
 	 * }
 	 * 
@@ -248,7 +249,8 @@
 	 */
 	function readOfficialWrapper($args, $officialConnection, $stagingConnection) {
 		return convertWordList(findDefinitonsForSingleWordLooma($args['word'],
-													$officialConnection, $stagingConnection), false);
+													$officialConnection, $stagingConnection,
+													$args['overwritten']), false);
 	}
 	
 	/**

@@ -226,5 +226,17 @@ table  tr  td  p {
 
 #officialSearchArea {
 	display: inline;
-	margin-left: 5%;
+}
+
+
+#showOverwriteButton.toggledOff::before {
+	content: "Show overwritten";
+}
+
+#showOverwriteButton.toggledOn::before {
+	content: "Hide overwritten"
+}
+
+#showOverwriteButton {
+	display: inline;
 }
