@@ -623,7 +623,7 @@
 	}
 
 //work on this
-	function checkForSimilarDefintion () {
+	function checkForSimilarDefinition () {
 		return true;
 	}
 	
