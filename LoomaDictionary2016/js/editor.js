@@ -78,6 +78,11 @@ var prevAccepted = false;
 var selectedWord = "";
 
 /**
+ * The id returned by setInterval while using it to update the progress bar
+ */
+var progressTimer;
+
+/**
  * To be called on startup. Sets up the screen and pulls data from the backend.
  */
 function startup() {
@@ -129,7 +134,9 @@ function processPDF() {
 	Pdf2TextClass().convertPDF(file, function(page, total) {}, function(text) {
 		// called when the pdf is fully converted to text. Finds all unique words
 		progress.text("Processing text");
-		var words = findUniqueWordsFromString(text);
+		var words = findUniqueWordsFromString(text).map(function(word) {
+			return word.toLowerCase();
+		});
 		
 		// uploads the words to the backend to be added to the dictionary
 		$.post("backend.php",
@@ -144,12 +151,28 @@ function processPDF() {
 						submitSearch(true);
 					}
 					
+					// stop updating the progress bar
+					clearInterval(progressTimer);
+					
 					// unlocks the process and reallows user submission
 					$("#uploadPDFDiv").find(".closePopupButton").prop("disabled", false);
 					$("#processPDFButton").prop("disabled", false);
 					processing = false;
 					submitSearch(true);
 				}, "json");
+		
+		// start updating the progress bar
+		progressTimer = setInterval(function() {
+			$.get("backend.php",
+					{'loginInfo': {"allowed": true, 'user': 'me'}, "progress": true},
+					function(data, status, jqXHR) {
+						var output = data['progress'];
+						if(!output) {
+							return;
+						}
+						progress.text("Processing text: " + output["position"] + " / " + output['length']);
+					}, "json");
+		}, 1000);
 	});
 }
 
@@ -186,6 +209,7 @@ function submitSearch(oldSearch) {
 				data = data['data'];
 				$("#pageInput").val(data['page']);
 				maxPage = data['maxPage'];
+				$("#maxPage").text(maxPage);
 				
 				// clears the table
 				var table = $("#resultsTable");
@@ -408,6 +432,14 @@ function selectWord(word) {
 	$(".unselectedWord[word='" + selectedWord + "']").addClass("selectedWord")
 										.removeClass("unselectedWord");
 	
+	loadOfficialTable();
+}
+
+/**
+ * Submits a search for an official (published) word
+ */
+function submitOfficialSearch() {
+	selectWord($("#officialSearchBox").val());
 	loadOfficialTable();
 }
 

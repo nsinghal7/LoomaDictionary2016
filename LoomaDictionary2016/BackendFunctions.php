@@ -63,6 +63,15 @@
 
 	//change to reflect the collection you would like to use within the staging database
 	$stagingCollection = 'staging';
+	
+	// enter address of app's database connection
+	$appAddress = '';
+	
+	// change to reflect app database name
+	$appDB = 'fakeLooma';
+	
+	//change to reflect the collection you would like to use within the app database
+	$appCollection = 'app';
 
 	/**
 	*	Dummy function to always return true
@@ -108,70 +117,196 @@
 		}
 		return null;
 	}
+	
+	/**
+	 *Returns a connection to the app database.  the address still needs to be specified
+	 */
+	function createConnectionToApp($login){
+		if(checkLogin($login))
+		{
+			global $appAddress;
+			//default is localhost, insert parameters to specify address of database
+			return new MongoClient($appAddress);
+		}
+		return null;
+	}
+	
+	
+	
+	
+	/**
+	 * Creates an uploadProgressSession by storing the length and current position (0) in the
+	 * 'app' collection of the database.
+	 * @param integer $length The length to store
+	 * @param unknown $appConnection The connection to the app database
+	 * @param unknown $user The user who owns the session
+	 */
+	function createUploadProgressSession($length, $appConnection, $user) {
+		global $appDB;
+		global $appCollection;
+		$session = array("position" => 0, "length" => $length, "user" => $user);
+		$appConnection->selectDB($appDB)->selectCollection($appCollection)->insert($session);
+	}
+	
+	
+	/**
+	 * Updates the current position of the progress session
+	 * @param unknown $position The new position
+	 * @param unknown $appConnection The connection to the app database
+	 * @param unknown $user The user
+	 */
+	function updateUploadProgressSession($position, $appConnection, $user) {
+		global $appDB;
+		global$appCollection;
+		$search = array("user" => $user);
+		$change = array('$set' => array("position" => $position));
+		
+		$appConnection->selectDB($appDB)->selectCollection($appCollection)->update($search, $change);
+	}
+	
+	
+	/**
+	 * Gets the progress of the upload from the session database entry referenced by the user
+	 * @param unknown $appConnection The connection to the app database
+	 * @param unknown $user The user
+	 * @return session object in the form: {"position": (int), "length": (int)}
+	 * or null if it didn't exist
+	 */
+	function getUploadProgress($appConnection, $user) {
+		global $appDB;
+		global $appCollection;
+		$query = array("user" => $user);
+		return $appConnection->selectDB($appDB)->selectCollection($appCollection)->findOne($query);
+	}
+	
+	
+	/**
+	 * Closes the upload session referenced by the user by removing it from the database
+	 * @param unknown $appConnection The connection to the app database
+	 * @param unknown $user The user
+	 */
+	function closeUploadProgress($appConnection, $user) {
+		global $appDB;
+		global $appCollection;
+		$query = array("user" => $user);
+		$appConnection->selectDB($appDB)->selectCollection($appCollection)->remove($query);
+	}
+	
+	
+	/**
+	 * Looks up the word in the pearson longman's wordwise dictionary and returns it formatted
+	 * @param unknown $word The word to look up
+	 * @return a list of objects with the following properties: def, rw, pos
+	 */
+	function lookUpWord($word) {
+		$url = "http://api.pearson.com/v2/dictionaries/wordwise/entries?limit=100&headword=" . rawurlencode($word);
+		$ch = curl_init($url);
+		curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+		$response = curl_exec($ch);
+		curl_close($ch);
+		$obj = $obj =json_decode($response, true); //true converts stdClass to associative array.
+		$messyList = $obj['results'];
+		$ans = array();
+		foreach($messyList as $messy) {
+			if($messy["headword"] == $word) {
+				$senses = isset($messy["senses"]) ? $messy["senses"] : array();
+				foreach($senses as $sense) {
+					$def = array();
+					$def['def'] = isset($sense['definition']) ? $sense['definition'] : "";
+					$def['pos'] = $messy["part_of_speech"];
+					$def['rw'] = ""; // this dictionary doesn't have root words
+					$ans[] = $def;
+				}
+			}
+		}
+		return $ans;
+	}
+	
 
 	//this method should be replaced depending on the format and type of data being entered
 	/**
-	*creates an entry in the stagin database
-	*takes the word that the entry will be created around, 
-	*the connection to the staging database and the official one, and the user name
-	*returns true
-	*/
+	 * Creates definitions for the given word and adds them all to the staging dictionary
+	 * @param unknown $word the word to create entries for
+	 * @param unknown $officialConnection The official database connection
+	 * @param unknown $stagingConnection the staging database connection
+	 * @param unknown $user the user
+	 * @return boolean True if all definitions were successfully added, false if ANY failed
+	 */
 	function createEntry($word, $officialConnection, $stagingConnection, $user) {
 		
+		$dictionaryData = lookUpWord($word);
+		
+		$fullSuccess = true;
+		
+		foreach($dictionaryData as $definition) {
+			$fullSuccess &= createIndividualDefinition($word, $definition, $officialConnection, $stagingConnection, $user);
+		}
+		
+		return $fullSuccess;
+	}
+	
+	/**
+	 * Creates a definition (one document in the database) and adds it to the staging database
+	 * @param unknown $word the word to define
+	 * @param unknown $definition The definition object to be put into the database
+	 * @param unknown $officialConnection The connection to the official database
+	 * @param unknown $stagingConnection The connection to the staging database
+	 * @param unknown $user the user responsible
+	 * @return boolean true if successful, false if failed
+	 */
+	function createIndividualDefinition($word, $definition, $officialConnection, $stagingConnection, $user) {
 		//get definition(find api)
-		$def = 
-
+		$def = $definition['def'];
+		
 		//get translation
 		$np = translateToNepali($word);
 		
 		//get the rw (hopefully this will be included in the dictionary api)
-		$rw =
-
+		$rw = $definition['rw'];
+		
 		//get the POS (hopefully this is included in the dictionary api)
-		$POS = 
+		$POS = $definition['pos'];
 		
 		//get the date and time
 		$dateCreated = getDateAndTime("America/Los_Angeles");
 		
 		//generate random number
 		$random = generateRandomNumber(16);
-
+		
 		//put everything into a doc
 		$doc = array( "wordData" => array(
-		"en" => $word,
-		"rw" => $rw,
-		"np" => $np,
-		"part" => $POS,
-		"def" => $def,
-		"rand" => $random,
-		"date_entered" => $dateCreated,
-		"mod" => $user),
-		"stagingData" => array(
-				'added' => true, 'modified' => false, 'accepted' => false,
-				'deleted' => false
+				"en" => $word,
+				"rw" => $rw,
+				"np" => $np,
+				"part" => $POS,
+				"def" => $def,
+				"rand" => $random,
+				"date_entered" => $dateCreated,
+				"mod" => $user),
+				"stagingData" => array(
+						'added' => true, 'modified' => false, 'accepted' => false,
+						'deleted' => false
 				)
-			);
-
+		);
+		
 		//check to see if a similar definition already exists
-		if(checkForSimilarDefinition()){
+		if(!checkForSimilarDefinition()){
 			global $stagingDB;
 			global $stagingCollection;
 			// insert the doc into the database
 			$stagingConnection->selectDB($stagingDB)->selectCollection($stagingCollection)->save(moveWordDataUpLevel($doc));
-			
+				
 			return true;
 		}
 		else{
 			return false;
 		}
-		
 	}
 
 	/**
 	 *	Generates a random number given a certain number of digits
 	 */
 	function generateRandomNumber ($numDigits){
-		$numDigits = 16;
 		$multiplier = 10 ** $numDigits;
 		$random = rand(0, $multiplier) / $multiplier;
 
@@ -623,8 +758,8 @@
 	}
 
 //work on this
-	function checkForSimilarDefintion () {
-		return true;
+	function checkForSimilarDefinition () {
+		return false;
 	}
 	
 	/**
