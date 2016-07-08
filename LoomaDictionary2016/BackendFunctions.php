@@ -63,6 +63,15 @@
 
 	//change to reflect the collection you would like to use within the staging database
 	$stagingCollection = 'staging';
+	
+	// enter address of app's database connection
+	$appAddress = '';
+	
+	// change to reflect app database name
+	$appDB = 'fakeLooma';
+	
+	//change to reflect the collection you would like to use within the app database
+	$appCollection = 'app';
 
 	/**
 	*	Dummy function to always return true
@@ -108,6 +117,82 @@
 		}
 		return null;
 	}
+	
+	/**
+	 *Returns a connection to the app database.  the address still needs to be specified
+	 */
+	function createConnectionToApp($login){
+		if(checkLogin($login))
+		{
+			global $appAddress;
+			//default is localhost, insert parameters to specify address of database
+			return new MongoClient($appAddress);
+		}
+		return null;
+	}
+	
+	
+	
+	
+	/**
+	 * Creates an uploadProgressSession by storing the length and current position (0) in the
+	 * 'app' collection of the database.
+	 * @param integer $length The length to store
+	 * @param unknown $appConnection The connection to the app database
+	 * @param unknown $user The user who owns the session
+	 */
+	function createUploadProgressSession($length, $appConnection, $user) {
+		global $appDB;
+		global $appCollection;
+		$session = array("position" => 0, "length" => $length, "user" => $user);
+		$appConnection->selectDB($appDB)->selectCollection($appCollection)->insert($session);
+	}
+	
+	
+	/**
+	 * Updates the current position of the progress session
+	 * @param unknown $position The new position
+	 * @param unknown $appConnection The connection to the app database
+	 * @param unknown $user The user
+	 */
+	function updateUploadProgressSession($position, $appConnection, $user) {
+		global $appDB;
+		global$appCollection;
+		$search = array("user" => $user);
+		$change = array('$set' => array("position" => $position));
+		
+		$appConnection->selectDB($appDB)->selectCollection($appCollection)->update($search, $change);
+	}
+	
+	
+	/**
+	 * Gets the progress of the upload from the session database entry referenced by the user
+	 * @param unknown $appConnection The connection to the app database
+	 * @param unknown $user The user
+	 * @return session object in the form: {"position": (int), "length": (int)}
+	 * or null if it didn't exist
+	 */
+	function getUploadProgress($appConnection, $user) {
+		global $appDB;
+		global $appCollection;
+		$query = array("user" => $user);
+		return $appConnection->selectDB($appDB)->selectCollection($appCollection)->findOne($query);
+	}
+	
+	
+	/**
+	 * Closes the upload session referenced by the user by removing it from the database
+	 * @param unknown $appConnection The connection to the app database
+	 * @param unknown $user The user
+	 */
+	function closeUploadProgress($appConnection, $user) {
+		global $appDB;
+		global $appCollection;
+		$query = array("user" => $user);
+		$appConnection->selectDB($appDB)->selectCollection($appCollection)->remove($query);
+	}
+	
+	
 
 	//this method should be replaced depending on the format and type of data being entered
 	/**
@@ -171,7 +256,6 @@
 	 *	Generates a random number given a certain number of digits
 	 */
 	function generateRandomNumber ($numDigits){
-		$numDigits = 16;
 		$multiplier = 10 ** $numDigits;
 		$random = rand(0, $multiplier) / $multiplier;
 

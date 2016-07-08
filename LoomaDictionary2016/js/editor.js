@@ -78,6 +78,11 @@ var prevAccepted = false;
 var selectedWord = "";
 
 /**
+ * The id returned by setInterval while using it to update the progress bar
+ */
+var progressTimer;
+
+/**
  * To be called on startup. Sets up the screen and pulls data from the backend.
  */
 function startup() {
@@ -144,12 +149,28 @@ function processPDF() {
 						submitSearch(true);
 					}
 					
+					// stop updating the progress bar
+					clearInterval(progressTimer);
+					
 					// unlocks the process and reallows user submission
 					$("#uploadPDFDiv").find(".closePopupButton").prop("disabled", false);
 					$("#processPDFButton").prop("disabled", false);
 					processing = false;
 					submitSearch(true);
 				}, "json");
+		
+		// start updating the progress bar
+		progressTimer = setInterval(function() {
+			$.get("backend.php",
+					{'loginInfo': {"allowed": true, 'user': 'me'}, "progress": true},
+					function(data, status, jqXHR) {
+						var output = data['progress'];
+						if(!output) {
+							return;
+						}
+						progress.text("Processing text: " + output["position"] + " / " + output['length']);
+					}, "json");
+		}, 1000);
 	});
 }
 
@@ -186,6 +207,7 @@ function submitSearch(oldSearch) {
 				data = data['data'];
 				$("#pageInput").val(data['page']);
 				maxPage = data['maxPage'];
+				$("#maxPage").text(maxPage);
 				
 				// clears the table
 				var table = $("#resultsTable");

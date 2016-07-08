@@ -292,8 +292,13 @@
 		return moveEntryToStaging($stagingConnection, $officialConnection, $moveId, $user);
 	}
 	
+	function getProgressWrapper($appConnection, $user) {
+		return getUploadProgress($appConnection, $user);
+	}
+	
 	$officialConnection;
 	$stagingConnection;
+	$appConnection;
 	
 	if(!isset($_REQUEST['loginInfo'])) { // no login data means not logged in
 		$response['status'] = array( 'type' => 'error', 'value' => 'Not logged in');
@@ -301,23 +306,41 @@
 		// attempt to create connections using the login data provided
 		$officialConnection = createConnectionToLooma($_REQUEST['loginInfo']);
 		$stagingConnection = createConnectionToStaging($_REQUEST['loginInfo']);
+		$appConnection = createConnectionToApp($_REQUEST['loginInfo']);
 		if($officialConnection == null or $stagingConnection == null) {
 			$response['status'] = array('type' => 'error', 'value' => 'Not logged in');
 		} else if ($_SERVER['REQUEST_METHOD'] == 'POST' and isset($_REQUEST['wordList'])) {
 			// adds all definitions for all words in 'wordsList' to the staging dictionary
+			
 			$list = json_decode($_REQUEST['wordList']);
+			
+			// creates a session that allows the front end to check progress
+			createUploadProgressSession(count($list), $appConnection, $_REQUEST['loginInfo']['user']);
+			
 			$skipped = 0;
-			foreach ($list as $word) {
-				$success = createEntryWrapper($word, $officialConnection, $stagingConnection,
-											$_REQUEST['loginInfo']['user']);
-				if (!$success) {
-					if(!isset($response['skipped'])) {
-						$response['skipped'] = array();
+			try {
+				foreach ($list as $index => $word) {
+					$success = createEntryWrapper($word, $officialConnection, $stagingConnection,
+							$_REQUEST['loginInfo']['user']);
+					if (!$success) {
+						if(!isset($response['skipped'])) {
+							$response['skipped'] = array();
+						}
+						$response['skipped'][] = $word;
+						$skipped++;
 					}
-					$response['skipped'][] = $word;
-					$skipped++;
+					updateUploadProgressSession($index + 1, $appConnection, $_REQUEST['loginInfo']['user']);
 				}
+			} catch(Exception $e) {
+				error_log($e->getMessage());
+			} finally {
+				closeUploadProgress($appConnection, $_REQUEST['loginInfo']['user']);
 			}
+			
+			
+			
+			
+			
 			
 			// always considered successful, but may skip words
 			$response['status'] = array('type' => 'success',
@@ -361,6 +384,8 @@
 			} else {
 				$response['status'] = array('type' => 'error', 'value' => 'moving failed');
 			}
+		} elseif($_SERVER['REQUEST_METHOD'] == 'GET' and isset($_REQUEST['progress'])) {
+			$response['progress'] = getProgressWrapper($appConnection, $_REQUEST['loginInfo']['user']);
 		} else {
 			// the arguments didn't match any acceptable requests
 			$response['status'] = array('type' => 'error', 'value' => 'invalid request',
