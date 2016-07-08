@@ -206,7 +206,7 @@
 	 * @return boolean true if the entry was created successfully, false otherwise
 	 */
 	function createEntryWrapper($word, $officialConnection, $stagingConnection, $user) {
-		return createEntry(convertWord($word, true), $officialConnection, $stagingConnection,
+		return createEntry($word, $officialConnection, $stagingConnection,
 							$user);
 	}
 	
