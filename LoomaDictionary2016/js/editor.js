@@ -434,6 +434,14 @@ function selectWord(word) {
 }
 
 /**
+ * Submits a search for an official (published) word
+ */
+function submitOfficialSearch() {
+	selectWord($("#officialSearchBox").val());
+	loadOfficialTable();
+}
+
+/**
  * loads the official table using the selected word (global variable)
  */
 function loadOfficialTable() {

@@ -145,7 +145,13 @@ modified or removed.
 </div>
 
 <div id="officialViewer">
-	<div id="footerLabel"><span>Published Definitions</span></div>
+	<div id="footerLabel">
+		<span>Published Definitions: &nbsp;&nbsp;</span>
+		<div id="officialSearchArea">
+			<input type="text" name="wordPart" id="officialSearchBox" placeholder="Enter Search Term Here">
+			<input type="button" value="Search" id="officialSearchButton" onclick="submitOfficialSearch()">
+		</div>
+	</div>
 	<table id="officialTable">
 		<tr>
 			<th class="editCol"></th>
