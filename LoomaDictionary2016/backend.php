@@ -291,7 +291,7 @@
 			return true;
 		} elseif ($change["field"] == "stat") {
 			$former["stagingData"]["accepted"] = !$former["stagingData"]["accepted"];
-		} elseif (in_array($change["field"], array("word", "root", "nep", "pos", "def"))) {
+		} elseif (in_array($change["field"], array("word", "root", "nep", "pos", "def", "chid"))) {
 			// for all of these the value just needs to be updated to $change["new"]
 			$former["wordData"][$change["field"]] = $change["new"];
 			return updateStaging(convertWord($former, true), $stagingConnection, $user, false);

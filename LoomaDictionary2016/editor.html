@@ -85,7 +85,16 @@ modified or removed.
 
 <div id="uploadPDFDiv" class="popupDiv">
 	<button class="closePopupButton" onclick="hideUploadDiv()"> X </button> <br>
-	<input type="file" id="pdfInput"> <br>
+	<input type="file" id="pdfInput">
+	<br>
+	File Prefix: <input type="text" id="prefixInput" placeholder="ex. 3EN06">
+	<br>
+	Chapter Ids: <input type="checkbox" id="chidCheck">
+	<br>
+	Autogenerate: <input type="checkbox" id="autoChidCheck" checked onclick="changeAutoGen()">
+	<br>
+	<pre id="chidInputLabel">Chapter prefix: </pre>
+	<input type="text" id="chapInput" placeholder="ex. Lesson">
 	<button id="processPDFButton" onclick="processPDF()">Process PDF</button>
 	<br>
 	<p id="progressDisplay" class="centeredText"> </p>
@@ -122,6 +131,7 @@ modified or removed.
 				<th class="posCol">POS</th>
 				<th class="nepCol">Nepali</th>
 				<th class="defCol">Definition</th>
+				<th class="chidCol">ch_id</th>
 				<th class="modCol">Modified By</th>
 				<th class="dateCol">Date Modified</th>
 				<th class="otherCol">Other Info</th>

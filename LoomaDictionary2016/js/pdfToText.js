@@ -53,11 +53,11 @@ function Pdf2TextClass(){
           callbackPageDone( self.complete, total );
           if (self.complete == total){
             window.setTimeout(function(){
-              var full_text = "";
               var num_pages = Object.keys(layers).length;
+              var ans = [];
               for( var j = 1; j <= num_pages; j++)
-                  full_text += layers[j] ;
-              callbackAllDone(full_text);
+                  ans.push(layers[j]);
+              callbackAllDone(ans);
             }, 1000);              
           }
         }); // end  of page.getTextContent().then

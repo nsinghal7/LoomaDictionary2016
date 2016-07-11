@@ -118,6 +118,18 @@ function hideUploadDiv() {
 }
 
 
+
+function changeAutoGen() {
+	if($("#autoChidCheck").prop("checked")) {
+		$("#chidInputLabel").text("Chapter prefix: ");
+		$("#chapInput").prop("placeholder", "ex. Lesson");
+	} else {
+		$("#chidInputLabel").text("Page numbers: ");
+		$("#chapInput").prop("placeholder", "ex. 12, 14, 17, 23");
+	}
+}
+
+
 /**
  * processes the PDF selected in the uploadPDFDiv, finding all unique words and sending
  * them to the server to be processed and added to the dictionary. Currently does not
@@ -128,8 +140,7 @@ function processPDF() {
 	// lock process and prevent user resubmission
 	processing = true;
 	var progress = $("#progressDisplay");
-	$("#uploadPDFDiv").find(".closePopupButton").prop("disabled", true);
-	$("#processPDFButton").prop("disabled", true);
+	$("#uploadPDFDiv").addClass("disableButtons");
 	
 	// convert file to text
 	var file = document.getElementById("pdfInput").files[0];
@@ -137,12 +148,11 @@ function processPDF() {
 		progress.text("No file selected or invalid format");
 	}
 	progress.text("Converting file to text");
-	Pdf2TextClass().convertPDF(file, function(page, total) {}, function(text) {
+	Pdf2TextClass().convertPDF(file, function(page, total) {}, function(pages) {
 		// called when the pdf is fully converted to text. Finds all unique words
 		progress.text("Processing text");
-		var words = findUniqueWordsFromString(text).map(function(word) {
-			return word.toLowerCase();
-		});
+		var words = findUniqueWordsFromString(pages, $("#autoChidCheck").prop("checked"),
+											$("#chapInput").val(), $("#prefixInput").val());
 		
 		// uploads the words to the backend to be added to the dictionary
 		$.post("backend.php",
@@ -161,8 +171,7 @@ function processPDF() {
 					clearInterval(progressTimer);
 					
 					// unlocks the process and reallows user submission
-					$("#uploadPDFDiv").find(".closePopupButton").prop("disabled", false);
-					$("#processPDFButton").prop("disabled", false);
+					$("#uploadPDFDiv").addClass("disableButtons");
 					processing = false;
 					submitSearch(true);
 				}, "json");
@@ -296,6 +305,7 @@ function createTableEntry(word, i) {
 	row.append(createEditableTd("pos", i, word["wordData"]["pos"]));
 	row.append(createEditableTd("nep", i, word["wordData"]["nep"]));
 	row.append(createEditableTd("def", i, word["wordData"]["def"]));
+	row.append(createEditableTd("chid", i, word["wordData"]["ch_id"]));
 	row.append($('<td class="modCol"><p>'
 			+ (word['wordData']["mod"]) + '</p></td>'));
 	row.append($('<td class="dateCol"><p>'
@@ -461,7 +471,7 @@ function loadOfficialTable() {
 				if(data != null) {
 					officialDefs = data['data'];
 					function createOfficialTd(word, field) {
-						return $("<td class='" + field + "Col'> <p>"
+						return $("<td class='" + field.replace("_", "") + "Col'> <p>"
 									+ (word['wordData'][field] || "") + "</p></td>");
 					}
 					var table = $("#officialTable");
@@ -476,6 +486,7 @@ function loadOfficialTable() {
 						row.append(createOfficialTd(officialDefs[i], "pos"));
 						row.append(createOfficialTd(officialDefs[i], "nep"));
 						row.append(createOfficialTd(officialDefs[i], "def"));
+						row.append(createOfficialTd(officialDefs[i], "ch_id"));
 						row.append(createOfficialTd(officialDefs[i], "mod"));
 						row.append(createOfficialTd(officialDefs[i], "date"));
 						row.append($("<td class='other'><p>id: "
