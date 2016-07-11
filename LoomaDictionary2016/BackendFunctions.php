@@ -376,7 +376,7 @@
 
 			//figure out how many total pages
 			$numTotalWords = $stagingCursor->count();
-			$numPages = ($numTotalWords + $wordsPerPage - 1) / $wordsPerPage;
+			$numPages = intval(($numTotalWords + $wordsPerPage - 1) / $wordsPerPage);
 
 			if($numPages < 1){
 				$numPages = 1;
