@@ -112,7 +112,7 @@
 		if(checkLogin($login))
 		{
 			global $loomaAddress;
-			//default is localhost, insert parameters to specify address of database
+
 			return new MongoClient($loomaAddress);
 		}
 		return null;
@@ -125,7 +125,7 @@
 		if(checkLogin($login))
 		{
 			global $appAddress;
-			//default is localhost, insert parameters to specify address of database
+
 			return new MongoClient($appAddress);
 		}
 		return null;
@@ -234,15 +234,21 @@
 	 */
 	function createEntry($word, $officialConnection, $stagingConnection, $user) {
 		
-		$dictionaryData = lookUpWord($word);
+		$dictionaryData = lookUpWord($word["word"]);
 		
 		$fullSuccess = true;
+
+		//variable to make sure for loop has been entered
+		$didRunForLoop = false;
 		
 		foreach($dictionaryData as $definition) {
 			$fullSuccess &= createIndividualDefinition($word, $definition, $officialConnection, $stagingConnection, $user);
+			$didRunForLoop = true;
 		}
-		
-		return $fullSuccess;
+		if($didRunForLoop){
+			return $fullSuccess;
+		}
+		return $didRunForLoop;
 	}
 	
 	/**
@@ -259,7 +265,7 @@
 		$def = $definition['def'];
 		
 		//get translation
-		$np = translateToNepali($word);
+		$np = translateToNepali($word["word"]);
 		
 		//get the rw (hopefully this will be included in the dictionary api)
 		$rw = $definition['rw'];
@@ -275,7 +281,8 @@
 		
 		//put everything into a doc
 		$doc = array( "wordData" => array(
-				"en" => $word,
+				"en" => $word["word"],
+				"ch_id" => $word["ch_id"],
 				"rw" => $rw,
 				"np" => $np,
 				"part" => $POS,
@@ -343,7 +350,6 @@
 
 		//this means an object with the specified id could not be found.
 		return false;
-
 
 	}
 
@@ -558,6 +564,7 @@
 	function compileSimpleWordData ($allWordData){
 		return array(
 				'_id' => $allWordData['_id'],
+				'ch_id' => $allWordData['ch_id'];
 				'en' => $allWordData['en'], 
 				'rw' => $allWordData['rw'],
 				'part' => $allWordData['part'], 
@@ -693,7 +700,7 @@
 
 		return array (
 				'_id' => $doc['_id'],
-				//"ch_id" => "3EN06",
+				"ch_id" => $doc['ch_id'],
 				"en" => $doc["en"],
 				"rw" => $doc["rw"],
 				"np" => $doc["np"],
