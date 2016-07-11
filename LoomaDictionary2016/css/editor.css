@@ -32,17 +32,18 @@ body {
     z-index: 100;
 }
 
-#pdfInput, #processPDFButton {
-	position: relative;
-	left: 50%;
-	margin-left: -75px;
-	margin-top: 12%;
+#uploadPDFDiv * {
+	margin-top: 4%;
+}
+
+#chidInputLabel {
+	display: inline;
 }
 
 
 
 #uploadPDFDiv {
-	height: 200px;
+	height: 250px;
     margin-top: -125px;
 
     width: 300px;
@@ -139,8 +140,8 @@ table  tr  td  p {
 	color: red;
 }
 
-.wordCol, .rootCol, .posCol, .nepCol, .modCol, .dateCol, .otherCol, .selectedCol, .editCol {
-	width: 7%;
+.wordCol, .rootCol, .posCol, .nepCol, .modCol, .dateCol, .otherCol, .selectedCol, .editCol, .ch_idCol {
+	width: 6.3%;
 }
 
 .defCol {

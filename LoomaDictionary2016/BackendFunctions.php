@@ -564,7 +564,7 @@
 	function compileSimpleWordData ($allWordData){
 		return array(
 				'_id' => $allWordData['_id'],
-				'ch_id' => $allWordData['ch_id'];
+				'ch_id' => $allWordData['ch_id'],
 				'en' => $allWordData['en'], 
 				'rw' => $allWordData['rw'],
 				'part' => $allWordData['part'], 
