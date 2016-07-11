@@ -19,7 +19,6 @@ function Pdf2TextClass(){
      *
      */
      this.pdfToText = function(data, callbackPageDone, callbackAllDone){
-     console.log(typeof data);
      console.assert( data  instanceof ArrayBuffer  || typeof data == 'string' );
      PDFJS.getDocument( data ).then( function(pdf) {
      var div = document.getElementById('viewer');

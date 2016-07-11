@@ -163,7 +163,7 @@
 	$wordDataConversions = array(array("_id", "id"), array("en", "word"), array("rw", "root"),
 								 array("np", "nep"), array("part", "pos"), array("def", "def"),
 								 array("rand", "rand"), array("date_entered", "date"),
-								 array("mod", "mod"));
+								 array("mod", "mod"), array("ch_id", "ch_id"));
 	
 	
 	/**
@@ -291,7 +291,7 @@
 			return true;
 		} elseif ($change["field"] == "stat") {
 			$former["stagingData"]["accepted"] = !$former["stagingData"]["accepted"];
-		} elseif (in_array($change["field"], array("word", "root", "nep", "pos", "def", "chid"))) {
+		} elseif (in_array($change["field"], array("word", "root", "nep", "pos", "def", "ch_id"))) {
 			// for all of these the value just needs to be updated to $change["new"]
 			$former["wordData"][$change["field"]] = $change["new"];
 			return updateStaging(convertWord($former, true), $stagingConnection, $user, false);
@@ -345,7 +345,7 @@
 		} else if ($_SERVER['REQUEST_METHOD'] == 'POST' and isset($_REQUEST['wordList'])) {
 			// adds all definitions for all words in 'wordsList' to the staging dictionary
 			
-			$list = json_decode($_REQUEST['wordList']);
+			$list = json_decode($_REQUEST['wordList'], true);
 			
 			// creates a session that allows the front end to check progress
 			createUploadProgressSession(count($list), $appConnection, $_REQUEST['loginInfo']['user']);

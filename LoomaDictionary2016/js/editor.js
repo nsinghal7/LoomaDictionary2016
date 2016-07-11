@@ -171,7 +171,7 @@ function processPDF() {
 					clearInterval(progressTimer);
 					
 					// unlocks the process and reallows user submission
-					$("#uploadPDFDiv").addClass("disableButtons");
+					$("#uploadPDFDiv").removeClass("disableButtons");
 					processing = false;
 					submitSearch(true);
 				}, "json");
@@ -305,7 +305,7 @@ function createTableEntry(word, i) {
 	row.append(createEditableTd("pos", i, word["wordData"]["pos"]));
 	row.append(createEditableTd("nep", i, word["wordData"]["nep"]));
 	row.append(createEditableTd("def", i, word["wordData"]["def"]));
-	row.append(createEditableTd("chid", i, word["wordData"]["ch_id"]));
+	row.append(createEditableTd("ch_id", i, word["wordData"]["ch_id"]));
 	row.append($('<td class="modCol"><p>'
 			+ (word['wordData']["mod"]) + '</p></td>'));
 	row.append($('<td class="dateCol"><p>'
@@ -410,7 +410,6 @@ function edit(type, index) {
 											&& type == "stat") || type == 'delete'}},
 			function(data, status, jqXHR) {
 				// called on server response
-				console.log("here");
 				if(data['status']['type'] == 'success') {
 					// don't alert user, since success is assumed, and keep server's change
 					words[index] = data['new'];
@@ -471,7 +470,7 @@ function loadOfficialTable() {
 				if(data != null) {
 					officialDefs = data['data'];
 					function createOfficialTd(word, field) {
-						return $("<td class='" + field.replace("_", "") + "Col'> <p>"
+						return $("<td class='" + field + "Col'> <p>"
 									+ (word['wordData'][field] || "") + "</p></td>");
 					}
 					var table = $("#officialTable");

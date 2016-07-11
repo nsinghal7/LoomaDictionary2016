@@ -43,7 +43,7 @@ body {
 
 
 #uploadPDFDiv {
-	height: 200px;
+	height: 250px;
     margin-top: -125px;
 
     width: 300px;
@@ -140,7 +140,7 @@ table  tr  td  p {
 	color: red;
 }
 
-.wordCol, .rootCol, .posCol, .nepCol, .modCol, .dateCol, .otherCol, .selectedCol, .editCol, .chidCol {
+.wordCol, .rootCol, .posCol, .nepCol, .modCol, .dateCol, .otherCol, .selectedCol, .editCol, .ch_idCol {
 	width: 6.3%;
 }
 

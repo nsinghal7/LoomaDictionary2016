@@ -26,7 +26,7 @@ function findUniqueWordsFromString(pages, isChPre, helpString, prefix){
 		});
 		var pageIndex = 0;
 		for(var i = 0; i < pages.length; i++) {
-			if(pageNums[pageIndex] == i) {
+			if(pageNums[pageIndex] == i + 1) {
 				chapter++;
 				pageIndex++;
 			}
@@ -35,11 +35,11 @@ function findUniqueWordsFromString(pages, isChPre, helpString, prefix){
 			}
 		}
 	}
-	filteredArray = words.sort().filter( function(v,i,o){return v.word!=o[i-1].word;});
+	filteredArray = words.sort().filter( function(v,i,o){return i==0 || v.word!=o[i-1].word;});
 	return filteredArray;
 }
 
 function extractWordsFromString(string) {
 	return string.match(/[qwertyuiopasdfghjklzxcvbnmQWERTYUIOPASDFGHJKLZXCVBNM0123456789]+/g)
-				.map(function(word) { return word.toLowreCase()});
+				.map(function(word) { return word.toLowerCase()});
 }
