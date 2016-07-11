@@ -237,12 +237,17 @@
 		$dictionaryData = lookUpWord($word);
 		
 		$fullSuccess = true;
+
+		$didRunForLoop = false;
 		
 		foreach($dictionaryData as $definition) {
 			$fullSuccess &= createIndividualDefinition($word, $definition, $officialConnection, $stagingConnection, $user);
+			$didRunForLoop = true;
 		}
-		
-		return $fullSuccess;
+		if($didRunForLoop){
+			return $fullSuccess;
+		}
+		return $didRunForLoop;
 	}
 	
 	/**
@@ -343,7 +348,6 @@
 
 		//this means an object with the specified id could not be found.
 		return false;
-
 
 	}
 
