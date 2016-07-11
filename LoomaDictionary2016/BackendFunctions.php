@@ -44,7 +44,7 @@
 	require 'translator.php';
 
 	//edit this value to determine how many words will be assigned to each page
-	$wordsPerPage = 10;
+	$wordsPerPage = 3;
 
 	//enter address to staging database here
 	$stagingAddress = '';
@@ -791,6 +791,20 @@
 		}
 		return $ans;
 	}
+
+	//////////////Advanced search functions
+	function advancedSearchToMongoQuery ($search) {
+		$searchArray = searchCriteriaToArray($search);
+	}
+
+	function searchCriteriaToArray($search) {
+		$array = $search->split(' & ');
+
+		return $array;
+	} 
+
+
+
 
  
 ?>
