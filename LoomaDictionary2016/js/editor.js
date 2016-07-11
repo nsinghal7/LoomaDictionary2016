@@ -163,7 +163,8 @@ function processPDF() {
 					if('status' in data && data['status']['type'] == 'error') {
 						progress.text("Failed with error: " + data['status']['value']);
 					} else {
-						progress.text("Success!");
+						progress.text("Success!" + (data['skipped'] ? " Skipped: "
+															+ data["skipped"] : ""));
 						submitSearch(true);
 					}
 					

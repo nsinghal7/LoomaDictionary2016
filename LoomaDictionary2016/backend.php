@@ -359,7 +359,7 @@
 						if(!isset($response['skipped'])) {
 							$response['skipped'] = array();
 						}
-						$response['skipped'][] = $word;
+						$response['skipped'][] = $word["word"];
 						$skipped++;
 					}
 					updateUploadProgressSession($index + 1, $appConnection, $_REQUEST['loginInfo']['user']);
