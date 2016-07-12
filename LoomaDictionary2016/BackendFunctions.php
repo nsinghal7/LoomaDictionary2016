@@ -391,7 +391,6 @@
 			}
 
 			$wordsArray = array_slice($wordsArray, ($page - 1) * $wordsPerPage, $wordsPerPage);
-			error_log(json_encode($wordsArray));
 			
 			$stagingCursor = $collection->find(array("en" => array('$in' => $wordsArray)));
 			
@@ -475,6 +474,47 @@
 		return array_merge($betaArray);
 	}
 	
+	
+	/**
+	 * Creates a query array representing the advanced search options given in the string
+	 * @param unknown $text The string of advanced search options
+	 */
+	function createAdvancedTextQuery($text) {
+		$ans = createAdvancedAndOrQuery($text, false);
+		return $ans;
+	}
+	
+	/**
+	 * Creates a query assuming that the next lowest priority operator to parse is & or |
+	 * @param unknown $text The text to parse
+	 * @param unknown $and True if & is the next lowest priority, false if | is
+	 * @return unknown[] a mongodb style query
+	 */
+	function createAdvancedAndOrQuery($text, $and) {
+		$list = explode($and ? "&" : "|", $text);
+		foreach($list as $index => $val) {
+			if($and) {
+				$list[$index] = createAdvancedBaseQuery($val);
+			} else {
+				$list[$index] = createAdvancedAndOrQuery($val, true);
+			}
+		}
+		return array(($and ? '$and' : '$or') => $list);
+	}
+	
+	/**
+	 * Creates a query assuming that the next lowest priority operator to parse is key:value
+	 * @param unknown $text The text to parse
+	 * @return unknown[] a mongodb style query
+	 */
+	function createAdvancedBaseQuery($text) {
+		$new = explode(":", $text);
+		if(count($new) != 2) {
+			error_log("incorrect syntax in search: extra colon and value. Ignoring extras");
+		}
+		return array(trim($new[0]) => trim($new[1]));
+	}
+	
 	/**
 	 * Creates a MongoDB query that can be used to search for the given arguments. Should be
 	 * replaced if the front end sends different arguments than for the Dictionary Editor
@@ -491,16 +531,7 @@
 			$condition = array("en" => array('$regex' => new MongoRegex("/.*" . $args["text"] . ".*/s")));
 		} else {
 			// advanced search
-			$list = explode("&", $args["text"]);
-			foreach($list as $key => $val) {
-				$new = explode(":", $val);
-				if(count($new) != 2) {
-					error_log("incorrect syntax in search: extra colon and value. Ignoring extras");
-				}
-				$list[$key] = array(trim($new[0]) => trim($new[1]));
-			}
-			// now list is in the form: [["en" => "test"], ["np" => "slkfdj"]] for query en:test&np:slkfdj
-			$condition = array('$and' => $list);
+			$condition = createAdvancedTextQuery($args["text"]);
 		}
 		$added = checkTrue($args['added']);
 		$modified = checkTrue($args['modified']);
