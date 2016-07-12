@@ -512,7 +512,7 @@
 		if(count($new) != 2) {
 			error_log("incorrect syntax in search: extra colon and value. Ignoring extras");
 		}
-		return array(trim($new[0]) => trim($new[1]));
+		return array(trim($new[0]) => array('$regex' => new MongoRegex("/.*" . trim($new[1]) . ".*/s")));
 	}
 	
 	/**
