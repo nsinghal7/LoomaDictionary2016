@@ -486,8 +486,22 @@
 	 * publishable)
 	 */
 	function stagingCriteriaToMongoQuery($args) {
-		$condition = array("en" => array('$regex' => new MongoRegex("/.*" . $args["text"] . ".*/s")));
-		
+		if(strpos($args["text"], ":") === false) {
+			// regular search
+			$condition = array("en" => array('$regex' => new MongoRegex("/.*" . $args["text"] . ".*/s")));
+		} else {
+			// advanced search
+			$list = explode("&", $args["text"]);
+			foreach($list as $key => $val) {
+				$new = explode(":", $val);
+				if(count($new) != 2) {
+					error_log("incorrect syntax in search: extra colon and value. Ignoring extras");
+				}
+				$list[$key] = array(trim($new[0]) => trim($new[1]));
+			}
+			// now list is in the form: [["en" => "test"], ["np" => "slkfdj"]] for query en:test&np:slkfdj
+			$condition = array('$and' => $list);
+		}
 		$added = checkTrue($args['added']);
 		$modified = checkTrue($args['modified']);
 		$accepted = checkTrue($args['accepted']);
