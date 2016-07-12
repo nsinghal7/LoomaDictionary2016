@@ -372,20 +372,31 @@
 			global $stagingCollection;
 
 			//get all elements that match the criteria
-			$stagingCursor = $stagingConnection->selectDB($stagingDB)->selectCollection($stagingCollection)->find(stagingCriteriaToMongoQuery($args));
+			$collection = $stagingConnection->selectDB($stagingDB)->selectCollection($stagingCollection);
+			$wordsArray = $collection->distinct("en", stagingCriteriaToMongoQuery($args));
 
 			//figure out how many total pages
-			$numTotalWords = $stagingCursor->count();
+			$numTotalWords = count($wordsArray);
 			$numPages = intval(($numTotalWords + $wordsPerPage - 1) / $wordsPerPage);
 
 			if($numPages < 1){
 				$numPages = 1;
 			}
+			
+			$page = intval($args['page']);
+			if($page < 1) {
+				$page = 1;
+			} elseif ($page > $numPages) {
+				$page = $numPages;
+			}
 
-			//skip to the correct page (if above the max, just skip to last page)
-			$page = skipToAppropriateLocation($stagingCursor, $args, $numPages, $numTotalWords);
-
-			//put the words in an array
+			$wordsArray = array_slice($wordsArray, ($page - 1) * $wordsPerPage, $wordsPerPage);
+			error_log(json_encode($wordsArray));
+			
+			$stagingCursor = $collection->find(array("en" => array('$in' => $wordsArray)));
+			
+			// put the words in an array. This time these are word objects. Should not be
+			// limited by wordsPerPage, since that has already been taken into account
 			$wordsArray = compileStagingWordsArray($stagingCursor);
 			
 			//create array with appropriate metadata in the beginning
@@ -503,13 +514,11 @@
 	*  creates an array with all the words and their data for 
 	*  entry in the final array of data for simplified view
 	*  takes a cursor to elements in the staging database
-	*	returns the array of all the words snd their data
+	*	returns the array of all the words and their data
 	*/
 	function compileStagingWordsArray ($stagingCursor){
-		global $wordsPerPage;
-
 		$wordsArray = array();
-		for ($i = 0; $i < $wordsPerPage and $stagingCursor->hasNext(); $i = $i + 1){
+		while($stagingCursor->hasNext()){
 			array_push ($wordsArray, compileSingleSimpleWord($stagingCursor->getNext()));
 		}
 
