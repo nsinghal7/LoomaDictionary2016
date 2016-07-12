@@ -87,15 +87,17 @@ modified or removed.
 	<button class="closePopupButton" onclick="hideUploadDiv()"> X </button> <br>
 	<input type="file" id="pdfInput">
 	<br>
-	File Prefix: <input type="text" id="prefixInput" placeholder="ex. 3EN">
+	<pre class="inline">File Prefix: </pre>
+	<input type="text" id="prefixInput" placeholder="ex. 3EN">
 	<br>
-	Autogenerate: <input type="checkbox" id="autoChidCheck" checked onclick="changeAutoGen()">
+	<pre class="inline">Autogenerate: </pre>
+	<input type="checkbox" id="autoChidCheck" checked onclick="changeAutoGen()">
 	<br>
-	<pre id="chidInputLabel">Chapter prefix: </pre>
+	<pre id="chidInputLabel" class="inline">Chapter prefix: </pre>
 	<input type="text" id="chapInput" placeholder="ex. Lesson">
 	<button id="processPDFButton" onclick="processPDF()">Process PDF</button>
 	<br>
-	<p id="progressDisplay" class="centeredText"> </p>
+	<p id="progressDisplay" class="centeredText alwaysShow"> </p>
 </div>
 
 
