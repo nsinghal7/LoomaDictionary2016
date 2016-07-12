@@ -736,15 +736,6 @@
 			}
 		}
 
-		//change added to false for everything left
-		$stagingCursor = $stagingConnection->selectDB($stagingDB)->selectCollection($stagingCollection)->find(stagingCriteriaToMongoQuery(array("text" => "", "added" => true)));
-
-		foreach($stagingCursor as $doc){
-			$doc['added'] = false;
-			$stagingConnection->selectDB($stagingDB)->selectCollection($stagingCollection)->update($doc);
-		}
-
-
 		return true;
 	}
 
@@ -854,7 +845,4 @@
 		}
 		return $ans;
 	}
-
-
- 
 ?>
