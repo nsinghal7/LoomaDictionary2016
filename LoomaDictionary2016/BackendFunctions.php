@@ -212,7 +212,7 @@
 				$senses = isset($messy["senses"]) ? $messy["senses"] : array();
 				foreach($senses as $sense) {
 					$def = array();
-					$def["word"] = $messy["headword"];
+					$def["word"] = strtolower($messy["headword"]);
 					$def['def'] = isset($sense['definition']) ? $sense['definition'] : "";
 					$def['pos'] = ($messy["part_of_speech"] != null) ? $messy["part_of_speech"] : "";
 					$def['rw'] = ""; // this dictionary doesn't have root words
