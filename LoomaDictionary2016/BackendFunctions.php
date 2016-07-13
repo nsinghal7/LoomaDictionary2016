@@ -303,8 +303,11 @@
 			// insert the doc into the database
 			$stagingConnection->selectDB($stagingDB)->selectCollection($stagingCollection)->save(moveWordDataUpLevel($doc));
 				
+			return true;
 		}
-		return false;
+		else{
+			return true;
+		}
 	}
 
 	/**
