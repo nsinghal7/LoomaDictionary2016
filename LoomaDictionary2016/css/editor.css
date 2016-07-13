@@ -48,6 +48,11 @@ body {
 
     width: 300px;
     margin-left: -150px;
+    overflow: scroll;
+}
+
+#progressDisplay {
+	word-wrap: break-word;
 }
 
 .popupDiv .closePopupButton {
