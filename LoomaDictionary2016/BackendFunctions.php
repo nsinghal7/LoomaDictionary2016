@@ -297,7 +297,7 @@
 		);
 		
 		//check to see if a similar definition already exists
-		if(!checkForSimilarDefinition()){
+		if(!checkForSimilarDefinition($doc, $stagingConnection, $officialConnection)){
 			global $stagingDB;
 			global $stagingCollection;
 			// insert the doc into the database
@@ -828,9 +828,23 @@
 		$stagingConnection->selectDB($stagingDB)->selectCollection($stagingCollection)->remove(array("_id" => new MongoId($_id['$id'])));
 	}
 
-//work on this
-	function checkForSimilarDefinition () {
-		return false;
+
+	/**
+	 * Checks if the given entry (in staging database format) is similar enough to an existing
+	 * entry that it shouldn't be added
+	 * @param unknown $doc The entry to check
+	 * @return boolean True if the entry should NOT be deleted, false if it should
+	 */
+	function checkForSimilarDefinition ($doc, $stagingConnection, $officialConnection) {
+		global $stagingDB;
+		global $stagingCollection;
+		global $officialDB;
+		global $officialCollection;
+		$query = array("en" => $doc["en"], "part" => $doc["part"], "def" => $doc["def"]);
+		if($stagingConnection->selectDB($stagingDB)->selectCollection($stagingCollection)->count($query) > 0) {
+			return true;
+		}
+		return $officialConnection->selectDB($officialDB)->selectCollection($officialCollection)->count($query) > 0;
 	}
 	
 	/**
