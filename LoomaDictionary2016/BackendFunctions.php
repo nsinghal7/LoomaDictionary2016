@@ -208,12 +208,13 @@
 		$messyList = $obj['results'];
 		$ans = array();
 		foreach($messyList as $messy) {
-			if(strpos($messy["headword"], " ") === false) { // no phrase definitions, only word. Allows for unconjugated form
+			if(strpos($messy["headword"], " ") === false && strpos($mess["headword"], "-") === false) { // no phrase definitions, only word. Allows for unconjugated form
 				$senses = isset($messy["senses"]) ? $messy["senses"] : array();
 				foreach($senses as $sense) {
 					$def = array();
+					$def["word"] = $messy["headword"];
 					$def['def'] = isset($sense['definition']) ? $sense['definition'] : "";
-					$def['pos'] = ($messy["part_of_speech"] == null) ? $messy["part_of_speech"] : "";
+					$def['pos'] = ($messy["part_of_speech"] != null) ? $messy["part_of_speech"] : "";
 					$def['rw'] = ""; // this dictionary doesn't have root words
 					$ans[] = $def;
 				}
@@ -280,7 +281,7 @@
 		
 		//put everything into a doc
 		$doc = array( "wordData" => array(
-				"en" => $word["word"],
+				"en" => $definition["word"],
 				"ch_id" => $word["ch_id"],
 				"rw" => $rw,
 				"np" => $np,
