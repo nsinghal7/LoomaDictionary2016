@@ -54,6 +54,11 @@ body {
 	float: right;
 }
 
+#addWordDiv {
+	margin-top: -29px;
+	margin-left: -90px;
+}
+
 .centeredText {
 	text-align: center;
 }
