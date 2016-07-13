@@ -161,7 +161,7 @@ function processPDF() {
 		progress.text("Processing text");
 		var words = findUniqueWordsFromString(pages, $("#autoChidCheck").prop("checked"),
 											$("#chapInput").val(), $("#prefixInput").val());
-		
+		maxProgress = 0;
 		// uploads the words to the backend to be added to the dictionary
 		$.post("backend.php",
 				{'loginInfo': {"allowed": true, 'user': 'me'},
@@ -178,6 +178,7 @@ function processPDF() {
 					
 					// stop updating the progress bar
 					clearInterval(progressTimer);
+					maxProgress = 0;
 					
 					// unlocks the process and reallows user submission
 					$("#uploadPDFDiv").removeClass("disableButtons");
