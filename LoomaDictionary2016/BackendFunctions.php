@@ -868,9 +868,9 @@
 		global $stagingDB;
 		global $stagingCollection;
 
-		$stagingCollection->selectDB($stagingDB)->selectCollection($stagingCollection)->remove(array());
+		$stagingConnection->selectDB($stagingDB)->selectCollection($stagingCollection)->remove(array());
 
-		$cursor = $stagingCollection->selectDB($stagingDB)->selectCollection($stagingCollection)->find();
+		$cursor = $stagingConnection->selectDB($stagingDB)->selectCollection($stagingCollection)->find();
 		if ($cursor->hasNext()) {
 			return false;
 		}else{
