@@ -877,5 +877,37 @@
 			return true;
 		}
 	}
+
+	function addSingleWord ($stagingConnection, $word, $user) {
+		global $stagingDB;
+		global $stagingCollection;
+
+		//get the date and time
+		$dateCreated = getDateAndTime("America/Los_Angeles");
+		
+		//generate random number
+		$random = generateRandomNumber(16);
+		
+		//put everything into a doc
+		$doc = array( "wordData" => array(
+				"en" => $word,
+				"ch_id" => '',
+				"rw" => '',
+				"np" => '',
+				"part" => '',
+				"def" => '',
+				"rand" => $random,
+				"date_entered" => $dateCreated,
+				"mod" => $user),
+				"stagingData" => array(
+						'added' => true, 'modified' => false, 'accepted' => false,
+						'deleted' => false
+				)
+		);
+
+		$stagingConnection->selectDB($stagingDB)->selectCollection($stagingCollection)->save(moveWordDataUpLevel($doc));
+
+		return true;
+	}
  
 ?>
