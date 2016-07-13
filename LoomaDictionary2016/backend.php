@@ -99,6 +99,13 @@
 	 * }
 	 * 
 	 * 
+	 * reverting all staging data
+	 * 
+	 * get {
+	 * 		revertAll: anything
+	 * }
+	 * 
+	 * 
 	 * Passes back the data in the following format for varying requests and outcomes. All
 	 * data returned is in JSON format.
 	 * 
@@ -152,6 +159,11 @@
 	 * 				position: (int),
 	 * 				length: (int)
 	 * 		}
+	 * }
+	 * 
+	 * reverting all staging data:
+	 * status: {
+	 * 		type: 'success' or 'error'
 	 * }
 	 * 
 	 * 
@@ -329,6 +341,27 @@
 		return getUploadProgress($appConnection, $user);
 	}
 	
+	/**
+	 * Wrapper for removing all entries from the staging database
+	 * @param unknown $stagingConnection The staging connection
+	 * @return True if successful, false if failed
+	 */
+	function revertAllStagingWrapper($stagingConnection) {
+		return clearStagingDatabase($stagingConnection);
+	}
+	
+	/**
+	 * Wrapper for adding a single word to the staging database. ONLY ADDS THE ENGLISH part
+	 * of it, not even adding definition or part of speech
+	 * @param unknown $word The word to add (string)
+	 * @param unknown $stagingConnection The connection to the staging database
+	 * @param unknown $user The user (string)
+	 * @return true if successful, false otherwise
+	 */
+	function addSingleWordWrapper($word, $stagingConnection, $user) {
+		return addSingleWord($stagingConnection, $word, $user);
+	}
+	
 	$officialConnection;
 	$stagingConnection;
 	$appConnection;
@@ -419,6 +452,13 @@
 			}
 		} elseif($_SERVER['REQUEST_METHOD'] == 'GET' and isset($_REQUEST['progress'])) {
 			$response['progress'] = getProgressWrapper($appConnection, $_REQUEST['loginInfo']['user']);
+		} elseif($_SERVER['REQUEST_METHOD'] == 'GET' and isset($_REQUEST['revertAll'])) {
+			$response['status'] = array('type' =>
+					revertAllStagingWrapper($stagingConnection) ? 'success' : 'error');
+		} elseif($_SERVER['REQUEST_METHOD'] == 'GET' and isset($_REQUEST['newWord'])) {
+			$response['status'] = array('type' =>
+					addSingleWordWrapper($_REQUEST['newWord'], $stagingConnection,
+							$_REQUEST['loginInfo']['user']) ? 'success' : 'error');
 		} else {
 			// the arguments didn't match any acceptable requests
 			$response['status'] = array('type' => 'error', 'value' => 'invalid request',

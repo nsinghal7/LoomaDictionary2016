@@ -100,13 +100,27 @@ modified or removed.
 	<p id="progressDisplay" class="centeredText alwaysShow"> </p>
 </div>
 
+<div id="addWordDiv" class="popupDiv">
+	<button class="closePopupButton" onclick="hideAddWordDiv()"> X </button> <br>
+	<pre class="inline">Word: </pre>
+	<input type="text" id="newWordInput" placeholder="ex. test">
+	<br>
+	<input type="button" id="addWordButton" onclick="addSingleWord()" value="Add word and show in editor">
+</div>
+
 
 <div id="menuArea">
 
 
 	<button id="uploadPDFButton" onclick="showUploadDiv()">Upload PDF</button>
 	
-	<button id="publishButton" onclick="publish()">Publish Accepted Changes</button>
+	<button id="publishButton" onclick="publish()" class="right">Publish Accepted Changes</button>
+	
+	<br>
+	
+	<button id="showWordDivButton" onclick="showAddWordDiv()">Add Single Word</button>
+	
+	<button id="revertAllButton" onclick="revertStaging()" class="right">Revert All</button>
 	
 	<div class="centeredSection">
 		<input type="text" name="wordPart" id="wordPart" placeholder="Enter Search Term Here">
