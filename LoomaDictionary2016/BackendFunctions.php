@@ -374,7 +374,7 @@
 			//get all elements that match the criteria
 			$collection = $stagingConnection->selectDB($stagingDB)->selectCollection($stagingCollection);
 			$wordsArray = $collection->distinct("en", stagingCriteriaToMongoQuery($args));
-
+			sort($wordsArray);
 			//figure out how many total pages
 			$numTotalWords = count($wordsArray);
 			$numPages = intval(($numTotalWords + $wordsPerPage - 1) / $wordsPerPage);
@@ -397,16 +397,11 @@
 			// put the words in an array. This time these are word objects. Should not be
 			// limited by wordsPerPage, since that has already been taken into account
 			$wordsArray = compileStagingWordsArray($stagingCursor);
-			usort($wordsArray, "compareWords");
 			//create array with appropriate metadata in the beginning
 			$finalArray = array( "page"=> $page, "maxPage" => $numPages, "words" => $wordsArray);
 			
 
 			return $finalArray;
-	}
-	
-	function compareWords($a, $b) {
-		return strcmp($a["wordData"]["en"], $b["wordData"]["en"]);
 	}
 
 

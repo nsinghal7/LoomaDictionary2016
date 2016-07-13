@@ -242,7 +242,15 @@ function submitSearch(oldSearch) {
 				table.find("tr:gt(0)").remove();
 				
 				// processes each word's data
-				words = data['words'];
+				words = data['words'].sort(function(a, b) {
+					if(a["wordData"]["word"] == b["wordData"]["word"]) {
+						return 0;
+					} else if(a["wordData"]["word"] < b["wordData"]["word"]) {
+						return -1;
+					} else {
+						return 1;
+					}
+				});
 				for(var i = 0; i < words.length; i++) {
 					var word = words[i];
 					
