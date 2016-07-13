@@ -841,7 +841,6 @@
 		global $loomaDB;
 		global $loomaCollection;
 		$query = array("en" => $doc["wordData"]["en"], "part" => $doc["wordData"]["part"], "def" => $doc["wordData"]["def"]);
-		error_log(json_encode($query));
 		if($stagingConnection->selectDB($stagingDB)->selectCollection($stagingCollection)->count($query) > 0) {
 			return true;
 		}
