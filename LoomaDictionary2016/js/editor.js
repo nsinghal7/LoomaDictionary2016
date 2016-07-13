@@ -191,11 +191,11 @@ function processPDF() {
 			$.get("backend.php",
 					{'loginInfo': {"allowed": true, 'user': 'me'}, "progress": true},
 					function(data, status, jqXHR) {
-						var output = parseInt(data['progress']);
-						if(!output || output < maxProgress) {
+						var output = data['progress'];
+						if(!output || output["position"] < maxProgress) {
 							return;
 						}
-						maxProgress = output;
+						maxProgress = output["position"];
 						progress.text("Processing text: " + output["position"] + " / " + output['length']);
 					}, "json");
 		}, 1000);
