@@ -88,6 +88,13 @@ var showOverwritten = false;
  */
 var progressTimer;
 
+
+/**
+ * Keeps track of the furthest the progress of the upload has reportedly gotten since
+ * some requests return too late and end up making it look like it went backwards
+ */
+var maxProgress;
+
 /**
  * To be called on startup. Sets up the screen and pulls data from the backend.
  */
@@ -183,10 +190,11 @@ function processPDF() {
 			$.get("backend.php",
 					{'loginInfo': {"allowed": true, 'user': 'me'}, "progress": true},
 					function(data, status, jqXHR) {
-						var output = data['progress'];
-						if(!output) {
+						var output = parseInt(data['progress']);
+						if(!output || output < maxProgress) {
 							return;
 						}
+						maxProgress = output;
 						progress.text("Processing text: " + output["position"] + " / " + output['length']);
 					}, "json");
 		}, 1000);
