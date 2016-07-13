@@ -213,7 +213,7 @@
 				foreach($senses as $sense) {
 					$def = array();
 					$def['def'] = isset($sense['definition']) ? $sense['definition'] : "";
-					$def['pos'] = $messy["part_of_speech"];
+					$def['pos'] = ($messy["part_of_speech"] == null) ? $messy["part_of_speech"] : "";
 					$def['rw'] = ""; // this dictionary doesn't have root words
 					$ans[] = $def;
 				}
