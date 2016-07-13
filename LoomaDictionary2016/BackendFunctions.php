@@ -208,7 +208,7 @@
 		$messyList = $obj['results'];
 		$ans = array();
 		foreach($messyList as $messy) {
-			if(strpos($messy["headword"], " ") === false && strpos($mess["headword"], "-") === false) { // no phrase definitions, only word. Allows for unconjugated form
+			if(strpos($messy["headword"], " ") === false && strpos($messy["headword"], "-") === false) { // no phrase definitions, only word. Allows for unconjugated form
 				$senses = isset($messy["senses"]) ? $messy["senses"] : array();
 				foreach($senses as $sense) {
 					$def = array();
@@ -265,7 +265,7 @@
 		$def = $definition['def'];
 		
 		//get translation
-		$np = translateToNepali($word["word"]);
+		$np = translateToNepali($definition["word"]);
 		
 		//get the rw (hopefully this will be included in the dictionary api)
 		$rw = $definition['rw'];
