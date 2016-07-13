@@ -208,7 +208,7 @@
 		$messyList = $obj['results'];
 		$ans = array();
 		foreach($messyList as $messy) {
-			if($messy["headword"] == $word) {
+			if(strpos($messy["headword"], " ") === false) { // no phrase definitions, only word. Allows for unconjugated form
 				$senses = isset($messy["senses"]) ? $messy["senses"] : array();
 				foreach($senses as $sense) {
 					$def = array();
