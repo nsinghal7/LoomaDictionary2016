@@ -208,12 +208,13 @@
 		$messyList = $obj['results'];
 		$ans = array();
 		foreach($messyList as $messy) {
-			if(strpos($messy["headword"], " ") === false) { // no phrase definitions, only word. Allows for unconjugated form
+			if(strpos($messy["headword"], " ") === false && strpos($messy["headword"], "-") === false) { // no phrase definitions, only word. Allows for unconjugated form
 				$senses = isset($messy["senses"]) ? $messy["senses"] : array();
 				foreach($senses as $sense) {
 					$def = array();
+					$def["word"] = $messy["headword"];
 					$def['def'] = isset($sense['definition']) ? $sense['definition'] : "";
-					$def['pos'] = $messy["part_of_speech"];
+					$def['pos'] = ($messy["part_of_speech"] != null) ? $messy["part_of_speech"] : "";
 					$def['rw'] = ""; // this dictionary doesn't have root words
 					$ans[] = $def;
 				}
@@ -264,7 +265,7 @@
 		$def = $definition['def'];
 		
 		//get translation
-		$np = translateToNepali($word["word"]);
+		$np = translateToNepali($definition["word"]);
 		
 		//get the rw (hopefully this will be included in the dictionary api)
 		$rw = $definition['rw'];
@@ -280,7 +281,7 @@
 		
 		//put everything into a doc
 		$doc = array( "wordData" => array(
-				"en" => $word["word"],
+				"en" => $definition["word"],
 				"ch_id" => $word["ch_id"],
 				"rw" => $rw,
 				"np" => $np,
@@ -839,7 +840,8 @@
 		global $stagingCollection;
 		global $loomaDB;
 		global $loomaCollection;
-		$query = array("en" => $doc["en"], "part" => $doc["part"], "def" => $doc["def"]);
+		$query = array("en" => $doc["wordData"]["en"], "part" => $doc["wordData"]["part"], "def" => $doc["wordData"]["def"]);
+		error_log(json_encode($query));
 		if($stagingConnection->selectDB($stagingDB)->selectCollection($stagingCollection)->count($query) > 0) {
 			return true;
 		}

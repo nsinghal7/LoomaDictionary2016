@@ -587,6 +587,9 @@ function addSingleWord() {
 			if(data && data['status'] && data['status']['type'] == 'success') {
 				$("#newWordInput").val("");
 				$("#wordPart").val(word);
+				$("#added").prop("checked", false);
+				$("#modified").prop("checked", false);
+				$("#accepted").prop("checked", false);
 				submitSearch();
 				hideAddWordDiv();
 			} else {
