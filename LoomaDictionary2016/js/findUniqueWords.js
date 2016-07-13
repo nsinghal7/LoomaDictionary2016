@@ -2,7 +2,14 @@
 function findUniqueWordsFromString(pages, isChPre, helpString, prefix){
 	pages = pages.map(extractWordsFromString); // string[][]
 	var words = [];
-	if(isChPre) {
+	if(helpString == "") {
+		// no chapters
+		for(var i = 0; i < pages.length; i++) {
+			for(var j = 0; j < pages[i].length; j++) {
+				words.push({"word": pages[i][j], "ch_id": prefix});
+			}
+		}
+	} else if(isChPre) {
 		helpString = helpString.trim().toLowerCase();
 		var chapter = 0;
 		var lastWasPrefix = false;

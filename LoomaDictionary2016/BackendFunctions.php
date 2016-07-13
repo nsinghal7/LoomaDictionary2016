@@ -233,7 +233,6 @@
 	 * @return boolean True if all definitions were successfully added, false if ANY failed
 	 */
 	function createEntry($word, $officialConnection, $stagingConnection, $user) {
-		
 		$dictionaryData = lookUpWord($word["word"]);
 		
 		$fullSuccess = true;
@@ -838,13 +837,13 @@
 	function checkForSimilarDefinition ($doc, $stagingConnection, $officialConnection) {
 		global $stagingDB;
 		global $stagingCollection;
-		global $officialDB;
-		global $officialCollection;
+		global $loomaDB;
+		global $loomaCollection;
 		$query = array("en" => $doc["en"], "part" => $doc["part"], "def" => $doc["def"]);
 		if($stagingConnection->selectDB($stagingDB)->selectCollection($stagingCollection)->count($query) > 0) {
 			return true;
 		}
-		return $officialConnection->selectDB($officialDB)->selectCollection($officialCollection)->count($query) > 0;
+		return $officialConnection->selectDB($loomaDB)->selectCollection($loomaCollection)->count($query) > 0;
 	}
 	
 	/**
