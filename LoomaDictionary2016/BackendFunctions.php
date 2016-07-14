@@ -429,7 +429,7 @@
 	 *
 	 *	Takes the desired word and a connection to the Looma database
 	 *
-	 *Also takes $overwritten, which, if true, specifies that overwritten entries should be shown
+	 *  Also takes $overwritten, which, if true, specifies that overwritten entries should be shown
 	 *
 	 *	Returns an array with all the definitions found
 	 */
@@ -803,13 +803,22 @@
 	}
 
 
-	//convert from dictionary to staging style (add staging data)
+
+	/**
+	 *	Converts a document from the looma databse into the format used in the staging databse
+	 *
+	 *	Returns an array with wordata and stagingData
+	 */
 	function convertFromLoomaToStaging ($doc){
 		$finalArray = array('wordData' => $doc, 'stagingData' => generateBlankStagingData());
 
 		return $finalArray;
 	}
 
+	/**
+	 *	Generates an array with staging data where all fields are false
+	 *	Returns the array of staging data
+	 */
 	function generateBlankStagingData () {
 		return array(
 				'added' => false, 'modified' => false, 'accepted' => false,
@@ -817,6 +826,11 @@
 			);
 	}
 
+	/**
+	 *	Removes an object with a certian id from the staging database
+	 *	@param string $id the id of the object to be removed
+	 *	@param mongodb connection $stagingConnection a connection with 
+	 */
 	function removeStaging ($_id, $stagingConnection) {
 		global $stagingDB;
 		global $stagingCollection;
