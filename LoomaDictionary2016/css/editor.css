@@ -217,8 +217,10 @@ table  tr  td  p {
 	position: fixed;
 	bottom: 0px;
 	z-index: 90;
-	overflow: hidden;
+	overflow-y: scroll;
+	overflow-x: hidden;
 	pointer-events: none;
+	max-height: 40%;
 }
 
 
