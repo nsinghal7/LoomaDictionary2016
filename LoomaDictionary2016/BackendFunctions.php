@@ -40,7 +40,7 @@
 	 */
 
 
-
+	//contains the methods to access google translate
 	require 'translator.php';
 
 	//edit this value to determine how many words will be assigned to each page
