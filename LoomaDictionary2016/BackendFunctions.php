@@ -860,6 +860,12 @@
 		return $ans;
 	}
 
+	/**
+	 * Clears the staging database of all words (technically the collection), and returns a boolean depending on whether it was 
+	 * successful.
+	 * @param mongodb connection $stagingConnection The connection to the stagign database
+	 * @return boolean True if the database was cleared, false if it still has contents
+	 */
 	function clearStagingDatabase ($stagingConnection){
 		global $stagingDB;
 		global $stagingCollection;
@@ -874,6 +880,14 @@
 		}
 	}
 
+
+	/**
+	 * Adds a single word to the staging database.  Only the 'en,' 'rand,' 'date_entered,' 'mod,' 
+	 * and 'stagingData' fields are populated
+	 * @param mongodb connection $stagingConnection The connection to the stagign database
+ 	 * @param string $word The word to be entered
+	 * @return string $user The user entering the word
+	 */
 	function addSingleWord ($stagingConnection, $word, $user) {
 		global $stagingDB;
 		global $stagingCollection;
