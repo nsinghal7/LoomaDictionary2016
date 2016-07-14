@@ -458,6 +458,13 @@
 		return $loomaArray;
 	}
 
+	/**
+	 *	Removes all entries in one array that appear in the other
+	 *	@param array $betaArray an array in staging database format to be overwritten
+	 *	@param array $dominantArray an array in staging database format
+	 *	
+	 *	Returns the betaArray without the overwritten entries
+	 */
 	function removeOverwrittenEntries ($betaArray, $dominantArray){
 		//nested for each loop, compare object ids and overwrite entires in the beta array
 		$betaCount = count($betaArray);
