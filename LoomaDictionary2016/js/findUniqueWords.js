@@ -64,6 +64,6 @@ function findUniqueWordsFromString(pages, isChPre, helpString, prefix){
 }
 
 function extractWordsFromString(string) {
-	return (string.match(/[qwertyuiopasdfghjklzxcvbnmQWERTYUIOPASDFGHJKLZXCVBNM0123456789]+/g) || [])
-						.map(function(word) { return word.toLowerCase()});
+	return string.match(/[qwertyuiopasdfghjklzxcvbnmQWERTYUIOPASDFGHJKLZXCVBNM0123456789]+/g)
+				.map(function(word) { return word.toLowerCase()});
 }
