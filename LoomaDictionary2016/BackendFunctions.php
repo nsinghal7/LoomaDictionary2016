@@ -205,8 +205,12 @@
 		curl_setopt($ch, CURLOPT_TIMEOUT, 2);
 		$response = curl_exec($ch);
 		curl_close($ch);
-		$obj = $obj =json_decode($response, true); //true converts stdClass to associative array.
+		$obj = json_decode($response, true); //true converts stdClass to associative array.
 		$messyList = $obj['results'];
+		if($messyList == null) {
+			error_log("messy list null for word: $word");
+			$messyList = array();
+		}
 		$ans = array();
 		foreach($messyList as $messy) {
 			if(strpos($messy["headword"], " ") === false && strpos($messy["headword"], "-") === false) { // no phrase definitions, only word. Allows for unconjugated form
