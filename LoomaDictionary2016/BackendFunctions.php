@@ -271,6 +271,9 @@
 		
 		//get translation
 		$np = translateToNepali($definition["word"]);
+		if($np == null) {
+			$np = "";
+		}
 		
 		//get the rw (hopefully this will be included in the dictionary api)
 		$rw = $definition['rw'];
