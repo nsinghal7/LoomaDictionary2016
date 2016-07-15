@@ -60,7 +60,7 @@ function findUniqueWordsFromString(pages, isChPre, helpString, prefix){
 			return 1;
 		}
 	});
-	return sorted.filter( function(v,i,o){return !/^(0|[1-9]\d*)$/.test(v.word) && (i==0 || v.word!=o[i-1].word);});
+	return sorted.filter( function(v,i,o){return !/(0|[1-9]\d*)/.test(v.word) && (i==0 || v.word!=o[i-1].word);});
 }
 
 function extractWordsFromString(string) {
