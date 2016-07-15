@@ -239,21 +239,19 @@
 	 * @return boolean True if all definitions were successfully added, false if ANY failed
 	 */
 	function createEntry($word, $officialConnection, $stagingConnection, $user) {
+		if(checkForExistingDefinition($word, $stagingConnection, $officialConnection)) {
+			return true; // doesn't count as skipped since it existed
+		}
+		
+		
 		$dictionaryData = lookUpWord($word["word"]);
 		
-		$fullSuccess = true;
-
-		//variable to make sure for loop has been entered
-		$didRunForLoop = false;
+		$partSuccess = false;
 		
 		foreach($dictionaryData as $definition) {
-			$fullSuccess &= createIndividualDefinition($word, $definition, $officialConnection, $stagingConnection, $user);
-			$didRunForLoop = true;
+			$partSuccess |= createIndividualDefinition($word, $definition, $officialConnection, $stagingConnection, $user);
 		}
-		if($didRunForLoop){
-			return $fullSuccess;
-		}
-		return $didRunForLoop;
+		return partSuccess;
 	}
 	
 	/**
@@ -304,18 +302,12 @@
 				)
 		);
 		
-		//check to see if a similar definition already exists
-		if(!checkForSimilarDefinition($doc, $stagingConnection, $officialConnection)){
-			global $stagingDB;
-			global $stagingCollection;
-			// insert the doc into the database
-			$stagingConnection->selectDB($stagingDB)->selectCollection($stagingCollection)->save(moveWordDataUpLevel($doc));
-				
-			return true;
-		}
-		else{
-			return true;
-		}
+		global $stagingDB;
+		global $stagingCollection;
+		// insert the doc into the database
+		$stagingConnection->selectDB($stagingDB)->selectCollection($stagingCollection)->save(moveWordDataUpLevel($doc));
+			
+		return true;
 	}
 
 	/**
@@ -833,17 +825,17 @@
 
 
 	/**
-	 * Checks if the given entry (in staging database format) is similar enough to an existing
-	 * entry that it shouldn't be added
+	 * Checks if the word has already been defined and therefore the new definition should be
+	 * canceled
 	 * @param unknown $doc The entry to check
-	 * @return boolean True if the entry should NOT be deleted, false if it should
+	 * @return boolean True if the entry exists, false if it doesn't
 	 */
-	function checkForSimilarDefinition ($doc, $stagingConnection, $officialConnection) {
+	function checkForExistingDefinition ($word, $stagingConnection, $officialConnection) {
 		global $stagingDB;
 		global $stagingCollection;
 		global $loomaDB;
 		global $loomaCollection;
-		$query = array("en" => $doc["wordData"]["en"], "part" => $doc["wordData"]["part"], "def" => $doc["wordData"]["def"]);
+		$query = array("en" => $word );
 		if($stagingConnection->selectDB($stagingDB)->selectCollection($stagingCollection)->count($query) > 0) {
 			return true;
 		}
