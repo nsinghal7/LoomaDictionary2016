@@ -145,7 +145,9 @@
 		global $appDB;
 		global $appCollection;
 		$session = array("position" => 0, "length" => $length, "user" => $user);
-		$appConnection->selectDB($appDB)->selectCollection($appCollection)->insert($session);
+		$collection = $appConnection->selectDB($appDB)->selectCollection($appCollection);
+		$collection->remove(array("user" => $user));
+		$collection->insert($session);
 	}
 	
 	
