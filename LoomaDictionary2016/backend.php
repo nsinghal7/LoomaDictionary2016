@@ -175,7 +175,8 @@
 	$wordDataConversions = array(array("_id", "id"), array("en", "word"), array("rw", "root"),
 								 array("np", "nep"), array("part", "pos"), array("def", "def"),
 								 array("rand", "rand"), array("date_entered", "date"),
-								 array("mod", "mod"), array("ch_id", "ch_id"));
+								 array("mod", "mod"), array("ch_id", "ch_id"),
+								 array("primary", "primary"));
 	
 	
 	/**
@@ -286,10 +287,7 @@
 	 * @param connection $officialConnection The connection to the official database
 	 * @param connection $stagingConnection The connection to the staging database
 	 * @param string $user the user
-	 * @return false if the update failed; if successful, should return the new value of the
-	 * word in staging-style. If the type of update was 'cancel' will return true to
-	 * differentiate it from a failure and a modification (since now the page should reload
-	 * to get the official entry or nothing)
+	 * @return false if the update failed, true if successful
 	 */
 	function updateStagingWrapper($change, $officialConnection, $stagingConnection, $user) {
 		$former = findDefinitionWithID($change["wordId"], $officialConnection,
@@ -303,6 +301,8 @@
 			return true;
 		} elseif ($change["field"] == "stat") {
 			$former["stagingData"]["accepted"] = !$former["stagingData"]["accepted"];
+		} elseif($change["field"] == "prim") {
+			$former["wordData"]["primary"] = !$former["wordData"]["primary"];
 		} elseif (in_array($change["field"], array("word", "root", "nep", "pos", "def", "ch_id"))) {
 			// for all of these the value just needs to be updated to $change["new"]
 			$former["wordData"][$change["field"]] = $change["new"];
