@@ -782,7 +782,7 @@
 	*database, a connection to that database, and a string with the user modifying
 	*the entry
 	*
-	*Returns the modified word
+	*Returns true if successful
 	*/
 	function updateStaging($new, $connection, $user, $isStagingChange) {
 		global $stagingDB;

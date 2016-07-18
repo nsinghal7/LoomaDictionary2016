@@ -325,11 +325,13 @@ function createTableEntry(word, i) {
 	row.append(createEditableTd("nep", i, word["wordData"]["nep"]));
 	row.append(createEditableTd("def", i, word["wordData"]["def"]));
 	row.append(createEditableTd("ch_id", i, word["wordData"]["ch_id"]));
+	row.append($('<td class="primCol"><input type="checkbox" onchange="edit(\'prim\', ' + i +
+						')" id="prim_' + i + '" '
+						+ (isTrue(word["wordData"]["primary"]) ? 'checked ' : '') + '></td>'));
 	row.append($('<td class="modCol"><p>'
 			+ (word['wordData']["mod"]) + '</p></td>'));
 	row.append($('<td class="dateCol"><p>'
 			+ (word['wordData']["date"]) + '</p></td>'));
-	row.append($('<td class="otherCol"><p> id: ' + word['wordData']['id']['$id'] +'</p></td>'));
 	return row;
 }
 
@@ -505,12 +507,9 @@ function loadOfficialTable() {
 						row.append(createOfficialTd(officialDefs[i], "nep"));
 						row.append(createOfficialTd(officialDefs[i], "def"));
 						row.append(createOfficialTd(officialDefs[i], "ch_id"));
+						row.append(createOfficialTd(officialDefs[i], "primary"));
 						row.append(createOfficialTd(officialDefs[i], "mod"));
 						row.append(createOfficialTd(officialDefs[i], "date"));
-						row.append($("<td class='other'><p>id: "
-								+ officialDefs[i]['wordData']['id']['$id'] 
-								+ "</p></td>"));
-						table.append(row);
 					}
 					
 					// update margin-bottom of resultsTable

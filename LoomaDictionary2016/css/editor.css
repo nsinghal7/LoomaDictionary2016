@@ -158,7 +158,7 @@ table  tr  td  p {
 	color: red;
 }
 
-.wordCol, .rootCol, .posCol, .nepCol, .modCol, .dateCol, .otherCol, .selectedCol, .editCol, .ch_idCol {
+.wordCol, .rootCol, .posCol, .nepCol, .modCol, .dateCol, .selectedCol, .editCol, .ch_idCol, primCol {
 	width: 6.3%;
 }
 
