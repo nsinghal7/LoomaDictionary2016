@@ -172,6 +172,12 @@
 	 
 	require "BackendFunctions.php";
 	
+	
+	/**
+	 * list of fields in wordData that need to be converted from backend to front.
+	 * in the form array(backend, frontend). If a field isn't in the list, it will not be
+	 * transfered (aka it will be deleted)
+	 */
 	$wordDataConversions = array(array("_id", "id"), array("en", "word"), array("rw", "root"),
 								 array("np", "nep"), array("part", "pos"), array("def", "def"),
 								 array("rand", "rand"), array("date_entered", "date"),
