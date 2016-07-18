@@ -40,7 +40,7 @@
 	 */
 
 
-
+	//contains the methods to access google translate
 	require 'translator.php';
 
 	//edit this value to determine how many words will be assigned to each page
@@ -289,6 +289,7 @@
 		
 		//put everything into a doc
 		$doc = array( "wordData" => array(
+				"primary" => false,
 				"en" => $definition["word"],
 				"ch_id" => $word["ch_id"],
 				"rw" => $rw,
@@ -430,7 +431,7 @@
 	 *
 	 *	Takes the desired word and a connection to the Looma database
 	 *
-	 *Also takes $overwritten, which, if true, specifies that overwritten entries should be shown
+	 *  Also takes $overwritten, which, if true, specifies that overwritten entries should be shown
 	 *
 	 *	Returns an array with all the definitions found
 	 */
@@ -459,6 +460,13 @@
 		return $loomaArray;
 	}
 
+	/**
+	 *	Removes all entries in one array that appear in the other
+	 *	@param array $betaArray an array in staging database format to be overwritten
+	 *	@param array $dominantArray an array in staging database format
+	 *	
+	 *	Returns the betaArray without the overwritten entries
+	 */
 	function removeOverwrittenEntries ($betaArray, $dominantArray){
 		//nested for each loop, compare object ids and overwrite entires in the beta array
 		$betaCount = count($betaArray);
@@ -620,6 +628,7 @@
 		return array(
 				'_id' => $allWordData['_id'],
 				'ch_id' => $allWordData['ch_id'],
+				'primary' => $allWordData['primary'],
 				'en' => $allWordData['en'], 
 				'rw' => $allWordData['rw'],
 				'part' => $allWordData['part'], 
@@ -756,6 +765,7 @@
 		return array (
 				'_id' => $doc['_id'],
 				"ch_id" => $doc['ch_id'],
+				'primary' => $doc['primary'],
 				"en" => $doc["en"],
 				"rw" => $doc["rw"],
 				"np" => $doc["np"],
@@ -804,13 +814,22 @@
 	}
 
 
-	//convert from dictionary to staging style (add staging data)
+
+	/**
+	 *	Converts a document from the looma databse into the format used in the staging databse
+	 *
+	 *	Returns an array with wordata and stagingData
+	 */
 	function convertFromLoomaToStaging ($doc){
 		$finalArray = array('wordData' => $doc, 'stagingData' => generateBlankStagingData());
 
 		return $finalArray;
 	}
 
+	/**
+	 *	Generates an array with staging data where all fields are false
+	 *	Returns the array of staging data
+	 */
 	function generateBlankStagingData () {
 		return array(
 				'added' => false, 'modified' => false, 'accepted' => false,
@@ -818,6 +837,11 @@
 			);
 	}
 
+	/**
+	 *	Removes an object with a certian id from the staging database
+	 *	@param string $id the id of the object to be removed
+	 *	@param mongodb connection $stagingConnection a connection with 
+	 */
 	function removeStaging ($_id, $stagingConnection) {
 		global $stagingDB;
 		global $stagingCollection;
@@ -861,6 +885,12 @@
 		return $ans;
 	}
 
+	/**
+	 * Clears the staging database of all words (technically the collection), and returns a boolean depending on whether it was 
+	 * successful.
+	 * @param mongodb connection $stagingConnection The connection to the stagign database
+	 * @return boolean True if the database was cleared, false if it still has contents
+	 */
 	function clearStagingDatabase ($stagingConnection){
 		global $stagingDB;
 		global $stagingCollection;
@@ -875,6 +905,14 @@
 		}
 	}
 
+
+	/**
+	 * Adds a single word to the staging database.  Only the 'en,' 'rand,' 'date_entered,' 'mod,' 
+	 * and 'stagingData' fields are populated
+	 * @param mongodb connection $stagingConnection The connection to the stagign database
+ 	 * @param string $word The word to be entered
+	 * @return string $user The user entering the word
+	 */
 	function addSingleWord ($stagingConnection, $word, $user) {
 		global $stagingDB;
 		global $stagingCollection;
@@ -893,6 +931,7 @@
 				"np" => '',
 				"part" => '',
 				"def" => '',
+				'primary' => false,
 				"rand" => $random,
 				"date_entered" => $dateCreated,
 				"mod" => $user),
