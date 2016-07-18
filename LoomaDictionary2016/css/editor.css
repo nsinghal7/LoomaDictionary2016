@@ -148,9 +148,9 @@ table  tr  td  p {
 }
 .resultsTableInput {
 	background-color: #baf0ff;
-	border-color: #dbf3ff;
 	height: 100%;
-	width: calc(100% - 5px);
+	width: calc(100% - 1px);
+	font-size: 120%;
 }
 
 .strikethrough {

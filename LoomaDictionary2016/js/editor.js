@@ -286,10 +286,9 @@ function createTableEntry(word, i) {
 	 */
 	function createEditableTd(type, index, value) {
 		return $('<td class="' + type + 'Col"></td>')
-				.append($('<input type="text" id="'
-						+ type + "_" + index + '" onchange="edit(\'' + type
-						+ '\', ' + index + ')" value="' + value
-						+ '" class="resultsTableInput">'));
+				.append($('<textarea id="' + type + "_" + index + '" onchange="edit(\'' + type
+						+ '\', ' + index + ')" class="resultsTableInput">'
+						+ value + "</textarea></td>"));
 	}
 	
 	// add each field
