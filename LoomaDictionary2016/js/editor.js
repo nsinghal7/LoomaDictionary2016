@@ -102,6 +102,7 @@ function startup() {
 	hideUploadDiv();
 	hideAddWordDiv();
 	submitSearch();
+	$("#cancelUploadButton").hide();
 }
 
 
@@ -158,9 +159,10 @@ function processPDF() {
 	progress.text("Converting file to text");
 	Pdf2TextClass().convertPDF(file, function(page, total) {}, function(pages) {
 		// called when the pdf is fully converted to text. Finds all unique words
-		progress.text("Processing text");
+		progress.text("finding unique words and chapters");
 		var words = findUniqueWordsFromString(pages, $("#autoChidCheck").prop("checked"),
 											$("#chapInput").val(), $("#prefixInput").val());
+		
 		maxProgress = 0;
 		// uploads the words to the backend to be added to the dictionary
 		$.post("backend.php",
@@ -176,6 +178,7 @@ function processPDF() {
 						submitSearch(true);
 					}
 					
+					$("#cancelUploadButton").hide();
 					// stop updating the progress bar
 					clearInterval(progressTimer);
 					maxProgress = 0;
@@ -185,6 +188,9 @@ function processPDF() {
 					processing = false;
 					submitSearch(true);
 				}, "json");
+		
+		// start allowing cancelation
+		$("#cancelUploadButton").show();
 		
 		// start updating the progress bar
 		progressTimer = setInterval(function() {
@@ -196,7 +202,7 @@ function processPDF() {
 							return;
 						}
 						maxProgress = output["position"];
-						progress.text("Processing text: " + output["position"] + " / " + output['length']);
+						progress.text("Adding definition: " + output["position"] + " / " + output['length']);
 					}, "json");
 		}, 1000);
 	});
@@ -612,5 +618,16 @@ function addSingleWord() {
 			}
 			$("#addWordDiv").removeClass("disableButtons");
 		}, 'json');
+}
+
+/**
+ * Cancels the current upload
+ */
+function cancelUpload() {
+	$.get("backend.php", {'loginInfo': {"allowed": true, 'user': 'me'}, "cancelUpload": true},
+		function(data, status, jqXHR) {
+			// don't do anything. it will continue to run until it skips all entries. then
+			// the normal processPDF() handler will finish it
+		});
 }
 

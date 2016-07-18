@@ -105,6 +105,12 @@
 	 * 		revertAll: anything
 	 * }
 	 * 
+	 * cancel upload
+	 * 
+	 * get {
+	 * 	cancelUpload: anything
+	 * }
+	 * 
 	 * 
 	 * Passes back the data in the following format for varying requests and outcomes. All
 	 * data returned is in JSON format.
@@ -165,6 +171,10 @@
 	 * status: {
 	 * 		type: 'success' or 'error'
 	 * }
+	 * 
+	 * 
+	 * cancel upload
+	 * [no special response]
 	 * 
 	 * 
 	 * 
@@ -387,13 +397,26 @@
 			$list = json_decode($_REQUEST['wordList'], true);
 			
 			// creates a session that allows the front end to check progress
-			createUploadProgressSession(count($list), $appConnection, $_REQUEST['loginInfo']['user']);
+			createUploadProgressSession(count($list), $appConnection,
+					$_REQUEST['loginInfo']['user']);
 			
 			$skipped = 0;
+			$canceled = false;
 			try {
 				foreach ($list as $index => $word) {
-					$success = createEntryWrapper($word, $officialConnection, $stagingConnection,
-							$_REQUEST['loginInfo']['user']);
+					
+					// check that session was not canceled
+					if($canceled or
+					   getUploadProgress($appConnection, $_REQUEST['loginInfo']['user'])==null){
+						// canceled
+						$canceled = true;
+					}
+					
+					
+					// if canceled, never a success
+					$success = ($canceled ? false : createEntryWrapper($word,
+														$officialConnection, $stagingConnection,
+														$_REQUEST['loginInfo']['user']));
 					if (!$success) {
 						if(!isset($response['skipped'])) {
 							$response['skipped'] = array();
@@ -401,7 +424,8 @@
 						$response['skipped'][] = $word["word"];
 						$skipped++;
 					}
-					updateUploadProgressSession($index + 1, $appConnection, $_REQUEST['loginInfo']['user']);
+					updateUploadProgressSession($index + 1, $appConnection,
+							$_REQUEST['loginInfo']['user']);
 				}
 			} catch(Exception $e) {
 				error_log($e->getMessage());
@@ -465,6 +489,8 @@
 			$response['status'] = array('type' =>
 					addSingleWordWrapper($_REQUEST['newWord'], $stagingConnection,
 							$_REQUEST['loginInfo']['user']) ? 'success' : 'error');
+		} elseif($_SERVER['REQUEST_METHOD'] == 'GET' and isset($_REQUEST['cancelUpload'])) {
+			closeUploadProgress($appConnection, $_REQUEST['loginInfo']['user']);
 		} else {
 			// the arguments didn't match any acceptable requests
 			$response['status'] = array('type' => 'error', 'value' => 'invalid request',

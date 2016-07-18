@@ -119,7 +119,7 @@ body {
 }
 
 
-.disableButtons {
+.disableButtons *:not(.alwaysClickable) {
 	pointer-events: none;
 }
 
