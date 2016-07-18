@@ -263,9 +263,15 @@
 	 * @param unknown $officialConnection The connection to the official database
 	 * @param unknown $stagingConnection The connection to the staging database
 	 * @param unknown $user the user responsible
-	 * @return boolean true if successful, false if failed
+	 * @return boolean true if successful, error if failed
 	 */
 	function createIndividualDefinition($word, $definition, $officialConnection, $stagingConnection, $user) {
+		
+		if(checkForExistingDefinition($definition["word"], $stagingConnection, $officialConnection)) {
+			// definition already exists, so don't add it, but don't fail
+			return true;
+		}
+		
 		//get definition(find api)
 		$def = $definition['def'];
 		
