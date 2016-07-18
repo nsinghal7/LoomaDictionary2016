@@ -417,7 +417,7 @@
 		} else if($field == "def") {
 			return true; // all definitions should be valid
 		} else if($field == "ch_id") {
-			return preg_match('/^[1-8](M|N|S|SS|EN)([0-9]?[0-9]\.)?[0-9][0-9]$/', $value) === 1;
+			return preg_match('/^[1-8](M|N|S|SS|EN)([0-9][0-9]\.)?[0-9][0-9]$/', $value) === 1;
 		}
 	}
 	
