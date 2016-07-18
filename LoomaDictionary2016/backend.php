@@ -251,6 +251,9 @@
 	 * @return boolean true if the entry was created successfully, false otherwise
 	 */
 	function createEntryWrapper($word, $officialConnection, $stagingConnection, $user) {
+		if(!isLegalValue("word", $word)) {
+			return false; // shouldn't add since it has a space in it
+		}
 		return createEntry($word, $officialConnection, $stagingConnection,
 							$user);
 	}
@@ -319,9 +322,18 @@
 			$former["stagingData"]["accepted"] = !$former["stagingData"]["accepted"];
 		} elseif($change["field"] == "prim") {
 			$former["wordData"]["primary"] = !$former["wordData"]["primary"];
-		} elseif (in_array($change["field"], array("word", "root", "nep", "pos", "def", "ch_id"))) {
+		} elseif (in_array($change["field"],
+						array("word", "root", "nep", "pos", "def", "ch_id"))) {
+			// get rid of potentially dangerous whitespace (would throw off exact searches)
+			$change["new"] = trim($change["new"]);
+			
 			// for all of these the value just needs to be updated to $change["new"]
 			$former["wordData"][$change["field"]] = $change["new"];
+			
+			// verify that this change is legal first:
+			if(!isLegalValue($change["field"], $change["new"])) {
+				return false;
+			}
 			return updateStaging(convertWord($former, true), $stagingConnection, $user, false);
 		} else {
 			// illegal update attempt
@@ -358,6 +370,16 @@
 	}
 	
 	/**
+	 * Wrapper for closing the current upload session. This will stop an ongoing upload
+	 * and also prevent contamination of the next upload's progress bar
+	 * @param unknown $appConnection The connection to the app database
+	 * @param unknown $user The user requesting the end of the session
+	 */
+	function closeUploadProgressWrapper($appConnection, $user) {
+		return closeUploadProgress($appConnection, $user);
+	}
+	
+	/**
 	 * Wrapper for removing all entries from the staging database
 	 * @param unknown $stagingConnection The staging connection
 	 * @return True if successful, false if failed
@@ -375,7 +397,28 @@
 	 * @return true if successful, false otherwise
 	 */
 	function addSingleWordWrapper($word, $stagingConnection, $user) {
+		if(!isLegalValue("word", $word)) {
+			return false;
+		}
 		return addSingleWord($stagingConnection, $word, $user);
+	}
+	
+	/**
+	 * Checks that the value is legal for the field.
+	 * @param unknown $field The field to check
+	 * @param unknown $value The value to check
+	 */
+	function isLegalValue($field, $value) {
+		// fields: "word", "root", "nep", "pos", "def", "ch_id"
+		if(in_array($field, array("word", "root", "nep"))) {
+			return strpos($value, ' ') === false; // only fails if multiple words
+		} else if($field == "pos") {
+			return true; // don't have qualifiers yet. replace when rules are created
+		} else if($field == "def") {
+			return true; // all definitions should be valid
+		} else if($field == "ch_id") {
+			return preg_match('/^[1-8](M|N|S|SS|EN)([0-9]?[0-9]\.)?[0-9][0-9]$/', $value) === 1;
+		}
 	}
 	
 	$officialConnection;
@@ -407,7 +450,8 @@
 					
 					// check that session was not canceled
 					if($canceled or
-					   getUploadProgress($appConnection, $_REQUEST['loginInfo']['user'])==null){
+					   getProgressWrapper($appConnection, $_REQUEST['loginInfo']['user'])
+													== null) {
 						// canceled
 						$canceled = true;
 					}
@@ -430,7 +474,7 @@
 			} catch(Exception $e) {
 				error_log($e->getMessage());
 			} finally {
-				closeUploadProgress($appConnection, $_REQUEST['loginInfo']['user']);
+				closeUploadProgressWrapper($appConnection, $_REQUEST['loginInfo']['user']);
 			}
 			
 			
@@ -490,7 +534,7 @@
 					addSingleWordWrapper($_REQUEST['newWord'], $stagingConnection,
 							$_REQUEST['loginInfo']['user']) ? 'success' : 'error');
 		} elseif($_SERVER['REQUEST_METHOD'] == 'GET' and isset($_REQUEST['cancelUpload'])) {
-			closeUploadProgress($appConnection, $_REQUEST['loginInfo']['user']);
+			closeUploadProgressWrapper($appConnection, $_REQUEST['loginInfo']['user']);
 		} else {
 			// the arguments didn't match any acceptable requests
 			$response['status'] = array('type' => 'error', 'value' => 'invalid request',

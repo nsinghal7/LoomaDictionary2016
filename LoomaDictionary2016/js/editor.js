@@ -459,7 +459,8 @@ function edit(type, index) {
 					alert("The change you made to the word "
 							+ words[index]['wordData']['word'] + " ("
 							+ words[index]['wordData']['pos'] + ", "
-							+ words[index]['wordData']['id'] + ") failed and were reverted");
+							+ words[index]['wordData']['id'] + ") failed and were reverted."
+							+ "They were most likely badly formatted");
 				}
 				
 				// unlock screen so the user can continue
