@@ -196,6 +196,10 @@ table  tr  td  p {
 	width: 30%;
 }
 
+.primCol input {
+	margin-left: calc(50% - 6px);
+}
+
 .selectedCol button {
 	height: 100%;
 	width: 100%;
