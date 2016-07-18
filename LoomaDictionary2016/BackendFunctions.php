@@ -289,6 +289,7 @@
 		
 		//put everything into a doc
 		$doc = array( "wordData" => array(
+				"primary" => false,
 				"en" => $definition["word"],
 				"ch_id" => $word["ch_id"],
 				"rw" => $rw,
@@ -627,6 +628,7 @@
 		return array(
 				'_id' => $allWordData['_id'],
 				'ch_id' => $allWordData['ch_id'],
+				'primary' => $allWordData['primary'],
 				'en' => $allWordData['en'], 
 				'rw' => $allWordData['rw'],
 				'part' => $allWordData['part'], 
@@ -763,6 +765,7 @@
 		return array (
 				'_id' => $doc['_id'],
 				"ch_id" => $doc['ch_id'],
+				'primary' => $doc['primary'],
 				"en" => $doc["en"],
 				"rw" => $doc["rw"],
 				"np" => $doc["np"],
@@ -928,6 +931,7 @@
 				"np" => '',
 				"part" => '',
 				"def" => '',
+				'primary' => false,
 				"rand" => $random,
 				"date_entered" => $dateCreated,
 				"mod" => $user),
