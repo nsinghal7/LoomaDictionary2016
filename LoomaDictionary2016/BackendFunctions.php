@@ -219,10 +219,21 @@
 				$senses = isset($messy["senses"]) ? $messy["senses"] : array();
 				foreach($senses as $sense) {
 					$def = array();
-					$def["word"] = strtolower($messy["headword"]);
-					$def['def'] = isset($sense['definition']) ? $sense['definition'] : "";
-					$def['pos'] = ($messy["part_of_speech"] != null) ? $messy["part_of_speech"] : "";
-					$def['rw'] = ""; // this dictionary doesn't have root words
+					$hw = strtolower($messy["headword"]);
+					if($hw == $def) {
+						// it is its own root word
+						$def["word"] = $word;
+						$def['def'] = isset($sense['definition']) ? $sense['definition'] : "";
+						$def['pos'] = ($messy["part_of_speech"] != null) ? $messy["part_of_speech"] : "";
+						$def['rw'] = '';
+					} else {
+						// has a separate root word. Definition and pos are now inaccurate and
+						// should be user-defined relative to rw definition.
+						$def["word"] = $word;
+						$def['def'] = "<TODO>";
+						$def['pos'] = "<TODO>";
+						$def['rw'] = $hw;
+					}
 					$ans[] = $def;
 				}
 			}
