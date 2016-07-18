@@ -305,22 +305,28 @@ function createTableEntry(word, i) {
 				+ '">selected</button></td>'));
 	row.append(createEditableTd("word", i, word["wordData"]["word"]));
 	var stat;
+	var colorClass;
 	if(word['stagingData']['deleted']) {
 		stat = "de<wbr>let<wbr>ed";
-		row.find("td input").addClass("strikethrough");
+		row.find("td input").addClass("strikethrough"); // strike through word field
+		colorClass = 'statColorDeleted';
 	} else if(word['stagingData']['accepted']) {
 		stat = "acc<wbr>ept<wbr>ed";
+		colorClass = 'statColorAccepted';
 	} else if(word['stagingData']['modified']) {
 		stat = "mod<wbr>if<wbr>ied";
+		colorClass = 'statColorModified';
 	} else if(word['stagingData']['added']) {
 		stat = "add<wbr>ed";
+		colorClass = 'statColorAdded';
 	} else {
 		stat = "un<wbr>ed<wbr>it<wbr>ed";
+		colorClass = 'statColorUnedited';
 	}
 	
 	//adds data to the row from the word object
 	row.append($('<td class="statCol"><button onclick="edit(\'stat\', '
-				+ i + ')" id="stat_' + i + '" class="statButton">' + stat
+				+ i + ')" id="stat_' + i + '" class="statButton ' + colorClass + '">' + stat
 				+ '</button><button class="cancelButton" onclick="edit(\'cancel\', ' + i
 				+ ')">re<wbr>vert</button><button onclick="edit(\'delete\', '
 				+ i + ')" class="entryDeleteButton">'

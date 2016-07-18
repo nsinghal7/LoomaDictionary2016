@@ -200,6 +200,27 @@ table  tr  td  p {
 	margin-left: calc(50% - 6px);
 }
 
+.statColorDeleted {
+	background-color: red;
+}
+
+.statColorAccepted {
+	background-color: green;
+}
+
+.statColorModified {
+	background-color: yellow;
+}
+
+.statColorAdded {
+	background-color: orange;
+}
+
+.statColorUnedited {
+	background-color: #f9eaff;
+	pointer-events: none;
+}
+
 .selectedCol button {
 	height: 100%;
 	width: 100%;
