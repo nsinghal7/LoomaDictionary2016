@@ -102,6 +102,7 @@ function startup() {
 	hideUploadDiv();
 	hideAddWordDiv();
 	submitSearch();
+	$("#cancelUploadButton").hide();
 }
 
 
@@ -158,9 +159,10 @@ function processPDF() {
 	progress.text("Converting file to text");
 	Pdf2TextClass().convertPDF(file, function(page, total) {}, function(pages) {
 		// called when the pdf is fully converted to text. Finds all unique words
-		progress.text("Processing text");
+		progress.text("finding unique words and chapters");
 		var words = findUniqueWordsFromString(pages, $("#autoChidCheck").prop("checked"),
 											$("#chapInput").val(), $("#prefixInput").val());
+		
 		maxProgress = 0;
 		// uploads the words to the backend to be added to the dictionary
 		$.post("backend.php",
@@ -176,6 +178,7 @@ function processPDF() {
 						submitSearch(true);
 					}
 					
+					$("#cancelUploadButton").hide();
 					// stop updating the progress bar
 					clearInterval(progressTimer);
 					maxProgress = 0;
@@ -185,6 +188,9 @@ function processPDF() {
 					processing = false;
 					submitSearch(true);
 				}, "json");
+		
+		// start allowing cancelation
+		$("#cancelUploadButton").show();
 		
 		// start updating the progress bar
 		progressTimer = setInterval(function() {
@@ -196,7 +202,7 @@ function processPDF() {
 							return;
 						}
 						maxProgress = output["position"];
-						progress.text("Processing text: " + output["position"] + " / " + output['length']);
+						progress.text("Adding definition: " + output["position"] + " / " + output['length']);
 					}, "json");
 		}, 1000);
 	});
@@ -299,22 +305,28 @@ function createTableEntry(word, i) {
 				+ '">selected</button></td>'));
 	row.append(createEditableTd("word", i, word["wordData"]["word"]));
 	var stat;
+	var colorClass;
 	if(word['stagingData']['deleted']) {
 		stat = "de<wbr>let<wbr>ed";
-		row.find("td input").addClass("strikethrough");
+		row.find("td input").addClass("strikethrough"); // strike through word field
+		colorClass = 'statColorDeleted';
 	} else if(word['stagingData']['accepted']) {
 		stat = "acc<wbr>ept<wbr>ed";
+		colorClass = 'statColorAccepted';
 	} else if(word['stagingData']['modified']) {
 		stat = "mod<wbr>if<wbr>ied";
+		colorClass = 'statColorModified';
 	} else if(word['stagingData']['added']) {
 		stat = "add<wbr>ed";
+		colorClass = 'statColorAdded';
 	} else {
 		stat = "un<wbr>ed<wbr>it<wbr>ed";
+		colorClass = 'statColorUnedited';
 	}
 	
 	//adds data to the row from the word object
 	row.append($('<td class="statCol"><button onclick="edit(\'stat\', '
-				+ i + ')" id="stat_' + i + '" class="statButton">' + stat
+				+ i + ')" id="stat_' + i + '" class="statButton ' + colorClass + '">' + stat
 				+ '</button><button class="cancelButton" onclick="edit(\'cancel\', ' + i
 				+ ')">re<wbr>vert</button><button onclick="edit(\'delete\', '
 				+ i + ')" class="entryDeleteButton">'
@@ -447,7 +459,8 @@ function edit(type, index) {
 					alert("The change you made to the word "
 							+ words[index]['wordData']['word'] + " ("
 							+ words[index]['wordData']['pos'] + ", "
-							+ words[index]['wordData']['id'] + ") failed and were reverted");
+							+ words[index]['wordData']['id'] + ") failed and were reverted."
+							+ "They were most likely badly formatted");
 				}
 				
 				// unlock screen so the user can continue
@@ -612,5 +625,16 @@ function addSingleWord() {
 			}
 			$("#addWordDiv").removeClass("disableButtons");
 		}, 'json');
+}
+
+/**
+ * Cancels the current upload
+ */
+function cancelUpload() {
+	$.get("backend.php", {'loginInfo': {"allowed": true, 'user': 'me'}, "cancelUpload": true},
+		function(data, status, jqXHR) {
+			// don't do anything. it will continue to run until it skips all entries. then
+			// the normal processPDF() handler will finish it
+		});
 }
 

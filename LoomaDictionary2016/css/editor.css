@@ -119,7 +119,7 @@ body {
 }
 
 
-.disableButtons {
+.disableButtons *:not(.alwaysClickable) {
 	pointer-events: none;
 }
 
@@ -194,6 +194,31 @@ table  tr  td  p {
 	font-size: calc(1.4vw - 30px / 6);
 	word-wrap: normal;
 	width: 30%;
+}
+
+.primCol input {
+	margin-left: calc(50% - 6px);
+}
+
+.statColorDeleted {
+	background-color: red;
+}
+
+.statColorAccepted {
+	background-color: #21ff02;
+}
+
+.statColorModified {
+	background-color: yellow;
+}
+
+.statColorAdded {
+	background-color: orange;
+}
+
+.statColorUnedited {
+	background-color: #f9eaff;
+	pointer-events: none;
 }
 
 .selectedCol button {

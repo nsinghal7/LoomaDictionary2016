@@ -105,6 +105,12 @@
 	 * 		revertAll: anything
 	 * }
 	 * 
+	 * cancel upload
+	 * 
+	 * get {
+	 * 	cancelUpload: anything
+	 * }
+	 * 
 	 * 
 	 * Passes back the data in the following format for varying requests and outcomes. All
 	 * data returned is in JSON format.
@@ -167,11 +173,21 @@
 	 * }
 	 * 
 	 * 
+	 * cancel upload
+	 * [no special response]
+	 * 
+	 * 
 	 * 
 	 */
 	 
 	require "BackendFunctions.php";
 	
+	
+	/**
+	 * list of fields in wordData that need to be converted from backend to front.
+	 * in the form array(backend, frontend). If a field isn't in the list, it will not be
+	 * transfered (aka it will be deleted)
+	 */
 	$wordDataConversions = array(array("_id", "id"), array("en", "word"), array("rw", "root"),
 								 array("np", "nep"), array("part", "pos"), array("def", "def"),
 								 array("rand", "rand"), array("date_entered", "date"),
@@ -235,6 +251,9 @@
 	 * @return boolean true if the entry was created successfully, false otherwise
 	 */
 	function createEntryWrapper($word, $officialConnection, $stagingConnection, $user) {
+		if(!isLegalValue("word", $word)) {
+			return false; // shouldn't add since it has a space in it
+		}
 		return createEntry($word, $officialConnection, $stagingConnection,
 							$user);
 	}
@@ -303,9 +322,18 @@
 			$former["stagingData"]["accepted"] = !$former["stagingData"]["accepted"];
 		} elseif($change["field"] == "prim") {
 			$former["wordData"]["primary"] = !$former["wordData"]["primary"];
-		} elseif (in_array($change["field"], array("word", "root", "nep", "pos", "def", "ch_id"))) {
+		} elseif (in_array($change["field"],
+						array("word", "root", "nep", "pos", "def", "ch_id"))) {
+			// get rid of potentially dangerous whitespace (would throw off exact searches)
+			$change["new"] = trim($change["new"]);
+			
 			// for all of these the value just needs to be updated to $change["new"]
 			$former["wordData"][$change["field"]] = $change["new"];
+			
+			// verify that this change is legal first:
+			if(!isLegalValue($change["field"], $change["new"])) {
+				return false;
+			}
 			return updateStaging(convertWord($former, true), $stagingConnection, $user, false);
 		} else {
 			// illegal update attempt
@@ -342,6 +370,16 @@
 	}
 	
 	/**
+	 * Wrapper for closing the current upload session. This will stop an ongoing upload
+	 * and also prevent contamination of the next upload's progress bar
+	 * @param unknown $appConnection The connection to the app database
+	 * @param unknown $user The user requesting the end of the session
+	 */
+	function closeUploadProgressWrapper($appConnection, $user) {
+		return closeUploadProgress($appConnection, $user);
+	}
+	
+	/**
 	 * Wrapper for removing all entries from the staging database
 	 * @param unknown $stagingConnection The staging connection
 	 * @return True if successful, false if failed
@@ -359,7 +397,28 @@
 	 * @return true if successful, false otherwise
 	 */
 	function addSingleWordWrapper($word, $stagingConnection, $user) {
+		if(!isLegalValue("word", $word)) {
+			return false;
+		}
 		return addSingleWord($stagingConnection, $word, $user);
+	}
+	
+	/**
+	 * Checks that the value is legal for the field.
+	 * @param unknown $field The field to check
+	 * @param unknown $value The value to check
+	 */
+	function isLegalValue($field, $value) {
+		// fields: "word", "root", "nep", "pos", "def", "ch_id"
+		if(in_array($field, array("word", "root", "nep"))) {
+			return strpos($value, ' ') === false; // only fails if multiple words
+		} else if($field == "pos") {
+			return true; // don't have qualifiers yet. replace when rules are created
+		} else if($field == "def") {
+			return true; // all definitions should be valid
+		} else if($field == "ch_id") {
+			return preg_match('/^[1-8](M|N|S|SS|EN)([0-9]?[0-9]\.)?[0-9][0-9]$/', $value) === 1;
+		}
 	}
 	
 	$officialConnection;
@@ -381,13 +440,27 @@
 			$list = json_decode($_REQUEST['wordList'], true);
 			
 			// creates a session that allows the front end to check progress
-			createUploadProgressSession(count($list), $appConnection, $_REQUEST['loginInfo']['user']);
+			createUploadProgressSession(count($list), $appConnection,
+					$_REQUEST['loginInfo']['user']);
 			
 			$skipped = 0;
+			$canceled = false;
 			try {
 				foreach ($list as $index => $word) {
-					$success = createEntryWrapper($word, $officialConnection, $stagingConnection,
-							$_REQUEST['loginInfo']['user']);
+					
+					// check that session was not canceled
+					if($canceled or
+					   getProgressWrapper($appConnection, $_REQUEST['loginInfo']['user'])
+													== null) {
+						// canceled
+						$canceled = true;
+					}
+					
+					
+					// if canceled, never a success
+					$success = ($canceled ? false : createEntryWrapper($word,
+														$officialConnection, $stagingConnection,
+														$_REQUEST['loginInfo']['user']));
 					if (!$success) {
 						if(!isset($response['skipped'])) {
 							$response['skipped'] = array();
@@ -395,12 +468,13 @@
 						$response['skipped'][] = $word["word"];
 						$skipped++;
 					}
-					updateUploadProgressSession($index + 1, $appConnection, $_REQUEST['loginInfo']['user']);
+					updateUploadProgressSession($index + 1, $appConnection,
+							$_REQUEST['loginInfo']['user']);
 				}
 			} catch(Exception $e) {
 				error_log($e->getMessage());
 			} finally {
-				closeUploadProgress($appConnection, $_REQUEST['loginInfo']['user']);
+				closeUploadProgressWrapper($appConnection, $_REQUEST['loginInfo']['user']);
 			}
 			
 			
@@ -459,6 +533,8 @@
 			$response['status'] = array('type' =>
 					addSingleWordWrapper($_REQUEST['newWord'], $stagingConnection,
 							$_REQUEST['loginInfo']['user']) ? 'success' : 'error');
+		} elseif($_SERVER['REQUEST_METHOD'] == 'GET' and isset($_REQUEST['cancelUpload'])) {
+			closeUploadProgressWrapper($appConnection, $_REQUEST['loginInfo']['user']);
 		} else {
 			// the arguments didn't match any acceptable requests
 			$response['status'] = array('type' => 'error', 'value' => 'invalid request',
