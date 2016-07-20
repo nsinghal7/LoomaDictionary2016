@@ -762,7 +762,7 @@
 				$stagingConnection->selectDB($stagingDB)->selectCollection($stagingCollection)->remove($doc);
 				// remove from official
 				
-				$loomaConnection->selectDB($loomaDB)->selectCollection($loomaCollection)->remove(array("_id" => new MongoId($doc["_id"]['$id'])));
+				$loomaConnection->selectDB($loomaDB)->selectCollection($loomaCollection)->remove(array("_id" => $doc["_id"]));
 			}
 			else if(checkTrue($doc['stagingData']['accepted']))
 			{
