@@ -220,7 +220,7 @@
 				foreach($senses as $sense) {
 					$def = array();
 					$hw = strtolower($messy["headword"]);
-					if($hw == $def) {
+					if($hw == $word) {
 						// it is its own root word
 						$def["word"] = $word;
 						$def['def'] = isset($sense['definition']) ? $sense['definition'] : "";
