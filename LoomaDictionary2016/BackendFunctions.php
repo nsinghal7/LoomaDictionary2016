@@ -258,7 +258,7 @@
 	 * @return boolean True if all definitions were successfully added, false if ANY failed
 	 */
 	function createEntry($word, $officialConnection, $stagingConnection, $user) {
-		if(checkForExistingDefinition($word, $stagingConnection, $officialConnection)) {
+		if(checkForSimilarDefinition($word, $stagingConnection, $officialConnection)) {
 			return true; // doesn't count as skipped since it existed
 		}
 		
@@ -280,22 +280,28 @@
 	 * @param unknown $officialConnection The connection to the official database
 	 * @param unknown $stagingConnection The connection to the staging database
 	 * @param unknown $user the user responsible
-	 * @return boolean true if successful, error if failed
+	 * @return boolean true if successful, false if failed;
 	 */
 	function createIndividualDefinition($word, $definition, $officialConnection, $stagingConnection, $user) {
 		
-		if(checkForExistingDefinition($definition["word"], $stagingConnection, $officialConnection)) {
+		if(checkForSameDefinition($definition, $stagingConnection, $officialConnection)) {
 			// definition already exists, so don't add it, but don't fail
 			return true;
 		}
 		
+		$success = true;
+		
 		//get definition(find api)
 		$def = $definition['def'];
+		if($def == "") {
+			$success = false; // skipped
+		}
 		
 		//get translation
 		$np = translateToNepali($definition["word"]);
 		if($np == null) {
 			$np = "";
+			$success = false; // skipped
 		}
 		
 		//get the rw (hopefully this will be included in the dictionary api)
@@ -333,7 +339,7 @@
 		// insert the doc into the database
 		$stagingConnection->selectDB($stagingDB)->selectCollection($stagingCollection)->save(moveWordDataUpLevel($doc));
 			
-		return true;
+		return $success;
 	}
 
 	/**
@@ -879,12 +885,31 @@
 	 * @param unknown $doc The entry to check
 	 * @return boolean True if the entry exists, false if it doesn't
 	 */
-	function checkForExistingDefinition ($word, $stagingConnection, $officialConnection) {
+	function checkForSimilarDefinition ($word, $stagingConnection, $officialConnection) {
 		global $stagingDB;
 		global $stagingCollection;
 		global $loomaDB;
 		global $loomaCollection;
 		$query = array("en" => $word );
+		if($stagingConnection->selectDB($stagingDB)->selectCollection($stagingCollection)->count($query) > 0) {
+			return true;
+		}
+		return $officialConnection->selectDB($loomaDB)->selectCollection($loomaCollection)->count($query) > 0;
+	}
+	
+	/**
+	 * Checks if the given partial definition is already in the database and therefore
+	 * shouldn't be redefined
+	 * @param unknown $definition in form {"word": word, "def": definition, "pos": part}
+	 * @param unknown $stagingConnection
+	 * @param unknown $officialConnection
+	 */
+	function checkForSameDefinition($definition, $stagingConnection, $officialConnection) {
+		global $stagingDB;
+		global $stagingCollection;
+		global $loomaDB;
+		global $loomaCollection;
+		$query = array("en" => $definition["word"], "def" => $definition["def"], "part" => $definition["pos"] );
 		if($stagingConnection->selectDB($stagingDB)->selectCollection($stagingCollection)->count($query) > 0) {
 			return true;
 		}
