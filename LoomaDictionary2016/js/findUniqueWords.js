@@ -1,10 +1,14 @@
 /** takes a string with the entire block of text, then returns an array of all the uniqu words*/
-function findUniqueWordsFromString(pages, isChPre, helpString, prefix){
+function findUniqueWordsFromString(pages, isChPre, helpString, prefix, start, end){
 	pages = pages.map(extractWordsFromString); // string[][]
+	
+	start = start || 1;
+	end = end || pages.length;
+	
 	var words = [];
 	if(helpString == "") {
 		// no chapters
-		for(var i = 0; i < pages.length; i++) {
+		for(var i = start - 1; i < end; i++) {
 			for(var j = 0; j < pages[i].length; j++) {
 				words.push({"word": pages[i][j], "ch_id": prefix});
 			}
@@ -15,7 +19,7 @@ function findUniqueWordsFromString(pages, isChPre, helpString, prefix){
 		var lastWasPrefix = false;
 		var contents = true;
 		
-		for(var i = 0; i < pages.length; i++) {
+		for(var i = start - 1; i < end; i++) {
 			words = words.concat(pages[i]);
 		}
 		for(var i = 0; i < words.length; i++) {
@@ -42,8 +46,12 @@ function findUniqueWordsFromString(pages, isChPre, helpString, prefix){
 				chapter++;
 				pageIndex++;
 			}
-			for(var j = 0; j < pages[i].length; j++) {
-				words.push({"word": pages[i][j], "ch_id": prefix + (chapter < 10 ? "0" : "") + chapter});
+			
+			// only add if its in the page range
+			if(i >= start - 1 && i < end) {
+				for(var j = 0; j < pages[i].length; j++) {
+					words.push({"word": pages[i][j], "ch_id": prefix + (chapter < 10 ? "0" : "") + chapter});
+				}
 			}
 		}
 	}

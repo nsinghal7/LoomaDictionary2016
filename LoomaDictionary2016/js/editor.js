@@ -161,7 +161,9 @@ function processPDF() {
 		// called when the pdf is fully converted to text. Finds all unique words
 		progress.text("finding unique words and chapters");
 		var words = findUniqueWordsFromString(pages, $("#autoChidCheck").prop("checked"),
-											$("#chapInput").val(), $("#prefixInput").val());
+											$("#chapInput").val(), $("#prefixInput").val(),
+											$("#startPageNumber").val(),
+											$("#endPageNumber").val());
 		
 		maxProgress = 0;
 		// uploads the words to the backend to be added to the dictionary
