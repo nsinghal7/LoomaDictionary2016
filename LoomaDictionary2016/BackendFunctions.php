@@ -881,18 +881,17 @@
 	}
 	
 	/**
-	 * Checks if the given partial definition is already in the database and therefore
-	 * shouldn't be redefined
-	 * @param unknown $definition in form {"word": word, "def": definition, "pos": part}
-	 * @param unknown $stagingConnection
-	 * @param unknown $officialConnection
+	 * Checks if the word has already been defined and therefore the new definition should be
+	 * canceled
+	 * @param unknown $doc The entry to check
+	 * @return boolean True if the entry exists, false if it doesn't
 	 */
-	function checkForSameDefinition($definition, $stagingConnection, $officialConnection) {
+	function checkForSimilarDefinition ($word, $stagingConnection, $officialConnection) {
 		global $stagingDB;
 		global $stagingCollection;
 		global $loomaDB;
 		global $loomaCollection;
-		$query = array("en" => $definition["word"], "def" => $definition["def"], "part" => $definition["pos"] );
+		$query = array("en" => $word );
 		if($stagingConnection->selectDB($stagingDB)->selectCollection($stagingCollection)->count($query) > 0) {
 			return true;
 		}
