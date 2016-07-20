@@ -313,6 +313,8 @@
 														$stagingConnection);
 		$former = convertWord($former, false);
 		
+		$modified = false;
+		
 		if($change["deleteToggled"] == "true") {
 			$former["stagingData"]["deleted"] = !$former["stagingData"]["deleted"];
 		} elseif($change["field"] == "cancel") {
@@ -322,6 +324,7 @@
 			$former["stagingData"]["accepted"] = !$former["stagingData"]["accepted"];
 		} elseif($change["field"] == "prim") {
 			$former["wordData"]["primary"] = !$former["wordData"]["primary"];
+			$modified = true;
 		} elseif (in_array($change["field"],
 						array("word", "root", "nep", "pos", "def", "ch_id"))) {
 			// get rid of potentially dangerous whitespace (would throw off exact searches)
@@ -334,7 +337,7 @@
 			if(!isLegalValue($change["field"], $change["new"])) {
 				return false;
 			}
-			return updateStaging(convertWord($former, true), $stagingConnection, $user, false);
+			$modified = true;
 		} else {
 			// illegal update attempt
 			return false;
@@ -342,7 +345,7 @@
 		$out = convertWord($former, true);
 		// assumes that updateStaging will take care of changing the modifier, date modified,
 		// and all staging data, since these are general tasks.
-		return updateStaging($out, $stagingConnection, $user, true);
+		return updateStaging($out, $stagingConnection, $user, $modified);
 	}
 	
 	/**
