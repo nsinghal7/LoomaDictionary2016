@@ -189,23 +189,20 @@ function processPDF() {
 				function(data, status, jqXHR) {
 					// called when the post request returns (whether successful or not)
 					if('status' in data && data['status']['type'] == 'error') {
+						// after a non-fatal error
 						progress.text("Failed with error: " + data['status']['value']);
 					} else {
 						progress.text("Success!" + (data['skipped'] ? " Skipped: "
 															+ data["skipped"] : ""));
-						submitSearch(true);
 					}
 					
-					$("#cancelUploadButton").hide();
-					// stop updating the progress bar
-					clearInterval(progressTimer);
-					maxProgress = 0;
+					finishProcessingPDF();
 					
-					// unlocks the process and reallows user submission
-					$("#uploadPDFDiv").removeClass("disableButtons");
-					processing = false;
-					submitSearch(true);
-				}, "json");
+				}, "json").fail(function(){
+						// called after a fatal error
+						progress.text("Network or Internal Error. Check with the developers!");
+						finishProcessingPDF();
+					});
 		
 		// start allowing cancelation
 		$("#cancelUploadButton").show();
@@ -224,6 +221,21 @@ function processPDF() {
 					}, "json");
 		}, 1000);
 	});
+}
+
+/**
+ * Clean up uploadPDFDiv and all request problems and displays after returning
+ */
+function finishProcessingPDF() {
+	$("#cancelUploadButton").hide();
+	// stop updating the progress bar
+	clearInterval(progressTimer);
+	maxProgress = 0;
+	
+	// unlocks the process and reallows user submission
+	$("#uploadPDFDiv").removeClass("disableButtons");
+	processing = false;
+	submitSearch(true);
 }
 
 /**
