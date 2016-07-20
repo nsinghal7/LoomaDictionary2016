@@ -164,6 +164,11 @@ function processPDF() {
 											$("#chapInput").val(), $("#prefixInput").val(),
 											$("#startPageNumber").val(),
 											$("#endPageNumber").val());
+		if(words === false) {
+			progress.text("You can't autogenerate ch_ids if you specify 'start' and 'end'");
+		}
+		
+		progress.text("uploading...");
 		
 		maxProgress = 0;
 		// uploads the words to the backend to be added to the dictionary
