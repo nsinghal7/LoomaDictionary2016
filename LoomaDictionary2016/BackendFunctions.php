@@ -239,6 +239,7 @@
 						$def["word"] = $hw;
 						$def["def"] = isset($sense['definition']) ? $sense['definition'] : "";
 						$def['pos'] = ($messy["part_of_speech"] != null) ? $messy["part_of_speech"] : "";
+						$def['rw'] = true; // signal that this is a root word
 						$ans[] = $def;
 					}
 				}
@@ -284,8 +285,9 @@
 	 */
 	function createIndividualDefinition($word, $definition, $officialConnection, $stagingConnection, $user) {
 		
-		if(checkForSameDefinition($definition, $stagingConnection, $officialConnection)) {
-			// definition already exists, so don't add it, but don't fail
+		if($definition["rw"] === true) {
+			// root word definition added only in case it wasn't there, but it was, so skip
+			// without it counting
 			return true;
 		}
 		
@@ -876,25 +878,6 @@
 		global $stagingCollection;
 		//remove object with id
 		$stagingConnection->selectDB($stagingDB)->selectCollection($stagingCollection)->remove(array("_id" => new MongoId($_id['$id'])));
-	}
-
-
-	/**
-	 * Checks if the word has already been defined and therefore the new definition should be
-	 * canceled
-	 * @param unknown $doc The entry to check
-	 * @return boolean True if the entry exists, false if it doesn't
-	 */
-	function checkForSimilarDefinition ($word, $stagingConnection, $officialConnection) {
-		global $stagingDB;
-		global $stagingCollection;
-		global $loomaDB;
-		global $loomaCollection;
-		$query = array("en" => $word );
-		if($stagingConnection->selectDB($stagingDB)->selectCollection($stagingCollection)->count($query) > 0) {
-			return true;
-		}
-		return $officialConnection->selectDB($loomaDB)->selectCollection($loomaCollection)->count($query) > 0;
 	}
 	
 	/**
