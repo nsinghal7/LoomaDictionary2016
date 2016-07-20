@@ -226,6 +226,7 @@
 						$def['def'] = isset($sense['definition']) ? $sense['definition'] : "";
 						$def['pos'] = ($messy["part_of_speech"] != null) ? $messy["part_of_speech"] : "";
 						$def['rw'] = '';
+						$ans[] = $def;
 					} else {
 						// has a separate root word. Definition and pos are now inaccurate and
 						// should be user-defined relative to rw definition.
@@ -233,8 +234,13 @@
 						$def['def'] = "<TODO>";
 						$def['pos'] = "<TODO>";
 						$def['rw'] = $hw;
+						$ans[] = $def;
+						// also add the root word, in case it hasn't already been defined
+						$def["word"] = $hw;
+						$def["def"] = isset($sense['definition']) ? $sense['definition'] : "";
+						$def['pos'] = ($messy["part_of_speech"] != null) ? $messy["part_of_speech"] : "";
+						$ans[] = $def;
 					}
-					$ans[] = $def;
 				}
 			}
 		}
