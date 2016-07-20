@@ -220,12 +220,13 @@
 				foreach($senses as $sense) {
 					$def = array();
 					$hw = strtolower($messy["headword"]);
-					if($hw == $def) {
+					if($hw == $word) {
 						// it is its own root word
 						$def["word"] = $word;
 						$def['def'] = isset($sense['definition']) ? $sense['definition'] : "";
 						$def['pos'] = ($messy["part_of_speech"] != null) ? $messy["part_of_speech"] : "";
 						$def['rw'] = '';
+						$ans[] = $def;
 					} else {
 						// has a separate root word. Definition and pos are now inaccurate and
 						// should be user-defined relative to rw definition.
@@ -233,8 +234,14 @@
 						$def['def'] = "<TODO>";
 						$def['pos'] = "<TODO>";
 						$def['rw'] = $hw;
+						$ans[] = $def;
+						// also add the root word, in case it hasn't already been defined
+						$def["word"] = $hw;
+						$def["def"] = isset($sense['definition']) ? $sense['definition'] : "";
+						$def['pos'] = ($messy["part_of_speech"] != null) ? $messy["part_of_speech"] : "";
+						$def['rw'] = true; // signal that this is a root word
+						$ans[] = $def;
 					}
-					$ans[] = $def;
 				}
 			}
 		}
@@ -252,7 +259,7 @@
 	 * @return boolean True if all definitions were successfully added, false if ANY failed
 	 */
 	function createEntry($word, $officialConnection, $stagingConnection, $user) {
-		if(checkForExistingDefinition($word, $stagingConnection, $officialConnection)) {
+		if(checkForSimilarDefinition($word, $stagingConnection, $officialConnection)) {
 			return true; // doesn't count as skipped since it existed
 		}
 		
@@ -274,22 +281,29 @@
 	 * @param unknown $officialConnection The connection to the official database
 	 * @param unknown $stagingConnection The connection to the staging database
 	 * @param unknown $user the user responsible
-	 * @return boolean true if successful, error if failed
+	 * @return boolean true if successful, false if failed;
 	 */
 	function createIndividualDefinition($word, $definition, $officialConnection, $stagingConnection, $user) {
 		
-		if(checkForExistingDefinition($definition["word"], $stagingConnection, $officialConnection)) {
-			// definition already exists, so don't add it, but don't fail
+		if($definition["rw"] === true) {
+			// root word definition added only in case it wasn't there, but it was, so skip
+			// without it counting
 			return true;
 		}
 		
+		$success = true;
+		
 		//get definition(find api)
 		$def = $definition['def'];
+		if($def == "") {
+			$success = false; // skipped
+		}
 		
 		//get translation
 		$np = translateToNepali($definition["word"]);
 		if($np == null) {
 			$np = "";
+			$success = false; // skipped
 		}
 		
 		//get the rw (hopefully this will be included in the dictionary api)
@@ -327,7 +341,7 @@
 		// insert the doc into the database
 		$stagingConnection->selectDB($stagingDB)->selectCollection($stagingCollection)->save(moveWordDataUpLevel($doc));
 			
-		return true;
+		return $success;
 	}
 
 	/**
@@ -865,20 +879,20 @@
 		//remove object with id
 		$stagingConnection->selectDB($stagingDB)->selectCollection($stagingCollection)->remove(array("_id" => new MongoId($_id['$id'])));
 	}
-
-
+	
 	/**
-	 * Checks if the word has already been defined and therefore the new definition should be
-	 * canceled
-	 * @param unknown $doc The entry to check
-	 * @return boolean True if the entry exists, false if it doesn't
+	 * Checks if the given partial definition is already in the database and therefore
+	 * shouldn't be redefined
+	 * @param unknown $definition in form {"word": word, "def": definition, "pos": part}
+	 * @param unknown $stagingConnection
+	 * @param unknown $officialConnection
 	 */
-	function checkForExistingDefinition ($word, $stagingConnection, $officialConnection) {
+	function checkForSameDefinition($definition, $stagingConnection, $officialConnection) {
 		global $stagingDB;
 		global $stagingCollection;
 		global $loomaDB;
 		global $loomaCollection;
-		$query = array("en" => $word );
+		$query = array("en" => $definition["word"], "def" => $definition["def"], "part" => $definition["pos"] );
 		if($stagingConnection->selectDB($stagingDB)->selectCollection($stagingCollection)->count($query) > 0) {
 			return true;
 		}

@@ -103,6 +103,17 @@ function startup() {
 	hideAddWordDiv();
 	submitSearch();
 	$("#cancelUploadButton").hide();
+	$(window).on("beforeunload", checkBeforeUnload);
+}
+
+/**
+ * To be called when closing window. If necessary, will cancel a running upload. Will not
+ * be able to notify the user
+ */
+function checkBeforeUnload() {
+	if(processing) {
+		cancelUpload();
+	}
 }
 
 
