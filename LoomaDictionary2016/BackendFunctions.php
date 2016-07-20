@@ -815,14 +815,14 @@
 	*
 	*Returns true if successful
 	*/
-	function updateStaging($new, $connection, $user, $isStagingChange) {
+	function updateStaging($new, $connection, $user, $modified) {
 		global $stagingDB;
 		global $stagingCollection;
 		$collection = $connection->selectDB($stagingDB)->selectCollection($stagingCollection);
 
 		//update user and modified status
 		$new['wordData']['mod'] = $user;
-		if(!$isStagingChange) {
+		if($modified) {
 			$new['stagingData']['modified'] = true;
 			$new['stagingData']['accepted'] = false;
 		}
