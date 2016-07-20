@@ -756,8 +756,14 @@
 		$stagingCursor = $stagingConnection->selectDB($stagingDB)->selectCollection($stagingCollection)->find(stagingCriteriaToMongoQuery(array("text" => "", "added" => false, "modified" => false, "accepted" => true, "deleted" => true)));
 
 		foreach($stagingCursor as $doc){
-			//check to make sure the object has not been deleted and has been accepted
-			if(!checkTrue($doc['stagingData']['deleted']) and checkTrue($doc['stagingData']['accepted']))
+			if (checkTrue($doc['stagingData']['deleted']))
+			{
+				//remove from database
+				$stagingConnection->selectDB($stagingDB)->selectCollection($stagingCollection)->remove($doc);
+				// remove from official
+				$loomaConnection->selectDB($loomaDB)->selectCollection($loomaCollection)->remove($doc);
+			}
+			else if(checkTrue($doc['stagingData']['accepted']))
 			{
 				//convert to correct format
 				$newDoc = convertFromStagingToLooma(compileSingleSimpleWord($doc), $user);
@@ -768,12 +774,6 @@
 				//adjust database and collection name!!!
 				$loomaConnection->selectDB($loomaDB)->selectCollection($loomaCollection)->save($newDoc);
 
-			}
-			//if it has been deleted, remove it
-			else if (checkTrue($doc['stagingData']['deleted']))
-			{
-				//remove from database
-				$stagingConnection->selectDB($stagingDB)->selectCollection($stagingCollection)->remove($doc);
 			}
 		}
 
