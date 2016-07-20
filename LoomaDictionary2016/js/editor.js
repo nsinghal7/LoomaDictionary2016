@@ -522,6 +522,7 @@ function loadOfficialTable() {
 						row.append(createOfficialTd(officialDefs[i], "primary"));
 						row.append(createOfficialTd(officialDefs[i], "mod"));
 						row.append(createOfficialTd(officialDefs[i], "date"));
+						table.append(row);
 					}
 					
 					// update margin-bottom of resultsTable
