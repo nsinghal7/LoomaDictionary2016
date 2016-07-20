@@ -36,6 +36,10 @@ body {
 	margin-top: 4%;
 }
 
+.quarter {
+	width: 25%;
+}
+
 .inline {
 	display: inline;
 }
