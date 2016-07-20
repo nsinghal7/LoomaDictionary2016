@@ -251,7 +251,7 @@
 	 * @return boolean true if the entry was created successfully, false otherwise
 	 */
 	function createEntryWrapper($word, $officialConnection, $stagingConnection, $user) {
-		if(!isLegalValue("word", $word)) {
+		if(!isLegalValue("word", $word["word"])) {
 			return false; // shouldn't add since it has a space in it
 		}
 		return createEntry($word, $officialConnection, $stagingConnection,
