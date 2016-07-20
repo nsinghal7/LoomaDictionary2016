@@ -14,12 +14,15 @@ function findUniqueWordsFromString(pages, isChPre, helpString, prefix, start, en
 			}
 		}
 	} else if(isChPre) {
+		if(start != 1 || end != pages.length) {
+			return false; // fail
+		}
 		helpString = helpString.trim().toLowerCase();
 		var chapter = 0;
 		var lastWasPrefix = false;
 		var contents = true;
 		
-		for(var i = start - 1; i < end; i++) {
+		for(var i = 0; i < pages.length; i++) {
 			words = words.concat(pages[i]);
 		}
 		for(var i = 0; i < words.length; i++) {
