@@ -83,6 +83,7 @@ body {
 
 
 #wordPart {
+	width: 80%;
 	width: calc(90% - 52px);
 }
 
@@ -153,6 +154,7 @@ table  tr  td  p {
 .resultsTableInput {
 	background-color: #baf0ff;
 	height: 100%;
+	width: 100%;
 	width: calc(100% - 1px);
 	font-size: 120%;
 }
@@ -201,6 +203,7 @@ table  tr  td  p {
 }
 
 .primCol input {
+	margin-left: 50%;
 	margin-left: calc(50% - 6px);
 }
 
