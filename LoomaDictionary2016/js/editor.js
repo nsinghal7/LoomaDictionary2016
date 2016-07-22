@@ -357,10 +357,12 @@ function createTableEntry(word, i) {
 	
 	//adds data to the row from the word object
 	row.append($('<td class="statCol"><button onclick="edit(\'stat\', '
-				+ i + ')" id="stat_' + i + '" class="statButton ' + colorClass + '">' + stat
+				+ i + ')" id="stat_' + i + '" class="statButton ' + colorClass
+				+ '" title="Click to toggle Accepted/Deleted on or off">' + stat
 				+ '</button><button class="cancelButton" onclick="edit(\'cancel\', ' + i
-				+ ')">re<wbr>vert</button><button onclick="edit(\'delete\', '
-				+ i + ')" class="entryDeleteButton">'
+				+ ')" title="Click to revert to last published version immediately">'
+				+ 're<wbr>vert</button><button onclick="edit(\'delete\', '
+				+ i + ')" class="entryDeleteButton" title="Click to toggle Delete on or off">'
 				+ (word['stagingData']['deleted']?'re add':'de<wbr>lete')+'</button></td>'));
 	row.append(createEditableTd("root", i, word["wordData"]["root"] || ""));
 	row.append(createEditableTd("pos", i, word["wordData"]["pos"]));
@@ -369,7 +371,9 @@ function createTableEntry(word, i) {
 	row.append(createEditableTd("ch_id", i, word["wordData"]["ch_id"]));
 	row.append($('<td class="primCol"><input type="checkbox" onchange="edit(\'prim\', ' + i +
 						')" id="prim_' + i + '" '
-						+ (isTrue(word["wordData"]["primary"]) ? 'checked ' : '') + '></td>'));
+						+ (isTrue(word["wordData"]["primary"]) ? 'checked ' : '')
+						+ ' title="Check to mark as the first/primary definition of the word">'
+						+ '</td>'));
 	row.append($('<td class="modCol"><p>'
 			+ (word['wordData']["mod"]) + '</p></td>'));
 	row.append($('<td class="dateCol"><p>'
@@ -542,7 +546,9 @@ function loadOfficialTable() {
 					for(var i = 0; i < officialDefs.length; i++) {
 						var row = $("<tr>");
 						row.append($("<td class='editCol'><button id='edit_" + i
-								+ "' onclick='moveOfficial(" + i + ");'>Edit</button></td>"));
+								+ "' onclick='moveOfficial(" + i
+								+ ");' title='Click to copy to the staging database to edit'>"
+								+ "Edit</button></td>"));
 						row.append(createOfficialTd(officialDefs[i], "word"));
 						row.append($("<td class='statCol'><p>unedited</p></td>"));
 						row.append(createOfficialTd(officialDefs[i], "root"));
