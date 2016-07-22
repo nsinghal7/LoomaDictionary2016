@@ -324,7 +324,7 @@ function createTableEntry(word, i) {
 		return $('<td class="' + type + 'Col"></td>')
 				.append($('<textarea id="' + type + "_" + index + '" onchange="edit(\'' + type
 						+ '\', ' + index + ')" class="resultsTableInput">'
-						+ value + "</textarea></td>"));
+						+ (value || "") + "</textarea></td>"));
 	}
 	
 	// add each field
