@@ -74,7 +74,7 @@ modified or removed.
 <head>
 <meta charset="UTF-8">
 <title>Looma Dictionary Editor</title>
-<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.2/jquery.min.js"></script>
+<script src="js/jquery.min.js"></script>
 <script src="js/pdfjs/pdf.js"></script>
 <script src="js/pdfToText.js"></script>
 <script src="js/findUniqueWords.js"></script>
@@ -85,24 +85,22 @@ modified or removed.
 
 <div id="uploadPDFDiv" class="popupDiv">
 	<button class="closePopupButton" onclick="hideUploadDiv()"> X </button> <br>
-	<input type="file" id="pdfInput">
+	<input type="file" id="pdfInput" title="Choose the file containing the words you wish to upload.">
 	<br>
-	<pre class="inline">File Prefix: </pre>
-	<input type="text" id="prefixInput" placeholder="ex. 3EN">
+	<pre class="inline" title="Type the prefix for the chapter id, which should include the grade level, then subject abbreviation, and possibly the chapter number if you are only loading one chapter">ch_id prefix: <input type="text" id="prefixInput" placeholder="ex. 3EN"></pre>
 	<br>
-	<pre class="inline">Autogenerate: </pre>
-	<input type="checkbox" id="autoChidCheck" checked onclick="changeAutoGen()">
+	<pre class="inline" title="Check this box if you want the program to automatically parse where chapters start and end. Make sure you read the user manual to know the limitations of this feature">Autogenerate ch_ids: <input type="checkbox" id="autoChidCheck" onclick="changeAutoGen()"></pre>
 	<br>
-	<pre id="chidInputLabel" class="inline">Chapter prefix: </pre>
-	<input type="text" id="chapInput" placeholder="ex. Lesson">
+	<pre id="chidInputLabel" class="inline" title="If you're loading an entire textbook, type the page numbers (in the pdf) of the start of each chapter. If you're just loading 1 chapter, don't type anything here but include the chapter in the 'ch_id prefix' field">Page numbers: <input type="text" id="chapInput" placeholder="ex. 12, 14, 17, 23"></pre>
 	<br>
-	<pre class="inline">Start: <input type="number" id="startPageNumber" class="quarter"> </pre>
-	<pre class="inline">End: <input type="number" id="endPageNumber" class="quarter"> </pre>
+	<pre class="inline" title="Input the page number (in the pdf) you want to start with. If you don't type anything, defaults to page 1">Start: <input type="number" id="startPageNumber" class="quarter"> </pre>
+	<pre class="inline" title="Input the page number (in the pdf) you want to end with. If you don't type anything, defaults to the last page">End: <input type="number" id="endPageNumber" class="quarter"> </pre>
 	<br>
-	<button id="processPDFButton" onclick="processPDF()">Process PDF</button>
+	<button id="processPDFButton" onclick="processPDF()" title="Click here to start processing and uploading this PDF. After clicking this, you should not exit the page or reload until it is finished or you press cancel">Process PDF</button>
 	<br>
 	<p id="progressDisplay" class="centeredText alwaysShow"> </p>
-	<button id="cancelUploadButton" class="alwaysClickable alwaysShow" onclick="cancelUpload()">Cancel</button>
+	<button id="cancelUploadButton" class="alwaysClickable alwaysShow" onclick="cancelUpload()"
+			title="Click here to cancel the current upload. Entries that have already been added from this upload will not be removed">Cancel</button>
 </div>
 
 <div id="addWordDiv" class="popupDiv">
@@ -133,7 +131,7 @@ modified or removed.
 		<br><br>
 		Added: <input type="checkbox" name="added" id="added">
 		Modified: <input type="checkbox" name="modified" id="modified">
-		Accepted: <input type="checkbox" name="accepted" id="accepted">
+		Accepted/Deleted: <input type="checkbox" name="accepted" id="accepted">
 	</div>
 </div>
 

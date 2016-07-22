@@ -324,7 +324,7 @@ function createTableEntry(word, i) {
 		return $('<td class="' + type + 'Col"></td>')
 				.append($('<textarea id="' + type + "_" + index + '" onchange="edit(\'' + type
 						+ '\', ' + index + ')" class="resultsTableInput">'
-						+ value + "</textarea></td>"));
+						+ (value || "") + "</textarea></td>"));
 	}
 	
 	// add each field
@@ -332,7 +332,8 @@ function createTableEntry(word, i) {
 				+ words[i]['wordData']['word'] + '\')" class="'
 				+ (words[i]['wordData']['word'] == selectedWord ? "" : "un")
 				+ 'selectedWord" word="' + words[i]['wordData']['word']
-				+ '">selected</button></td>'));
+				+ '" title="Click to display accepted definitions in the footer">selected'
+				+ '</button></td>'));
 	row.append(createEditableTd("word", i, word["wordData"]["word"]));
 	var stat;
 	var colorClass;
