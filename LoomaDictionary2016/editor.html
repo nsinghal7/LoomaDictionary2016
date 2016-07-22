@@ -175,10 +175,10 @@ modified or removed.
 	<div id="footerLabel">
 		<span>Published Definitions: &nbsp;&nbsp;</span>
 		<div id="officialSearchArea">
-			<input type="text" name="wordPart" id="officialSearchBox" placeholder="Enter Search Term Here">
-			<input type="button" value="Search" id="officialSearchButton" onclick="submitOfficialSearch()">
+			<input type="text" name="wordPart" id="officialSearchBox" placeholder="Enter Search Term Here" title="input a search for a specific word in the published dictionary">
+			<input type="button" value="Search" id="officialSearchButton" onclick="submitOfficialSearch()" title="Click to search">
 		</div>
-		<button id="showOverwriteButton" class="toggledOff" onclick="toggleOverwrite();"></button>
+		<button id="showOverwriteButton" class="toggledOff" onclick="toggleOverwrite();" title="Click to toggle showing published versions of entries currently in the staging dictionary"></button>
 	</div>
 	<table id="officialTable">
 		<tr>
