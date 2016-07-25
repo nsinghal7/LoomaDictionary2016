@@ -72,13 +72,30 @@ body {
 	text-align: center;
 }
 
+#contextInput {
+	width: 60%;
+	width: calc(100% - 80px);
+}
 
 
-.centeredSection {
-	width: 30%;
-	margin: auto;
+
+.boxedSection {
 	border: 3px solid green;
 	padding: 18px;
+}
+
+.partialLeft {
+	float: left;
+	margin-left: 15%;
+}
+
+.partialRight {
+	float: right;
+	margin-right: 15%;
+}
+
+.thirtyW {
+	width: 30%;
 }
 
 
@@ -91,7 +108,14 @@ body {
 	float: right;
 }
 
+.clearAll {
+	clear: both;
+}
 
+.fullWidthBreakText {
+	width: 100%;
+	word-wrap: break-word;
+}
 
 
 #viewArea {

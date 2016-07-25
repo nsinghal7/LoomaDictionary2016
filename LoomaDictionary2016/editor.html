@@ -125,7 +125,9 @@ modified or removed.
 	
 	<button id="revertAllButton" onclick="revertStaging()" class="right">Revert All</button>
 	
-	<div class="centeredSection">
+	<br class="clearAll">
+	
+	<div class="boxedSection partialLeft thirtyW">
 		<input type="text" name="wordPart" id="wordPart" placeholder="Enter Search Term Here">
 		<input type="button" value="Search" id="searchButton" onclick="submitSearch()">
 		<br><br>
@@ -133,10 +135,20 @@ modified or removed.
 		Modified: <input type="checkbox" name="modified" id="modified">
 		Accepted/Deleted: <input type="checkbox" name="accepted" id="accepted">
 	</div>
+	
+	<div class="boxedSection partialRight thirtyW">
+		<b>Context: </b>
+		<input type="file" id="contextInput" onchange="changeContext()">
+		<p id="contextText" class="fullWidthBreakText"></p>
+		<br>
+		<input type="button" onclick="moveContext(0);" value="<<">
+		<input type="button" onclick="moveContext(-1);" value="<">
+		<input type="button" onclick="moveContext(1);" value=">">
+	</div>
 </div>
 
 
-<div id="viewArea">
+<div id="viewArea" class="clearAll">
 	
 	<div id="resultsArea">
 		<table id="resultsTable">

@@ -96,6 +96,16 @@ var progressTimer;
 var maxProgress;
 
 /**
+ * Stores the context file (or part of it) so it can be searched and displayed
+ */
+var context = "";
+
+/**
+ * Marks the last visited place the selected word was found in the context, or 0 on init
+ */
+var contextMarker = 0;
+
+/**
  * To be called on startup. Sets up the screen and pulls data from the backend.
  */
 function startup() {
@@ -170,14 +180,22 @@ function processPDF() {
 	progress.text("Converting file to text");
 	Pdf2TextClass().convertPDF(file, function(page, total) {}, function(pages) {
 		// called when the pdf is fully converted to text. Finds all unique words
+		
 		progress.text("finding unique words and chapters");
+		var start = $("#startPageNumber").val();
+		var end = $("#endPageNumber").val();
 		var words = findUniqueWordsFromString(pages, $("#autoChidCheck").prop("checked"),
 											$("#chapInput").val(), $("#prefixInput").val(),
-											$("#startPageNumber").val(),
-											$("#endPageNumber").val());
+											start, end);
 		if(words === false) {
 			progress.text("You can't autogenerate ch_ids if you specify 'start' and 'end'");
+			finishProcessingPDF();
 		}
+		
+		
+		
+		updateContext(pages, start, end);
+		
 		
 		progress.text("uploading...");
 		
@@ -195,6 +213,9 @@ function processPDF() {
 						progress.text("Success!" + (data['skipped'] ? " Skipped: "
 															+ data["skipped"] : ""));
 					}
+					
+					// show the first instance of the word in context
+					moveContext(0);
 					
 					finishProcessingPDF();
 					
@@ -516,6 +537,7 @@ function selectWord(word) {
 										.removeClass("unselectedWord");
 	
 	loadOfficialTable();
+	moveContext(0);
 }
 
 /**
@@ -676,3 +698,85 @@ function cancelUpload() {
 		});
 }
 
+
+
+/**
+ * Moves and updates the context depending on the input
+ * @param change 0 to signal to go to the first instance, 1 for the next, -1 for the previous.
+ * Any other value results in staying in the same place
+ */
+function moveContext(change) {
+	if(selectedWord == "") {
+		$("#contextText").text("No Word Selected");
+		return;
+	}
+	if(change == -1) {
+		var prev = context.toLowerCase().lastIndexOf(selectedWord, contextMarker);
+		if(prev >= 0) {
+			contextMarker = prev;
+		}
+	} else if(change == 1) {
+		var next = context.toLowerCase().indexOf(selectedWord, contextMarker);
+		if(next <= 0) {
+			contextMarker = next;
+		}
+	} else if(change == 0){
+		contextMarker = context.toLowerCase().indexOf(selectedWord);
+	}
+	if(contextMarker < 0) {
+		$("#contextText").text("Not found");
+	} else {
+		$("#contextText").html(getContext());
+	}
+}
+
+/**
+ * Gets the context around a particular location in the context string. bolds the selected word
+ */
+function getContext() {
+	var start = Math.max(0, contextMarker - 20);
+	start = Math.max(0, context.lastIndexOf(" ", start) + 1);
+	var end = Math.min(context.length - 1, contextMarker + 20);
+	end = Math.min(context.length, context.indexOf(" ", end));
+	if(end == -1) {
+		end = undefined; // automatically go to the end
+	}
+	return context.substring(start, contextMarker) + "<b>"
+				+ context.substring(contextMarker, contextMarker + selectedWord.length)
+				+ "</b>" + context.substring(contextMarker + selectedWord.length, end);
+}
+
+/**
+ * Changes the context file to the inputted file
+ */
+function changeContext() {
+	var file = document.getElementById("contextInput").files[0];
+	if(file == null || !("name" in file) || !file.name.endsWith(".pdf")) {
+		$("#contextInput").val("");
+		$("#contextText").text("invalid file");
+	}
+	Pdf2TextClass().convertPDF(file, function(page, total) {}, function(pages) {
+		updateContext(pages);
+		moveContext(0);
+	});
+}
+
+
+/**
+ * Updates the context string to the given pages of text from a pdf
+ * @param pages The list of pages
+ * @param start The page to starton , defaults to 0
+ * @param end The page to end on, defaults to the last page
+ */
+function updateContext(pages, start, end) {
+	// set the context
+	console.log(pages);
+	context = "";
+	for(var i = start || 0; i <= (end || (pages.length - 1)); i++) {
+		console.log(i);
+		context += pages[i];
+	}
+	console.log(context);
+	// reset to the beginning of the context
+	contextMarker = 0;
+}
