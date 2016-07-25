@@ -220,22 +220,25 @@
 				foreach($senses as $sense) {
 					$def = array();
 					$hw = strtolower($messy["headword"]);
-					if($hw == $word) {
-						// it is its own root word
-						$def["word"] = $word;
-						$def['def'] = isset($sense['definition']) ? $sense['definition'] : "";
-						$def['pos'] = ($messy["part_of_speech"] != null) ? $messy["part_of_speech"] : "";
-						$def['rw'] = '';
-						$ans[] = $def;
-					} else {
+					
+					$def["word"] = $word;
+					$def['def'] = isset($sense['definition']) ? $sense['definition'] : "";
+					$def['pos'] = ($messy["part_of_speech"] != null) ? $messy["part_of_speech"] : "";
+					$def['rw'] = '';
+					$ans[] = $def;
+					
+					if($hw != $word) {
 						// has a separate root word. Definition and pos are now inaccurate and
 						// should be user-defined relative to rw definition.
-						$def["word"] = $word;
-						$def['def'] = "<TODO>";
-						$def['pos'] = "<TODO>";
-						$def['rw'] = $hw;
-						$ans[] = $def;
+						$new = array();
+						$new["word"] = $word;
+						$new['def'] = "<TODO>" . $def['def'];
+						$new['pos'] = "<TODO>" . $def['pos'];
+						$new['rw'] = $hw;
+						$ans[] = $new;
 						// also add the root word, in case it hasn't already been defined
+						// deal with duplicates later
+						$def = array();
 						$def["word"] = $hw;
 						$def["def"] = isset($sense['definition']) ? $sense['definition'] : "";
 						$def['pos'] = ($messy["part_of_speech"] != null) ? $messy["part_of_speech"] : "";
