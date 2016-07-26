@@ -264,7 +264,7 @@
 	 * @return boolean True if all definitions were successfully added, false if ANY failed
 	 */
 	function createEntry($word, $officialConnection, $stagingConnection, $user) {
-		if(checkForSimilarDefinition($word, $stagingConnection, $officialConnection)) {
+		if(checkForSimilarDefinition($word["word"], $stagingConnection, $officialConnection)) {
 			return true; // doesn't count as skipped since it existed
 		}
 		
