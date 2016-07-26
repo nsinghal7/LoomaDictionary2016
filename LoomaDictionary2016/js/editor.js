@@ -711,13 +711,13 @@ function moveContext(change) {
 		return;
 	}
 	if(change == -1) {
-		var prev = context.toLowerCase().lastIndexOf(selectedWord, contextMarker);
+		var prev = context.toLowerCase().lastIndexOf(selectedWord, contextMarker - 1);
 		if(prev >= 0) {
 			contextMarker = prev;
 		}
 	} else if(change == 1) {
-		var next = context.toLowerCase().indexOf(selectedWord, contextMarker);
-		if(next <= 0) {
+		var next = context.toLowerCase().indexOf(selectedWord, contextMarker + 1);
+		if(next >= 0) {
 			contextMarker = next;
 		}
 	} else if(change == 0){
@@ -770,13 +770,10 @@ function changeContext() {
  */
 function updateContext(pages, start, end) {
 	// set the context
-	console.log(pages);
 	context = "";
 	for(var i = start || 0; i <= (end || (pages.length - 1)); i++) {
-		console.log(i);
 		context += pages[i];
 	}
-	console.log(context);
 	// reset to the beginning of the context
 	contextMarker = 0;
 }
