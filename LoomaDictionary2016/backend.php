@@ -251,7 +251,7 @@
 	 * @return boolean true if the entry was created successfully, false otherwise
 	 */
 	function createEntryWrapper($word, $officialConnection, $stagingConnection, $user) {
-		$word = strtolower($word);
+		$word["word"] = strtolower($word["word"]);
 		if(!isLegalValue("word", $word["word"]) || !isLegalValue("ch_id", $word["ch_id"])) {
 			return false; // shouldn't add since the word or ch_id is invalid
 		}
