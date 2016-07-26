@@ -180,6 +180,8 @@
 	 * 
 	 */
 	 
+	set_time_limit(300); // prevent timeout due to a large file. 5 minutes of direct php ops
+	
 	require "BackendFunctions.php";
 	
 	

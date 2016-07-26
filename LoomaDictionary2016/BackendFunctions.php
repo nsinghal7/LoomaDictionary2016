@@ -39,6 +39,8 @@
 	 * 	
 	 */
 
+	set_time_limit(300); // prevent timeout due to a large file. 5 minutes of direct php ops
+
 
 	//contains the methods to access google translate
 	require 'translator.php';
