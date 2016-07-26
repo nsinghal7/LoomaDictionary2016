@@ -184,12 +184,23 @@ function processPDF() {
 		progress.text("finding unique words and chapters");
 		var start = $("#startPageNumber").val();
 		var end = $("#endPageNumber").val();
-		var words = findUniqueWordsFromString(pages, $("#autoChidCheck").prop("checked"),
-											$("#chapInput").val(), $("#prefixInput").val(),
+		var auto = $("#autoChidCheck").prop("checked");
+		var prefix = $("#prefixInput").val();
+		
+		// check for bad ch_id prefix
+		if(!prefix.match(/^[1-8](M|N|S|SS|EN)([0-9][0-9]\.)?([0-9][0-9])?$/)) {
+			progress.text("chapter prefix isn't formatted correctly");
+			finishProcessingPDF();
+			return;
+		}
+		
+		
+		var words = findUniqueWordsFromString(pages, auto, $("#chapInput").val(), prefix,
 											start, end);
 		if(words === false) {
 			progress.text("You can't autogenerate ch_ids if you specify 'start' and 'end'");
 			finishProcessingPDF();
+			return;
 		}
 		
 		
