@@ -748,6 +748,10 @@ function cancelUpload() {
  * Any other value results in staying in the same place
  */
 function moveContext(change) {
+	if(context == "") {
+		$("#contextText").text("No file selected");
+		return;
+	}
 	if(selectedWord == "") {
 		$("#contextText").text("No Word Selected");
 		return;
