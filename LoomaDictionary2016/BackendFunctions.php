@@ -227,9 +227,10 @@
 					$def['def'] = isset($sense['definition']) ? $sense['definition'] : "";
 					$def['pos'] = ($messy["part_of_speech"] != null) ? $messy["part_of_speech"] : "";
 					$def['rw'] = '';
-					$ans[] = $def;
 					
-					if($hw != $word) {
+					if($hw == $word) {
+						$ans[] = $def;
+					} else {
 						// has a separate root word. Definition and pos are now inaccurate and
 						// should be user-defined relative to rw definition.
 						$new = array();
@@ -335,6 +336,7 @@
 				"np" => $np,
 				"part" => $POS,
 				"def" => $def,
+				"primary" => false,
 				"rand" => $random,
 				"date_entered" => $dateCreated,
 				"mod" => $user),
