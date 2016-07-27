@@ -39,6 +39,8 @@
 	 * 	
 	 */
 
+	set_time_limit(300); // prevent timeout due to a large file. 5 minutes of direct php ops
+
 
 	//contains the methods to access google translate
 	require 'translator.php';
@@ -220,22 +222,25 @@
 				foreach($senses as $sense) {
 					$def = array();
 					$hw = strtolower($messy["headword"]);
-					if($hw == $word) {
-						// it is its own root word
-						$def["word"] = $word;
-						$def['def'] = isset($sense['definition']) ? $sense['definition'] : "";
-						$def['pos'] = ($messy["part_of_speech"] != null) ? $messy["part_of_speech"] : "";
-						$def['rw'] = '';
-						$ans[] = $def;
-					} else {
+					
+					$def["word"] = $word;
+					$def['def'] = isset($sense['definition']) ? $sense['definition'] : "";
+					$def['pos'] = ($messy["part_of_speech"] != null) ? $messy["part_of_speech"] : "";
+					$def['rw'] = '';
+					$ans[] = $def;
+					
+					if($hw != $word) {
 						// has a separate root word. Definition and pos are now inaccurate and
 						// should be user-defined relative to rw definition.
-						$def["word"] = $word;
-						$def['def'] = "<TODO>";
-						$def['pos'] = "<TODO>";
-						$def['rw'] = $hw;
-						$ans[] = $def;
+						$new = array();
+						$new["word"] = $word;
+						$new['def'] = "<TODO>" . $def['def'];
+						$new['pos'] = "<TODO>" . $def['pos'];
+						$new['rw'] = $hw;
+						$ans[] = $new;
 						// also add the root word, in case it hasn't already been defined
+						// deal with duplicates later
+						$def = array();
 						$def["word"] = $hw;
 						$def["def"] = isset($sense['definition']) ? $sense['definition'] : "";
 						$def['pos'] = ($messy["part_of_speech"] != null) ? $messy["part_of_speech"] : "";
@@ -259,7 +264,7 @@
 	 * @return boolean True if all definitions were successfully added, false if ANY failed
 	 */
 	function createEntry($word, $officialConnection, $stagingConnection, $user) {
-		if(checkForSimilarDefinition($word, $stagingConnection, $officialConnection)) {
+		if(checkForSimilarDefinition($word["word"], $stagingConnection, $officialConnection)) {
 			return true; // doesn't count as skipped since it existed
 		}
 		
@@ -285,7 +290,7 @@
 	 */
 	function createIndividualDefinition($word, $definition, $officialConnection, $stagingConnection, $user) {
 		
-		if($definition["rw"] === true) {
+		if($definition["rw"] === true and checkForDuplicateDefinition($definition, $stagingConnection, $officialConnection)) {
 			// root word definition added only in case it wasn't there, but it was, so skip
 			// without it counting
 			return true;
@@ -308,6 +313,9 @@
 		
 		//get the rw (hopefully this will be included in the dictionary api)
 		$rw = $definition['rw'];
+		if($rw === true) {
+			$rw = ''; // it is a rw definition, so it is its own root word
+		}
 		
 		//get the POS (hopefully this is included in the dictionary api)
 		$POS = $definition['pos'];
@@ -884,7 +892,7 @@
 	/**
 	 * Checks if the word has already been defined and therefore the new definition should be
 	 * canceled
-	 * @param unknown $doc The entry to check
+	 * @param unknown $word The word to check
 	 * @return boolean True if the entry exists, false if it doesn't
 	 */
 	function checkForSimilarDefinition ($word, $stagingConnection, $officialConnection) {
@@ -893,6 +901,26 @@
 		global $loomaDB;
 		global $loomaCollection;
 		$query = array("en" => $word );
+		if($stagingConnection->selectDB($stagingDB)->selectCollection($stagingCollection)->count($query) > 0) {
+			return true;
+		}
+		return $officialConnection->selectDB($loomaDB)->selectCollection($loomaCollection)->count($query) > 0;
+	}
+	
+	/**
+	 * Checks if a definition has already been defined and therefore the new definition should
+	 * be canceled. Checks more strictly than checkForSimilarDefinition
+	 * @param unknown $def The definition object to check
+	 * @param unknown $stagingConnection The connection to the staging database
+	 * @param unknown $officialConnection The connection to the official database
+	 * @return boolean True if there is a duplicate, false if not
+	 */
+	function checkForDuplicateDefinition($def, $stagingConnection, $officialConnection) {
+		global $stagingDB;
+		global $stagingCollection;
+		global $loomaDB;
+		global $loomaCollection;
+		$query = array("en" => $def["word"], "part" => $def["pos"], "def" => $def["def"]);
 		if($stagingConnection->selectDB($stagingDB)->selectCollection($stagingCollection)->count($query) > 0) {
 			return true;
 		}

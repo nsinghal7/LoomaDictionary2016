@@ -180,6 +180,8 @@
 	 * 
 	 */
 	 
+	set_time_limit(300); // prevent timeout due to a large file. 5 minutes of direct php ops
+	
 	require "BackendFunctions.php";
 	
 	
@@ -251,6 +253,7 @@
 	 * @return boolean true if the entry was created successfully, false otherwise
 	 */
 	function createEntryWrapper($word, $officialConnection, $stagingConnection, $user) {
+		$word["word"] = strtolower($word["word"]);
 		if(!isLegalValue("word", $word["word"]) || !isLegalValue("ch_id", $word["ch_id"])) {
 			return false; // shouldn't add since the word or ch_id is invalid
 		}
@@ -327,6 +330,9 @@
 			$modified = true;
 		} elseif (in_array($change["field"],
 						array("word", "root", "nep", "pos", "def", "ch_id"))) {
+			if($change["field"] == "word") {
+				$change["new"] = strtolower($change["new"]);
+			}
 			// get rid of potentially dangerous whitespace (would throw off exact searches)
 			$change["new"] = trim($change["new"]);
 			
@@ -400,6 +406,7 @@
 	 * @return true if successful, false otherwise
 	 */
 	function addSingleWordWrapper($word, $stagingConnection, $user) {
+		$word = strtolower($word);
 		if(!isLegalValue("word", $word)) {
 			return false;
 		}
