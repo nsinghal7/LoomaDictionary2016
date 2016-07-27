@@ -335,6 +335,7 @@
 				"np" => $np,
 				"part" => $POS,
 				"def" => $def,
+				"primary" => true,
 				"rand" => $random,
 				"date_entered" => $dateCreated,
 				"mod" => $user),
