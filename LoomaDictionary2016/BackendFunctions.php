@@ -313,6 +313,9 @@
 		
 		//get the rw (hopefully this will be included in the dictionary api)
 		$rw = $definition['rw'];
+		if($rw === true) {
+			$rw = ''; // it is a rw definition, so it is its own root word
+		}
 		
 		//get the POS (hopefully this is included in the dictionary api)
 		$POS = $definition['pos'];
