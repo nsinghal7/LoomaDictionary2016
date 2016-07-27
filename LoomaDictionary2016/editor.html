@@ -115,20 +115,23 @@ modified or removed.
 <div id="menuArea">
 
 
-	<button id="uploadPDFButton" onclick="showUploadDiv()">Upload PDF</button>
+	<button id="uploadPDFButton" onclick="showUploadDiv()" title="Click here to upload a PDF with words for the dictionary">Upload PDF</button>
 	
-	<button id="publishButton" onclick="publish()" class="right">Publish Accepted Changes</button>
+	<button id="publishButton" onclick="publish()" class="right" title="Click here to publish accepted/deleted entries from the staging database to the official database">Publish Accepted Changes</button>
 	
 	<br>
 	
-	<button id="showWordDivButton" onclick="showAddWordDiv()">Add Single Word</button>
+	<button id="showWordDivButton" onclick="showAddWordDiv()" title="Click here to add a single word to the staging database manually">Add Single Word</button>
 	
-	<button id="revertAllButton" onclick="revertStaging()" class="right">Revert All</button>
+	<button id="revertAllButton" onclick="revertStaging()" class="right" title="Click here to remove all entries from the staging database and return to the previous published state">Revert All</button>
 	
 	<br class="clearAll">
 	
 	<div class="boxedSection partialLeft thirtyW">
-		<input type="text" name="wordPart" id="wordPart" placeholder="Enter Search Term Here">
+		<input type="text" name="wordPart" id="wordPart" placeholder="Enter Search Term Here" title="Normal Search:
+	Type a part of a word you want to search for, or nothing
+Advanced Search:
+	Type key:value pairs (keys are en, rw, part, np, def, ch_id, mod, date) separated by & or |, where & has a higher operator precedence. Entries will match if they contain the value given.">
 		<input type="button" value="Search" id="searchButton" onclick="submitSearch()">
 		<br><br>
 		Added: <input type="checkbox" name="added" id="added">
