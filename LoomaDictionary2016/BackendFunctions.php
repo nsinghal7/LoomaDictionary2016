@@ -275,9 +275,10 @@
 		$partSuccess = false;
 		
 		foreach($dictionaryData as $definition) {
+			
 			$partSuccess |= createIndividualDefinition($word, $definition, $officialConnection, $stagingConnection, $user);
 		}
-		return partSuccess;
+		return $partSuccess;
 	}
 	
 	/**
@@ -292,9 +293,8 @@
 	function createIndividualDefinition($word, $definition, $officialConnection, $stagingConnection, $user) {
 		
 		if($definition["rw"] === true and checkForDuplicateDefinition($definition, $stagingConnection, $officialConnection)) {
-			// root word definition added only in case it wasn't there, but it was, so skip
-			// without it counting
-			return true;
+			// root word definition added only in case it wasn't there, so skip
+			return false;
 		}
 		
 		$success = true;
@@ -302,14 +302,14 @@
 		//get definition(find api)
 		$def = $definition['def'];
 		if($def == "") {
-			$success = false; // skipped
+			$success = false; // skipped, but still add the word
 		}
 		
 		//get translation
 		$np = translateToNepali($definition["word"]);
 		if($np == null) {
 			$np = "";
-			$success = false; // skipped
+			$success = false; // skipped, but still add the word
 		}
 		
 		//get the rw (hopefully this will be included in the dictionary api)
@@ -318,7 +318,7 @@
 			$rw = ''; // it is a rw definition, so it is its own root word
 		}
 		
-		//get the POS (hopefully this is included in the dictionary api)
+		//get the POS
 		$POS = $definition['pos'];
 		
 		//get the date and time
@@ -351,7 +351,7 @@
 		// insert the doc into the database
 		$stagingConnection->selectDB($stagingDB)->selectCollection($stagingCollection)->save(moveWordDataUpLevel($doc));
 			
-		return $success;
+		return $success && $rw !== true; // root words shouldn't count as success for main word
 	}
 
 	/**
