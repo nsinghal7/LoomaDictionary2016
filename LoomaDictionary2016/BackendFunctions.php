@@ -335,7 +335,8 @@
 				"np" => $np,
 				"part" => $POS,
 				"def" => $def,
-				"primary" => true,
+				// primary if no other definition already exists with the same word
+				"primary" => checkForSimilarDefinition($definition["word"], $stagingConnection, $officialConnection),
 				"rand" => $random,
 				"date_entered" => $dateCreated,
 				"mod" => $user),
