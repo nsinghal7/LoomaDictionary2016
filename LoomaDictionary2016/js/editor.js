@@ -114,6 +114,16 @@ function startup() {
 	submitSearch();
 	$("#cancelUploadButton").hide();
 	$(window).on("beforeunload", checkBeforeUnload);
+	$("#wordPart").keyup(function(event){
+	    if(event.keyCode == 13){
+	        submitSearch(false);
+	    }
+	});
+	$("#officialSearchBox").keyup(function(event){
+	    if(event.keyCode == 13){
+	        submitOfficialSearch();
+	    }
+	});
 }
 
 /**
