@@ -338,6 +338,23 @@ function submitSearch(oldSearch) {
 			}, 'json');
 }
 
+/**
+ * Allows consistent replacement of problematic characters for jquery to handle
+ * @param str
+ * @returns
+ */
+function cssEscapeString( str ) {
+    return str.replace("'", '_');
+}
+
+/**
+ * Allows consistent un-replacement of problematic characters for jquery to handle
+ * @param str
+ * @returns
+ */
+function cssUnescapeString(str) {
+	return str.replace("_", "'");
+}
 
 /**
  * Creates a table entry for the staging table with all necessary fields in the right format
@@ -361,9 +378,9 @@ function createTableEntry(word, i) {
 	
 	// add each field
 	row.append($('<td class="selectedCol"> <button onclick="selectWord(\''
-				+ words[i]['wordData']['word'] + '\')" class="'
+				+ cssEscapeString(words[i]['wordData']['word']) + '\')" class="'
 				+ (words[i]['wordData']['word'] == selectedWord ? "" : "un")
-				+ 'selectedWord" word="' + words[i]['wordData']['word']
+				+ 'selectedWord" word="' + cssEscapeString(words[i]['wordData']['word'])
 				+ '" title="Click to display accepted definitions in the footer">selected'
 				+ '</button></td>'));
 	row.append(createEditableTd("word", i, word["wordData"]["word"]));
@@ -541,10 +558,10 @@ function edit(type, index) {
  * @param word The word selected as a string
  */
 function selectWord(word) {
-	selectedWord = word;
+	selectedWord = cssUnescapeString(word);
 	// select correct words
 	$(".selectedWord").addClass("unselectedWord").removeClass("selectedWord");
-	$(".unselectedWord[word='" + selectedWord + "']").addClass("selectedWord")
+	$(".unselectedWord[word='" + word + "']").addClass("selectedWord")
 										.removeClass("unselectedWord");
 	
 	loadOfficialTable();
