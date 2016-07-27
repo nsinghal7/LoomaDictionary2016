@@ -290,7 +290,7 @@
 	 */
 	function createIndividualDefinition($word, $definition, $officialConnection, $stagingConnection, $user) {
 		
-		if($definition["rw"] === true) {
+		if($definition["rw"] === true and checkForDuplicateDefinition($definition, $stagingConnection, $officialConnection)) {
 			// root word definition added only in case it wasn't there, but it was, so skip
 			// without it counting
 			return true;
@@ -889,7 +889,7 @@
 	/**
 	 * Checks if the word has already been defined and therefore the new definition should be
 	 * canceled
-	 * @param unknown $doc The entry to check
+	 * @param unknown $word The word to check
 	 * @return boolean True if the entry exists, false if it doesn't
 	 */
 	function checkForSimilarDefinition ($word, $stagingConnection, $officialConnection) {
@@ -898,6 +898,26 @@
 		global $loomaDB;
 		global $loomaCollection;
 		$query = array("en" => $word );
+		if($stagingConnection->selectDB($stagingDB)->selectCollection($stagingCollection)->count($query) > 0) {
+			return true;
+		}
+		return $officialConnection->selectDB($loomaDB)->selectCollection($loomaCollection)->count($query) > 0;
+	}
+	
+	/**
+	 * Checks if a definition has already been defined and therefore the new definition should
+	 * be canceled. Checks more strictly than checkForSimilarDefinition
+	 * @param unknown $def The definition object to check
+	 * @param unknown $stagingConnection The connection to the staging database
+	 * @param unknown $officialConnection The connection to the official database
+	 * @return boolean True if there is a duplicate, false if not
+	 */
+	function checkForDuplicateDefinition($def, $stagingConnection, $officialConnection) {
+		global $stagingDB;
+		global $stagingCollection;
+		global $loomaDB;
+		global $loomaCollection;
+		$query = array("en" => $def["word"], "part" => $def["pos"], "def" => $def["def"]);
 		if($stagingConnection->selectDB($stagingDB)->selectCollection($stagingCollection)->count($query) > 0) {
 			return true;
 		}
