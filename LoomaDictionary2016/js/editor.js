@@ -593,7 +593,7 @@ function loadOfficialTable() {
 							special = word['wordData']['primary'] + "";
 						}
 						return $("<td class='" + field + "Col'> <p>"
-									+ (primary || word['wordData'][field] || "") + "</p></td>");
+									+ (special || word['wordData'][field] || "") + "</p></td>");
 					}
 					var table = $("#officialTable");
 					table.find("tr:gt(0)").remove();
