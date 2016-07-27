@@ -763,16 +763,47 @@ function moveContext(change) {
 }
 
 /**
+ * returns the index of the previous whitespace character or -1 if not found
+ * @param string
+ * @param place
+ * @returns {Number}
+ */
+function lastSpace(string, place) {
+	var ans = -1;
+	var separators = [" ", "\t", "\n"];
+	for(var i in separators) {
+		ans = Math.max(ans, string.lastIndexOf(separators[i], place));
+	}
+	return ans;
+}
+
+/**
+ * Returns the index of the next whitespace character or the max value provided
+ * @param string
+ * @param place
+ * @param max
+ * @returns
+ */
+function nextSpace(string, place, max) {
+	var ans = max;
+	var separators = [" ", "\t", "\n"];
+	for(var i in separators) {
+		var next = string.indexOf(separators[i], place);
+		if(next != -1) {
+			ans = Math.min(ans, next);
+		}
+	}
+	return ans;
+}
+
+/**
  * Gets the context around a particular location in the context string. bolds the selected word
  */
 function getContext() {
 	var start = Math.max(0, contextMarker - 20);
-	start = Math.max(0, context.lastIndexOf(" ", start) + 1);
+	start = lastSpace(context, start) + 1;
 	var end = Math.min(context.length - 1, contextMarker + 20);
-	end = Math.min(context.length, context.indexOf(" ", end));
-	if(end == -1) {
-		end = undefined; // automatically go to the end
-	}
+	end = nextSpace(context, end, context.length);
 	return context.substring(start, contextMarker) + "<b>"
 				+ context.substring(contextMarker, contextMarker + selectedWord.length)
 				+ "</b>" + context.substring(contextMarker + selectedWord.length, end);
