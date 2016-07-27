@@ -273,10 +273,8 @@
 		
 		$partSuccess = false;
 		
-		$previous = "";
 		foreach($dictionaryData as $definition) {
-			$partSuccess |= createIndividualDefinition($word, $definition, $officialConnection, $stagingConnection, $user, $previous);
-			$previous = $definition['word'];
+			$partSuccess |= createIndividualDefinition($word, $definition, $officialConnection, $stagingConnection, $user);
 		}
 		return partSuccess;
 	}
@@ -290,7 +288,7 @@
 	 * @param unknown $user the user responsible
 	 * @return boolean true if successful, false if failed;
 	 */
-	function createIndividualDefinition($word, $definition, $officialConnection, $stagingConnection, $user, $previous) {
+	function createIndividualDefinition($word, $definition, $officialConnection, $stagingConnection, $user) {
 		
 		if($definition["rw"] === true and checkForDuplicateDefinition($definition, $stagingConnection, $officialConnection)) {
 			// root word definition added only in case it wasn't there, but it was, so skip
@@ -337,9 +335,7 @@
 				"np" => $np,
 				"part" => $POS,
 				"def" => $def,
-				// primary if no other definition already exists with the same word. If it does
-				// exist, it must be consecutively before this one
-				"primary" => $previous == $definition["word"],
+				"primary" => false,
 				"rand" => $random,
 				"date_entered" => $dateCreated,
 				"mod" => $user),
