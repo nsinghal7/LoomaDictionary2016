@@ -588,8 +588,12 @@ function loadOfficialTable() {
 				if(data != null) {
 					officialDefs = data['data'];
 					function createOfficialTd(word, field) {
+						var special = false;
+						if(field == "primary") {
+							special = word['wordData']['primary'] + "";
+						}
 						return $("<td class='" + field + "Col'> <p>"
-									+ (word['wordData'][field] || "") + "</p></td>");
+									+ (primary || word['wordData'][field] || "") + "</p></td>");
 					}
 					var table = $("#officialTable");
 					table.find("tr:gt(0)").remove();
