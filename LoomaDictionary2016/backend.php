@@ -424,7 +424,7 @@
 			return strpos($value, ' ') === false; // only fails if multiple words
 		} else if($field == "pos") {
 			return true; // don't have qualifiers yet. replace when rules are created
-		} else if($field == "def" or $field == "np") {
+		} else if($field == "def" or $field == "nep") {
 			return true; // all definitions should be valid
 		} else if($field == "ch_id") {
 			return preg_match('/^[1-8](M|N|S|SS|EN)([0-9][0-9]\.)?[0-9][0-9]$/', $value) === 1;
