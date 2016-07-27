@@ -752,6 +752,10 @@ function moveContext(change) {
 		$("#contextText").text("No Word Selected");
 		return;
 	}
+	if(context == "") {
+		$("#contextText").text("No file selected");
+		return;
+	}
 	if(change == -1) {
 		var prev = context.toLowerCase().lastIndexOf(selectedWord, contextMarker - 1);
 		if(prev >= 0) {
