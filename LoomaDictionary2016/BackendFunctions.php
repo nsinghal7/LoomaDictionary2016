@@ -206,7 +206,7 @@
 		$url = "http://api.pearson.com/v2/dictionaries/wordwise/entries?limit=100&headword=" . rawurlencode($word);
 		$ch = curl_init($url);
 		curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-		curl_setopt($ch, CURLOPT_TIMEOUT, 2);
+		curl_setopt($ch, CURLOPT_TIMEOUT, 4);
 		$response = curl_exec($ch);
 		curl_close($ch);
 		$obj = json_decode($response, true); //true converts stdClass to associative array.

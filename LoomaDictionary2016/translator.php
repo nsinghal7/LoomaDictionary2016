@@ -25,7 +25,7 @@ function translate($api_key,$text,$target,$source)
     $ch = curl_init($url);
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
     curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
-    curl_setopt($ch, CURLOPT_TIMEOUT, 2);
+    curl_setopt($ch, CURLOPT_TIMEOUT, 4);
     $response = curl_exec($ch);                 
     curl_close($ch);
  
