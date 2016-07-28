@@ -198,7 +198,7 @@ function processPDF() {
 		var prefix = $("#prefixInput").val();
 		
 		// check for bad ch_id prefix
-		if(!prefix.match(/^[1-8](M|N|S|SS|EN)([0-9][0-9]\.)?([0-9][0-9])?$/)) {
+		if(!prefix.match(/^([1-8]((M|N|S|SS|EN)(([0-9][0-9]\.)?[0-9][0-9])?)?)?$/)) {
 			progress.text("chapter prefix isn't formatted correctly");
 			finishProcessingPDF();
 			return;
