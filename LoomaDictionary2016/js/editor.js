@@ -1,15 +1,15 @@
 /*
  * File: editor.js
  * Author: Nikhil Singhal
- * Date: July 1, 2016
+ * Date: July 28, 2016
  * 
  * this is the javascript that controls the functionality of editor.html.
  * 
  * The function of this code is specific to the current setup of the html and may need to
- * be modified with it.
+ * be modified along with it.
  * 
  * Requires that the html file have already imported jQuery, js/pdfToText.js (which requires
- * js/pdfjs/pdf.js), and js/findUniqueWords.js
+ * that it has imported js/pdfjs/pdf.js), and js/findUniqueWords.js
  * 
  * Also relies on css classes defined in css/editor.css, and specifications on data
  * transfer format from backend.php

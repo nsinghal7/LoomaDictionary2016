@@ -1,6 +1,14 @@
 /**
+ * File: pdfToText.js
+ * Author: gm2008 on stackoverflow and Nikhil Singhal
+ * Date: July 28, 2016
+ * 
+ * This file provides a class (essentially) thac can be used to read in a File object and
+ * convert it to pages of text using a callback (not directly returned).
+ * 
  * from http://stackoverflow.com/questions/1554280/extract-text-from-pdf-in-javascript,
- * but replaced bidiTexts with items and added the return statement at the end.
+ * but replaced "bidiTexts" with "items" and added the return statement at the end. Also
+ * Changed ans on lines 56 and 58 to be an array so that each page would be separate
  */
 
 function Pdf2TextClass(){

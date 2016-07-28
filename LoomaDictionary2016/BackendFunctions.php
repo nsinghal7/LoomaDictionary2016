@@ -1,10 +1,8 @@
 <?php
 
-//make sure searching for word data before accessing word or id, but take out word data in convert method before putting into dictionary.  dont assume word data when pulling from looma database
-
 	/**
-	 *	Author: Colton
-	 *  Date: 7/1/16
+	 *	Author: Colton Conley and Nikhil Singhal
+	 *  Date: 7/28/16
 	 *	Filename: BackendFunctions.php
 	 *
 	 *	Description:
