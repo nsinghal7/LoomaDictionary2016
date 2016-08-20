@@ -124,6 +124,11 @@ function startup() {
 	        submitOfficialSearch();
 	    }
 	});
+	$("#newWordInput").keyup(function(event){
+	    if(event.keyCode == 13){
+	        addSingleWord();
+	    }
+	});
 }
 
 /**
@@ -388,7 +393,12 @@ function createTableEntry(word, i) {
 		return $('<td class="' + type + 'Col"></td>')
 				.append($('<textarea id="' + type + "_" + index + '" onchange="edit(\'' + type
 						+ '\', ' + index + ')" class="resultsTableInput">'
-						+ (value || "") + "</textarea></td>"));
+						+ (value || "") + "</textarea>").keyup(function(event){
+						    if(event.keyCode == 13){
+						    	console.log("test")
+						        $("#" + type + "_" + index).blur();
+						    }
+						}));
 	}
 	
 	// add each field
@@ -699,6 +709,7 @@ function revertStaging() {
  */
 function showAddWordDiv() {
 	$("#addWordDiv").show();
+	$("#newWordInput").focus();
 	$("#menuArea, #viewArea, #officialViewer").addClass("disableButtons");
 }
 
