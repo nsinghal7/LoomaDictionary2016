@@ -1,11 +1,11 @@
 <?php
 /**
      *  Author: Colton
-     *  Date: 7/1/16
+     *  Date: 7/28/16
      *  Filename: translator.php
      *
      *  Description:
-     *  This file contains a generic translate function, as well as a more specific
+     *  This file contains a generic google translate function, as well as a more specific
      *  funciton that will translate to Nepali from english given a certain word
      */
 

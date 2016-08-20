@@ -1,15 +1,15 @@
 /*
  * File: editor.js
  * Author: Nikhil Singhal
- * Date: July 1, 2016
+ * Date: July 28, 2016
  * 
  * this is the javascript that controls the functionality of editor.html.
  * 
  * The function of this code is specific to the current setup of the html and may need to
- * be modified with it.
+ * be modified along with it.
  * 
  * Requires that the html file have already imported jQuery, js/pdfToText.js (which requires
- * js/pdfjs/pdf.js), and js/findUniqueWords.js
+ * that it has imported js/pdfjs/pdf.js), and js/findUniqueWords.js
  * 
  * Also relies on css classes defined in css/editor.css, and specifications on data
  * transfer format from backend.php
@@ -124,6 +124,11 @@ function startup() {
 	        submitOfficialSearch();
 	    }
 	});
+	$("#newWordInput").keyup(function(event){
+	    if(event.keyCode == 13){
+	        addSingleWord();
+	    }
+	});
 }
 
 /**
@@ -198,7 +203,7 @@ function processPDF() {
 		var prefix = $("#prefixInput").val();
 		
 		// check for bad ch_id prefix
-		if(!prefix.match(/^[1-8](M|N|S|SS|EN)([0-9][0-9]\.)?([0-9][0-9])?$/)) {
+		if(!prefix.match(/^([1-8]((M|N|S|SS|EN)([0-9][0-9]\.)?([0-9][0-9])?)?)?$/)) {
 			progress.text("chapter prefix isn't formatted correctly");
 			finishProcessingPDF();
 			return;
@@ -231,8 +236,13 @@ function processPDF() {
 						// after a non-fatal error
 						progress.text("Failed with error: " + data['status']['value']);
 					} else {
-						progress.text("Success!" + (data['skipped'] ? " Skipped: "
-															+ data["skipped"] : ""));
+						progress.html("Done!<br>Success: " + (data['success'] || "")
+							+ "<br>Fully skipped for unknown reason: " + (data['fullSkip'] || "")
+							+ "<br>Some definitions skipped for unknown reason: " + (data['partSkip'] || "")
+							+ "<br>Some definitions missing vital data: " + (data['partMissing'] || "")
+							+ "<br>Already Existed: " + (data['exists'] || "")
+							+ "<br>Connection error: " + (data["noCon"] || "")
+							+ "<br>Canceled: " + (data['canceled'] || ""));
 					}
 					
 					// show the first instance of the word in context
@@ -242,7 +252,7 @@ function processPDF() {
 					
 				}, "json").fail(function(){
 						// called after a fatal error
-						progress.text("Network or Internal Error. Check with the developers!");
+						progress.text("Network or Internal Error while connecting to server. Check with the developers!");
 						finishProcessingPDF();
 					});
 		
@@ -383,7 +393,12 @@ function createTableEntry(word, i) {
 		return $('<td class="' + type + 'Col"></td>')
 				.append($('<textarea id="' + type + "_" + index + '" onchange="edit(\'' + type
 						+ '\', ' + index + ')" class="resultsTableInput">'
-						+ (value || "") + "</textarea></td>"));
+						+ (value || "") + "</textarea>").keyup(function(event){
+						    if(event.keyCode == 13){
+						    	console.log("test")
+						        $("#" + type + "_" + index).blur();
+						    }
+						}));
 	}
 	
 	// add each field
@@ -694,6 +709,7 @@ function revertStaging() {
  */
 function showAddWordDiv() {
 	$("#addWordDiv").show();
+	$("#newWordInput").focus();
 	$("#menuArea, #viewArea, #officialViewer").addClass("disableButtons");
 }
 

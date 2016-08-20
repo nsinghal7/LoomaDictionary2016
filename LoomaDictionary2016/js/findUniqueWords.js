@@ -1,19 +1,43 @@
-/** takes a string with the entire block of text, then returns an array of all the uniqu words*/
+/*
+ *File: findUniqueWords.js
+ *Authors: Nikhil Singhal and Colton Conley
+ *Date: July 28, 2016
+ *
+ * This file contains two useful functions that help to separate out words from parsed PDF
+ * text, determine their ch_ids with help from user input, and return them as an array of
+ * objects
+ */
+
+
+/**
+ * Finds unique words and their chapter IDs from parsed PDF text
+ * @param pages An array of strings, each corresponding to the text from a PDF page
+ * @param isChPre True if the helpString is a word that separates chapters such as "Lesson".
+ * False if it is a comma separated list of page numbers
+ * @param helpString  Either a word that separates chapters or a comma separated list of page
+ * numbers
+ * @param prefix The ch_id prefix used before all parsed chapter numbers
+ * @param start The page (in the PDF) to start looking for words
+ * @param end The page (in the PDF) to stop looking for words
+ */
 function findUniqueWordsFromString(pages, isChPre, helpString, prefix, start, end){
+	// get only words
 	pages = pages.map(extractWordsFromString); // string[][]
 	
+	// make sure start and end are defined
 	start = start || 1;
 	end = end || pages.length;
 	
 	var words = [];
 	if(helpString == "") {
-		// no chapters
+		// no chapters, don't add numbers just use the prefix
 		for(var i = start - 1; i < end; i++) {
 			for(var j = 0; j < pages[i].length; j++) {
 				words.push({"word": pages[i][j], "ch_id": prefix});
 			}
 		}
 	} else if(isChPre) {
+		// parse through to find helpstring followed by numbers to find chapter markers
 		if(start != 1 || end != pages.length) {
 			return false; // fail
 		}
@@ -39,6 +63,7 @@ function findUniqueWordsFromString(pages, isChPre, helpString, prefix, start, en
 			words[i] = {"word": words[i], "ch_id": prefix + (contents ? "00" : (chapter < 10 ? "0" : "") + chapter)};
 		}
 	} else {
+		// switch chapters when the next page number comes up.
 		var chapter = 0;
 		var pageNums = helpString.split(",").map(function(num) {
 			return parseInt(num.trim());
@@ -58,6 +83,7 @@ function findUniqueWordsFromString(pages, isChPre, helpString, prefix, start, en
 			}
 		}
 	}
+	// sort the words
 	var sorted = words.sort(function(a, b) {
 		if(a.word == b.word) {
 			if(a.ch_id <= b.ch_id) {
@@ -71,9 +97,17 @@ function findUniqueWordsFromString(pages, isChPre, helpString, prefix, start, en
 			return 1;
 		}
 	});
+	
+	// remove a word followed by a duplicate. This will make sure the words are unique
 	return sorted.filter( function(v,i,o){return !/(0|[1-9]\d*)/.test(v.word) && (i==0 || v.word!=o[i-1].word);});
 }
 
+/**
+ * Finds and extracts all words from a string, where words can only be comprised of latin
+ * letters and arabic numeral digits
+ * @param string The string to extract from
+ * @returns The list of words, all lowercase, from the string.
+ */
 function extractWordsFromString(string) {
 	return (string.match(/[qwertyuiopasdfghjklzxcvbnmQWERTYUIOPASDFGHJKLZXCVBNM0123456789]+/g) || [])
 						.map(function(word) { return word.toLowerCase()});
