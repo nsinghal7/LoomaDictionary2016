@@ -128,10 +128,15 @@
 	 * add word list:
 	 * {
 	 * 		status: {
-	 * 					type: 'success',
-	 * 					value: 'added words, skipped [# of skipped words] words'
+	 * 					type: 'success'
 	 * 				},
-	 * 		skipped: array of words skipped as string[]
+	 * 		canceled: (optional) list of words skipped because of a canceled upload
+	 * 		noCon: (optional) list of words skipped because couldn't connect to dictionary or translator
+	 * 		fullSkip: (optional) list of words skipped completely due to an unknown error
+	 * 		exists: (optional) list of words skipped because they already existed
+	 * 		partSkip: (optional) list of words where a definition, but not all, were skipped
+	 * 		partMissing: (optional) list of words where a definition is missing a required field
+	 * 		success: (optional) list of words successfully added as far as the system can tell
 	 * }
 	 * 
 	 * search staging:
@@ -451,13 +456,19 @@
 			createUploadProgressSession(count($list), $appConnection,
 					$_REQUEST['loginInfo']['user']);
 			
-			$skipped = 0;
 			$canceled = false;
+			$noConnection = false;
+			
+			if(!checkLookupConnections()) {
+				$noConnection = true;
+			}
+			
+			
 			try {
 				foreach ($list as $index => $word) {
 					
 					// check that session was not canceled
-					if($canceled or
+					if(!$canceled and !$noConnection and
 					   getProgressWrapper($appConnection, $_REQUEST['loginInfo']['user'])
 													== null) {
 						// canceled
@@ -466,16 +477,24 @@
 					
 					
 					// if canceled, never a success
-					$success = ($canceled ? false : createEntryWrapper($word,
-														$officialConnection, $stagingConnection,
-														$_REQUEST['loginInfo']['user']));
-					if (!$success) {
-						if(!isset($response['skipped'])) {
-							$response['skipped'] = array();
-						}
-						$response['skipped'][] = $word["word"];
-						$skipped++;
+					if($canceled) {
+						$output = -3;
+						$key = "canceled";
+					} else if($noConnection) {
+						$output = -2;
+						$key = "noCon";
+					} else {
+						$output = createEntryWrapper($word,
+								$officialConnection, $stagingConnection,
+								$_REQUEST['loginInfo']['user']);
+						$key = array("fullSkip", "exists", "partSkip", "partMissing", "success")[$output + 1];
 					}
+					
+					
+					if(!isset($response[$key])) {
+						$response[$key] = array();
+					}
+					$response[$key][] = $word["word"];
 					updateUploadProgressSession($index + 1, $appConnection,
 							$_REQUEST['loginInfo']['user']);
 				}
@@ -491,8 +510,7 @@
 			
 			
 			// always considered successful, but may skip words
-			$response['status'] = array('type' => 'success',
-									'value' => "added words, skipped $skipped words");
+			$response['status'] = array('type' => 'success');
 		} elseif ($_SERVER['REQUEST_METHOD'] == 'GET' and isset($_REQUEST['searchArgs'])) {
 			// searches for the definitions specified by the 'searchArgs' and returns results
 			if ($_REQUEST['staging'] == "true") {

@@ -231,8 +231,13 @@ function processPDF() {
 						// after a non-fatal error
 						progress.text("Failed with error: " + data['status']['value']);
 					} else {
-						progress.text("Success!" + (data['skipped'] ? " Skipped: "
-															+ data["skipped"] : ""));
+						progress.html("Done!<br>Success: " + (data['success'] || "")
+							+ "<br>Fully skipped for unknown reason: " + (data['fullSkip'] || "")
+							+ "<br>Some definitions skipped for unknown reason: " + (data['partSkip'] || "")
+							+ "<br>Some definitions missing vital data: " + (data['partMissing'] || "")
+							+ "<br>Already Existed: " + (data['exists'] || "")
+							+ "<br>Connection error: " + (data["noCon"] || "")
+							+ "<br>Canceled: " + (data['canceled'] || ""));
 					}
 					
 					// show the first instance of the word in context
@@ -242,7 +247,7 @@ function processPDF() {
 					
 				}, "json").fail(function(){
 						// called after a fatal error
-						progress.text("Network or Internal Error. Check with the developers!");
+						progress.text("Network or Internal Error while connecting to server. Check with the developers!");
 						finishProcessingPDF();
 					});
 		

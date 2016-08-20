@@ -260,23 +260,32 @@
 	 * @param unknown $officialConnection The official database connection
 	 * @param unknown $stagingConnection the staging database connection
 	 * @param unknown $user the user
-	 * @return boolean True if all definitions were successfully added, false if ANY failed
+	 * @return int: -1 for completely skipped, 0 for already existed, so doesn't count as skipped,
+	 * 1 if a definition was skipped, 2 for at least one entry contained empty required fields,
+	 * 3 for complete success. The earlier statuses are returned with higher priority.
 	 */
 	function createEntry($word, $officialConnection, $stagingConnection, $user) {
 		if(checkForSimilarDefinition($word["word"], $stagingConnection, $officialConnection)) {
-			return true; // doesn't count as skipped since it existed
+			return 0; // doesn't count as skipped since it existed
 		}
 		
 		
 		$dictionaryData = lookUpWord($word["word"]);
 		
-		$partSuccess = false;
+		$status = 3;
+		$oneGood = false;
 		
 		foreach($dictionaryData as $definition) {
 			
-			$partSuccess |= createIndividualDefinition($word, $definition, $officialConnection, $stagingConnection, $user);
+			$result = createIndividualDefinition($word, $definition, $officialConnection, $stagingConnection, $user);
+			$oneGood |= $result > 0;
+			if($result == -1 and $status > 1) {
+				$status = 1;
+			} else if($result == 1 and $status > 2) {
+				$status = 2;
+			}
 		}
-		return $partSuccess;
+		return $oneGood ? $status : -1;
 	}
 	
 	/**
@@ -286,13 +295,14 @@
 	 * @param unknown $officialConnection The connection to the official database
 	 * @param unknown $stagingConnection The connection to the staging database
 	 * @param unknown $user the user responsible
-	 * @return boolean true if successful, false if failed;
+	 * @return int: -1 for skipped, 0 if added but shouldn't count toward success of total word,
+	 * 1 for added but required fields left empty, 2 for complete success.
 	 */
 	function createIndividualDefinition($word, $definition, $officialConnection, $stagingConnection, $user) {
 		
 		if($definition["rw"] === true and checkForDuplicateDefinition($definition, $stagingConnection, $officialConnection)) {
-			// root word definition added only in case it wasn't there, so skip
-			return false;
+			// root word definition added only in case it wasn't there, so skip, but don't count as skip
+			return 0;
 		}
 		
 		$success = true;
@@ -349,7 +359,13 @@
 		// insert the doc into the database
 		$stagingConnection->selectDB($stagingDB)->selectCollection($stagingCollection)->save(moveWordDataUpLevel($doc));
 			
-		return $success && $rw !== true; // root words shouldn't count as success for main word
+		if($rw === true) {
+			return 0;
+		} else if($success) {
+			return 2;
+		} else {
+			return 1;
+		}
 	}
 
 	/**
@@ -1003,6 +1019,19 @@
 		$stagingConnection->selectDB($stagingDB)->selectCollection($stagingCollection)->save(moveWordDataUpLevel($doc));
 
 		return true;
+	}
+	
+	/**
+	 * Checks that the internet is working and can get correct data from the dictionary and
+	 * translator.
+	 * @return true if no problem, false if the program should cancel.
+	 */
+	function checkLookupConnections() {
+		$translateCheck = translateToNepali("test") === null;
+		$lookupCheck = count(lookUpWord("test")) == 0;
+		error_log($translateCheck);
+		error_log($lookupCheck);
+		return !($translateCheck or $lookupCheck);
 	}
  
 ?>
